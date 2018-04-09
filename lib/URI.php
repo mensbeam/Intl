@@ -432,6 +432,7 @@ class URI {
         # Keep running the following state machine by switching on state.
         # If after a run pointer points to the EOF code point, go to the next step.
         # Otherwise, increase pointer by one and continue with the state machine.
+        // Note: the state machine is designed to run once even with an empty string
         do {
             # Within a parser algorithm that uses a pointer variable, c references the code point the pointer variable points to.
             // DEVIATION: we operate on byte strings: $pos is the byte offset of the character referred to by $pointer; 
@@ -584,6 +585,9 @@ class URI {
             }
             # If after a run pointer points to the EOF code point, go to the next step.
             # Otherwise, increase pointer by one and continue with the state machine.
+            // DEVIATION: we operate on byte strings: $pos is the byte offset of the character referred to by $pointer; 
+            // $posNext is the start of "remaining" i.e. the offset of the next UTF-8 character
+            // $posPrev is the byte offset of the start of the previous character i.e. ($pointer - 1)
             $posPrev = $pos;
             $pos = $posNext;
             $pointer++;
