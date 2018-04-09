@@ -1,0 +1,23 @@
+{
+    "name": "jkingweb/uniform",
+    "type": "library",
+    "description": "A collection of URL tools compatible with the WHATWG URL standard",
+    "keywords": ["url","uri","whatwg"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "J. King",
+            "email": "jking@jkingweb.ca",
+            "homepage": "https://jkingweb.ca/"
+        }
+
+    ],
+    "require": {
+        "php": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "JKingWeb\\URI\\": "lib/"
+        }
+    }
+}
