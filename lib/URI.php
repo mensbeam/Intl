@@ -378,6 +378,8 @@ class URI {
     const ST_FRAGMENT = 9;
     const ST_RELATIVE = 10;
     const ST_SPECIAL_AUTHORITY_IGNORE_SLASHES = 11;
+    const ST_AUTHORITY = 12;
+    const ST_PATH = 13;
 
     public static $confUseAllSchemePorts = false;
 
@@ -579,6 +581,19 @@ class URI {
                         $pointer--;
                     }
                     break;
+                # path or authority state
+                case self::ST_PATH_OR_AUTHORITY:
+                    if ($c=="/") {
+                        # If c is U+002F (/), then set state to authority state.
+                        $state = self::ST_AUTHORITY;
+                    } else {
+                        # Otherwise, set state to path state, and decrease pointer by one.
+                        $state = self::ST_PATH;
+                        $pos = $posPrev;
+                        $pointer--;
+                    }
+                    break;
+                // invalid or unimplemented state
                 default:
                     // FIXME: this should be an error, but until the whole state machine is implemented, we stop processing instead
                     return $url;
@@ -620,11 +635,67 @@ class URI {
 
     /** Returns the UTF-8 character at byte offset $pos (which could possibly be a replacement charcter) along with the byte offset of the next character */
     protected function getChar(string $input, int $pos, bool $throwOnError = false, $replacementChar = "\u{FFFD}"): array {
-         // FIXME: stub
-         // FIXME: write a function to read a whole UTF-8 byte sequence rather than single bytes
-         // FIXME: return an EOF object and ($pos + 1) if we're at the end of the byte stream
-         return [$input[$pos], $pos + 1];
+        // get the byte at the specified position
+        $b = ($pos < strlen($input)) ? $input[$pos] : "";
+        if ($b < "\x80" || $b=="") {
+            // if the byte is an ASCII character or end of input, simply return it
+            return [$b, $pos + 1];
+        } else {
+            // otherwise determine the byte-length of the UTF-8 character
+            $l = $this->getCharLength($b);
+            if (!$l && $throwOnError) {
+                // if the byte is invalid and we're supposed to halt, halt
+                throw new \Exception;
+            } elseif (!$l) {
+                // if the byte is invalid and we're supposed to continue, skip any further invalid bytes and return a replacement character instead
+                do {
+                    $l = $this->getCharLength($input[++$pos]);
+                } while (!$l);
+                return [$replacementChar, $pos];
+            } else {
+                // otherwise collect valid mid-sequence bytes into a buffer until the whole character is retrieved or an invalid byte is encountered
+                $buffer = $b;
+                do {
+                    $b = (++$pos < strlen($input)) ? $input[$pos] : "";
+                    if ($b >= "\x80" && $b <= "\xBF") {
+                        // if the byte is valid, add it to the buffer
+                        $buffer .= $b;
+                    } elseif ($throwOnError) {
+                        // if the byte is invalid and we're supposed to halt, halt
+                        throw new \Exception;
+                    } else {
+                        // if the byte is invalid and we're supposed to continue, go back one byte and skip any bytes which are not sequence-start bytes, then return a replacement character
+                        $pos--;
+                        do {
+                            $l = $this->getCharLength($input[++$pos]);
+                        } while (!$l);
+                        return [$replacementChar, $pos];
+                    }
+                } while (strlen($buffer) < $l);
+                // return the filled buffer and the position of the next byte
+                return [$buffer, $pos + 1];
+            }
+        }
+    }
 
+    /** 
+     * Returns the total expected length of the UTF-8 character starting with byte $b 
+     * 
+     * If the byte is not the start of a UTF-8 sequence, 0 is returned
+     */
+    protected function getCharLength(string $b): int {
+        if ($b >= "\xC0" && $b <= "\xDF") { // two-byte character
+            return 2;
+        } elseif ($b >= "\xE0" && $b <= "\xEF") { // three-byte character
+            return 3;
+        } elseif ($b >= "\xF0" && $b <= "\xF7") { // four-byte character
+            return 4;
+        } elseif ($b < "\x80") { // ASCII byte: one-byte character
+            return 1;
+        } elseif ($b == "") { // end of input: pretend it's a valid single-byte character
+            return 1;
+        } else { // invalid byte
+            return 0;
+        }
     }
 }
-
