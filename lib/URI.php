@@ -426,10 +426,7 @@ class URI {
         # Let the @ flag, [] flag, and passwordTokenSeenFlag be unset.
         $flagAtSign = $flagSquareBracket = $flagPasswordTokenSeen = false;
         # Let pointer be a pointer to first code point in input.
-        // DEVIATION: we operate on byte strings: $pos is the byte offset of the character referred to by $pointer;
-        // $posPrev is the byte offset of the start of the previous character i.e. ($pointer - 1)
-        $pointer = 0;
-        $posPrev = $pos;
+        // we operate on byte strings: $pos is the byte offset of the character referred to by $pointer
         $pos = 0;
         # Keep running the following state machine by switching on state.
         # If after a run pointer points to the EOF code point, go to the next step.
@@ -437,10 +434,12 @@ class URI {
         // Note: the state machine is designed to run once even with an empty string
         do {
             # Within a parser algorithm that uses a pointer variable, c references the code point the pointer variable points to.
-            // DEVIATION: we operate on byte strings: $pos is the byte offset of the character referred to by $pointer; 
+            // we operate on byte strings: $pos is the byte offset of the character referred to by $pointer; 
             // $posNext is the start of "remaining" i.e. the offset of the next UTF-8 character
-            // $posPrev is the byte offset of the start of the previous character i.e. ($pointer - 1)
-            list($c, $posNext) = $this->getChar($input, $pos);
+            $c = UTF8::get($input, $pos, $posNext);
+            // when the algorithm specifies to decrease the pointer by one, the result is to reprocess the current character; we
+            // accomplish this by going back to this label, which skips the increment at the end of each iteration
+            processChar:
             // switch on state
             switch ($state) {
                 # scheme start state
@@ -452,8 +451,7 @@ class URI {
                     } elseif (!$stateOverride) {
                         # Otherwise, if state override is not given, set state to no scheme state, and decrease pointer by one.
                         $state = self::ST_NO_SCHEME;
-                        $pos = $posPrev; 
-                        $pointer--;
+                        goto processChar;
                     } else {
                         # Otherwise, validation error, return failure.
                         # NOTE: This indication of failure is used exclusively by Location object’s protocol attribute.
@@ -527,7 +525,7 @@ class URI {
                         $state = self::ST_NO_SCHEME;
                         $pos = 0;
                         $pointer = 0;
-                        continue 2;
+                        goto processChar;
                     } else {
                         # Otherwise, validation error, return failure.
                         # NOTE: This indication of failure is used exclusively by Location object’s protocol attribute. Furthermore, the non-failure termination earlier in this state is an intentional difference for defining that attribute.
@@ -560,13 +558,11 @@ class URI {
                     } elseif ($base->scheme != "file") {
                         # Otherwise, if base’s scheme is not "file", set state to relative state and decrease pointer by one.
                         $state = self::ST_RELATIVE;
-                        $pos = $posPrev;
-                        $pointer--;
+                        goto processChar;
                     } else {
                         # Otherwise, set state to file state and decrease pointer by one.
                         $state = self::ST_FILE;
-                        $pos = $posPrev;
-                        $pointer--;
+                        goto processChar;
                     }
                     break;
                 # special relative or authority state
@@ -577,8 +573,7 @@ class URI {
                     } else {
                         # Otherwise, validation error, set state to relative state and decrease pointer by one.
                         $state = self::ST_RELATIVE;
-                        $pos = $posPrev;
-                        $pointer--;
+                        goto processChar;
                     }
                     break;
                 # path or authority state
@@ -589,8 +584,7 @@ class URI {
                     } else {
                         # Otherwise, set state to path state, and decrease pointer by one.
                         $state = self::ST_PATH;
-                        $pos = $posPrev;
-                        $pointer--;
+                        goto processChar;
                     }
                     break;
                 // invalid or unimplemented state
@@ -600,10 +594,8 @@ class URI {
             }
             # If after a run pointer points to the EOF code point, go to the next step.
             # Otherwise, increase pointer by one and continue with the state machine.
-            // DEVIATION: we operate on byte strings: $pos is the byte offset of the character referred to by $pointer; 
+            // we operate on byte strings: $pos is the byte offset of the character referred to by $pointer; 
             // $posNext is the start of "remaining" i.e. the offset of the next UTF-8 character
-            // $posPrev is the byte offset of the start of the previous character i.e. ($pointer - 1)
-            $posPrev = $pos;
             $pos = $posNext;
             $pointer++;
         } while ($pos <= $eof);
@@ -630,72 +622,6 @@ class URI {
                 );
             default:
                 throw new \Exception;
-        }
-    }
-
-    /** Returns the UTF-8 character at byte offset $pos (which could possibly be a replacement charcter) along with the byte offset of the next character */
-    protected function getChar(string $input, int $pos, bool $throwOnError = false, $replacementChar = "\u{FFFD}"): array {
-        // get the byte at the specified position
-        $b = ($pos < strlen($input)) ? $input[$pos] : "";
-        if ($b < "\x80" || $b=="") {
-            // if the byte is an ASCII character or end of input, simply return it
-            return [$b, $pos + 1];
-        } else {
-            // otherwise determine the byte-length of the UTF-8 character
-            $l = $this->getCharLength($b);
-            if (!$l && $throwOnError) {
-                // if the byte is invalid and we're supposed to halt, halt
-                throw new \Exception;
-            } elseif (!$l) {
-                // if the byte is invalid and we're supposed to continue, skip any further invalid bytes and return a replacement character instead
-                do {
-                    $l = $this->getCharLength($input[++$pos]);
-                } while (!$l);
-                return [$replacementChar, $pos];
-            } else {
-                // otherwise collect valid mid-sequence bytes into a buffer until the whole character is retrieved or an invalid byte is encountered
-                $buffer = $b;
-                do {
-                    $b = (++$pos < strlen($input)) ? $input[$pos] : "";
-                    if ($b >= "\x80" && $b <= "\xBF") {
-                        // if the byte is valid, add it to the buffer
-                        $buffer .= $b;
-                    } elseif ($throwOnError) {
-                        // if the byte is invalid and we're supposed to halt, halt
-                        throw new \Exception;
-                    } else {
-                        // if the byte is invalid and we're supposed to continue, go back one byte and skip any bytes which are not sequence-start bytes, then return a replacement character
-                        $pos--;
-                        do {
-                            $l = $this->getCharLength($input[++$pos]);
-                        } while (!$l);
-                        return [$replacementChar, $pos];
-                    }
-                } while (strlen($buffer) < $l);
-                // return the filled buffer and the position of the next byte
-                return [$buffer, $pos + 1];
-            }
-        }
-    }
-
-    /** 
-     * Returns the total expected length of the UTF-8 character starting with byte $b 
-     * 
-     * If the byte is not the start of a UTF-8 sequence, 0 is returned
-     */
-    protected function getCharLength(string $b): int {
-        if ($b >= "\xC0" && $b <= "\xDF") { // two-byte character
-            return 2;
-        } elseif ($b >= "\xE0" && $b <= "\xEF") { // three-byte character
-            return 3;
-        } elseif ($b >= "\xF0" && $b <= "\xF7") { // four-byte character
-            return 4;
-        } elseif ($b < "\x80") { // ASCII byte: one-byte character
-            return 1;
-        } elseif ($b == "") { // end of input: pretend it's a valid single-byte character
-            return 1;
-        } else { // invalid byte
-            return 0;
         }
     }
 }
