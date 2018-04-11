@@ -365,6 +365,8 @@ class URI {
     const ERR_INVALID_SCHEME_CHAR = 3;
     const ERR_FILE_SCHEME_EXPECTING_DOUBLE_SLASH = 4;
     const ERR_RELATIVE_URL = 5;
+    const ERR_SCHEME_EXPECTING_SLASH = 6;
+    const ERR_BACKSLASH_FORBIDDEN = 7;
 
     // parser state identifiers
     const ST_SCHEME_START = 1;
@@ -380,6 +382,7 @@ class URI {
     const ST_SPECIAL_AUTHORITY_IGNORE_SLASHES = 11;
     const ST_AUTHORITY = 12;
     const ST_PATH = 13;
+    const ST_RELATIVE_SLASH = 14;
 
     public static $confUseAllSchemePorts = false;
 
@@ -470,9 +473,9 @@ class URI {
                         # If state override is given, then:
                         if ($stateOverride &&
                             # If url’s scheme is a special scheme and buffer is not a special scheme, then return.
-                            (array_key_exists($url->scheme, self::SCHEME_SPECIAL) && !array_key_exists($buffer, self::SCHEME_SPECIAL)) ||
+                            ($this->isSpecial($url) && !$this->isSpecial($buffer)) ||
                             # If url’s scheme is not a special scheme and buffer is a special scheme, then return.
-                            (!array_key_exists($url->scheme, self::SCHEME_SPECIAL) && array_key_exists($buffer, self::SCHEME_SPECIAL)) ||
+                            (!$this->isSpecial($url) && $this->isSpecial($buffer)) ||
                             # If url includes credentials or has a non-null port, and buffer is "file", then return.
                             ($buffer=="file" || !is_null($url->port) || strlen((string) $url->username) || strlen((string) $url->password)) ||
                             # If url’s scheme is "file" and its host is an empty host or null, then return.
@@ -501,11 +504,11 @@ class URI {
                             }
                             # Set state to file state.
                             $state = self::ST_FILE;
-                        } elseif ($base && $base->scheme===$url->scheme && array_key_exists($url->scheme, self::SCHEME_SPECIAL)) {
+                        } elseif ($base && $base->scheme===$url->scheme && $this->isSpecial($url)) {
                             # Otherwise, if url is special, base is non-null, and base’s scheme is equal to url’s scheme, set state to special relative or authority state.
                             # NOTE: This means that base’s cannot-be-a-base-URL flag is unset.
                             $state = self::ST_SPECIAL_RELATIVE_OR_AUTHORITY;
-                        } elseif (array_key_exists($url->scheme, self::SCHEME_SPECIAL)) {
+                        } elseif ($this->isSpecial($url)) {
                             # Otherwise, if url is special, set state to special authority slashes state.
                             $state = self::ST_SPECIAL_AUTHORITY_SLASHES;
                         } elseif ($input[$posNext]=="/") {
@@ -543,12 +546,14 @@ class URI {
                         return $url;
                     } elseif ($base->cannotBeBaseUrl && $c=="#") {
                         # Otherwise, if base’s cannot-be-a-base-URL flag is set and c is U+0023 (#)
-                        # set url’s scheme to base’s scheme, 
-                        $url->scheme = $base->scheme;
-                        # url’s path to a copy of base’s path, 
-                        $url->path = $base->path;
-                        # url’s query to base’s query,
-                        $url->query = $base->query;
+                        $this->map($url, $base, [
+                            # set url’s scheme to base’s scheme, 
+                            "scheme",
+                            # url’s path to a copy of base’s path,
+                            "path",
+                            # url’s query to base’s query,
+                            "query",
+                        ]);
                         # url’s fragment to the empty string, 
                         $url->fragment = "";
                         # set url’s cannot-be-a-base-URL flag,
@@ -572,6 +577,7 @@ class URI {
                         $state = self::ST_SPECIAL_AUTHORITY_IGNORE_SLASHES;
                     } else {
                         # Otherwise, validation error, set state to relative state and decrease pointer by one.
+                        $url->err[] = [$pointer, $pos, self::ERR_SCHEME_EXPECTING_SLASH];
                         $state = self::ST_RELATIVE;
                         goto processChar;
                     }
@@ -585,6 +591,96 @@ class URI {
                         # Otherwise, set state to path state, and decrease pointer by one.
                         $state = self::ST_PATH;
                         goto processChar;
+                    }
+                    break;
+                # relative state
+                case self::ST_RELATIVE:
+                    # Set url’s scheme to base’s scheme, and then, switching on c:
+                    $url->scheme = $base->scheme;
+                    switch ($c) {
+                        case "": # The EOF code point
+                            $this->map($url, $base, [
+                                # Set url’s username to base’s username,
+                                "username",
+                                # url’s password to base’s password,
+                                "password",
+                                # url’s host to base’s host,
+                                "host",
+                                # url’s port to base’s port,
+                                "port",
+                                # url’s path to a copy of base’s path,
+                                "path",
+                                # and url’s query to base’s query.
+                                "query",
+                            ]);
+                            break;
+                        case "/":
+                            # Set state to relative slash state.
+                            $state = self::ST_RELATIVE_SLASH;
+                            break;
+                        case "?":
+                            $this->map($url, $base, [
+                                # Set url’s username to base’s username,
+                                "username",
+                                # url’s password to base’s password,
+                                "password",
+                                # url’s host to base’s host,
+                                "host",
+                                # url’s port to base’s port,
+                                "port",
+                                # url’s path to a copy of base’s path,
+                                "path",
+                            ]);
+                            # url’s query to the empty string, 
+                            $url->query = "";
+                            # and state to query state.
+                            $state = self::ST_QUERY;
+                            break;
+                        case "#":
+                            $this->map($url, $base, [
+                                # Set url’s username to base’s username,
+                                "username",
+                                # url’s password to base’s password,
+                                "password",
+                                # url’s host to base’s host,
+                                "host",
+                                # url’s port to base’s port,
+                                "port",
+                                # url’s path to a copy of base’s path,
+                                "path",
+                                # url’s query to base’s query,
+                                "query",
+                            ]);
+                            # url’s fragment to the empty string,
+                            $url->fragment = "";
+                            # and state to fragment state.
+                            $state = self::ST_FRAGMENT;
+                            break;
+                        default:
+                            if ($this->isSpecial($url) && $c = "\\") {
+                                # If url is special and c is U+005C (\), validation error, set state to relative slash state.
+                                $url->err[] = [$pointer, $pos, self::ERR_BACKSLASH_FORBIDDEN];
+                                $state = self::ST_RELATIVE_SLASH;
+                            } else {
+                                # Otherwise, run these steps:
+                                $this->map($url, $base, [
+                                    # Set url’s username to base’s username,
+                                    "username",
+                                    # url’s password to base’s password,
+                                    "password",
+                                    # url’s host to base’s host,
+                                    "host",
+                                    # url’s port to base’s port,
+                                    "port",
+                                    # url’s path to a copy of base’s path,
+                                    "path",
+                                ]);
+                                # and then remove url’s path’s last item, if any.
+                                array_pop($url->path);
+                                # Set state to path state, and decrease pointer by one.
+                                $state = self::ST_PATH;
+                                goto processChar;
+                            }
                     }
                     break;
                 // invalid or unimplemented state
@@ -623,5 +719,17 @@ class URI {
             default:
                 throw new \Exception;
         }
+    }
+
+    protected function map(URI $to, URI $from, array $properties): bool {
+        foreach ($properties as $prop) {
+            $to->$prop = $from->prop;
+        }
+        return true;
+    }
+
+    protected function isSpecial($test): bool {
+        $test = ($est instanceof URI) ? $test->scheme : $test;
+        return array_key_exists($test, self::SCHEME_SPECIAL);
     }
 }
