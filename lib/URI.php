@@ -359,6 +359,19 @@ class URI {
     const CHR_ASCII_ALPHA = 3;
     const CHR_ASCII_ALPHANUM = 4;
 
+    // percent-encoding character set identifiers
+    const PE_CONTROL = 1;
+    const PE_FRAGMENT = 2;
+    const PE_PATH = 3;
+    const PE_USERINFO = 4;
+
+    const PE_SET = [
+        self::PE_CONTROL  => [],
+        self::PE_FRAGMENT => [" ", '"', '`', "<", ">"],
+        self::PE_PATH     => [" ", '"', '`', "<", ">", "#", "?", "{", "}"],
+        self::PE_USERINFO => [" ", '"', '`', "<", ">", "#", "?", "{", "}", "/", ":", ";", "=", "@", "[", "]", "\\"],
+    ];
+
     // error condition identifiers
     const ERR_LEADING_OR_TRAILING_WS = 1;
     const ERR_EMBEDDED_NEWLINE_OR_TAB = 2;
@@ -367,6 +380,9 @@ class URI {
     const ERR_RELATIVE_URL = 5;
     const ERR_SCHEME_EXPECTING_SLASH = 6;
     const ERR_BACKSLASH_FORBIDDEN = 7;
+    const ERR_UNEXPECTED_SLASH = 8;
+    const ERR_UNEXPECTED_AT = 9;
+    const ERR_AUTHORITY_WITHOUT_HOST = 10;
 
     // parser state identifiers
     const ST_SCHEME_START = 1;
@@ -383,6 +399,9 @@ class URI {
     const ST_AUTHORITY = 12;
     const ST_PATH = 13;
     const ST_RELATIVE_SLASH = 14;
+    const ST_HOST = 15;
+    const ST_HOSTNAME = 16;
+    const ST_FILE_HOST = 17;
 
     public static $confUseAllSchemePorts = false;
 
@@ -683,6 +702,130 @@ class URI {
                             }
                     }
                     break;
+                # relative slash state
+                case self::ST_RELATIVE_SLASH:
+                    if ($this->isSpecial($url) && ($c=="/" || $c=="\\")) {
+                        # If url is special and c is U+002F (/) or U+005C (\), then:
+                        # If c is U+005C (\), validation error.
+                        if ($c=="\\") {
+                            $url->err[] = [$pointer, $pos, self::ERR_BACKSLASH_FORBIDDEN];
+                        }
+                        # Set state to special authority ignore slashes state.
+                        $state = self::ST_SPECIAL_AUTHORITY_IGNORE_SLASHES;
+                    } elseif ($c="/") {
+                        # Otherwise, if c is U+002F (/), then set state to authority state.
+                        $state = self::ST_AUTHORITY;
+                    } else {
+                        # Otherwise, 
+                        $this->map($url, $base, [
+                            # set url’s username to base’s username,
+                            "username",
+                            # url’s password to base’s password,
+                            "password",
+                            # url’s host to base’s host,
+                            "host",
+                            # url’s port to base’s port,
+                            "port",
+                        ]);
+                        # state to path state, and then, decrease pointer by one.
+                        $state = self::ST_PATH;
+                        goto processChar;
+                    }
+                    break;
+                # special authority slashes state
+                case self::ST_SPECIAL_AUTHORITY_SLASHES:
+                    if ($c=="/" && substr($input, $posNext, 1)=="/") {
+                        # If c is U+002F (/) and remaining starts with U+002F (/), then set state to special authority ignore slashes state and increase pointer by one.
+                        $state = self::ST_SPECIAL_AUTHORITY_IGNORE_SLASHES;
+                        // this has the effect of increasing the pointer by one
+                        $pos = $posNext;
+                        $c = UTF8::get($input, $pos, $posNext);
+                    } else {
+                        # Otherwise, validation error, set state to special authority ignore slashes state, and decrease pointer by one.
+                        $url->err[] = [$pointer, $pos, self::ERR_SCHEME_EXPECTING_SLASH];
+                        $state = self::ST_SPECIAL_AUTHORITY_IGNORE_SLASHES;
+                        goto processChar;
+                    }
+                    break;
+                # special authority ignore slashes state
+                case self::ST_SPECIAL_AUTHORITY_IGNORE_SLASHES:
+                    if ($c != "/" && $c != "\\") {
+                        # If c is neither U+002F (/) nor U+005C (\), then set state to authority state and decrease pointer by one.
+                        $state = self::ST_AUTHORITY;
+                        goto processChar;
+                    } else {
+                        # Otherwise, validation error.
+                        $url->err[] = [$pointer, $pos, self::ERR_UNEXPECTED_SLASH];
+                    }
+                    break;
+                # authority state
+                case self::ST_AUTHORITY:
+                    if($c=="@") {
+                        # If c is U+0040 (@), then:
+                        # Validation error.
+                        $url->err[] = [$pointer, $pos, self::ERR_UNEXPECTED_AT];
+                        # If the @ flag is set, prepend "%40" to buffer.
+                        if ($flagAtSign) {
+                            $buffer = "%40".$buffer;
+                        }
+                        # Set the @ flag.
+                        $flagAtSign = true;
+                        # For each codePoint in buffer:
+                        $bPos = 0;
+                        $bEof = strlen($buffer);
+                        while ($bPos < $bEof) {
+                            $codePoint = UTF8::get($buffer, $bPos, $bPosNext);
+                            # If codePoint is U+003A (:) and passwordTokenSeenFlag is unset, then set passwordTokenSeenFlag and continue.
+                            if ($codePoint==":" && !$flagPasswordTokenSeen) {
+                                $flagPasswordTokenSeen = true;
+                                // "continue" in the specification means going to the next character
+                                $bPos = $bPosNext;
+                                continue;
+                            }
+                            # Let encodedCodePoints be the result of running UTF-8 percent encode codePoint using the userinfo percent-encode set.
+                            $encodedCodePoints = $this->percentEncode($codePoint, self::PE_USERINFO);
+                            if ($flagPasswordTokenSeen) {
+                                # If passwordTokenSeenFlag is set, then append encodedCodePoints to url’s password.
+                                $url->password .= $encodedCodePoints;
+                            } else {
+                                # Otherwise, append encodedCodePoints to url’s username.
+                                $url->username .= $encodedCodePoints;
+                            }
+                        }
+                        # Set buffer to the empty string.
+                        $buffer = "";
+                    } elseif (
+                        # Otherwise, if one of the following is true
+                        in_array($c, ["/", "?", "#", ""]) || # c is the EOF code point, U+002F (/), U+003F (?), or U+0023 (#)
+                        ($this->isSpecial($url) && $c=="\\") # url is special and c is U+005C (\)
+                    ) {
+                        # then:
+                        # If @ flag is set and buffer is the empty string, validation error, return failure.
+                        if ($flagAtSign && $buffer = "") {
+                            $url->err[] = [$pointer, $pos, self::ERR_AUTHORITY_WITHOUT_HOST];
+                            $url->failure = true;
+                            return $url;
+                        }
+                        # Decrease pointer by the number of code points in buffer plus one,
+                        // DEVIATION: as with decreasing the pointer by one to reprocess characters, we'll ignore the "plus one" here for self-consitency
+                        // we first count the number of characters in the buffer
+                        $c = UTF8::len($buffer);
+                        // then decrease the advisorty character pointer by that amount
+                        $pointer -= $c;
+                        // then seek back the same number of characters
+                        $pos = UTF8::seek($input, -$c, $pos);
+                        // and finally consume that character to get the position of the next character to continue the loop correctly
+                        $c = UTF8::get($input, $pos, $posNext);
+                        # set buffer to the empty string, and set state to host state.
+                        $buffer = "";
+                        $state = self::ST_HOST;
+                        // and reprocess the first character in the erstwhile buffer
+                        goto processChar;
+                    } else {
+                        # Otherwise, append c to buffer.
+                        $buffer .= $c;
+                    }
+                    break;
                 // invalid or unimplemented state
                 default:
                     // FIXME: this should be an error, but until the whole state machine is implemented, we stop processing instead
@@ -731,5 +874,20 @@ class URI {
     protected function isSpecial($test): bool {
         $test = ($est instanceof URI) ? $test->scheme : $test;
         return array_key_exists($test, self::SCHEME_SPECIAL);
+    }
+
+    protected function percentEncode(string $bytes, int $set): string {
+        if (!isset(self::PE_SET[$set])) {
+            throw new \Exception;
+        }
+        $buffer = "";
+        foreach ($bytes as $b) {
+            if ($b < "\x20" || $b > "\x7E" || in_array($b, self::PE_SET[$set])) {
+                $buffer .= "%".strtoupper(bin2hex($b));
+            } else {
+                $buffer .= $b;
+            }
+        }
+        return $buffer;
     }
 }
