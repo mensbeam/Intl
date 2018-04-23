@@ -4,7 +4,7 @@
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
-namespace JKingWeb\URI;
+namespace MensBeam\UTF8;
 
 abstract class UTF8 {
     public static $replacementChar = "\u{FFFD}";

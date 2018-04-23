@@ -1,8 +1,8 @@
 {
-    "name": "jkingweb/uniform",
+    "name": "mensbeam/utf8",
     "type": "library",
-    "description": "A collection of URL tools compatible with the WHATWG URL standard",
-    "keywords": ["url","uri","whatwg"],
+    "description": "A set of tools for working with UTF-8 strings without mbstring or intl",
+    "keywords": ["utf-8", "utf8"],
     "license": "MIT",
     "authors": [
         {
@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "JKingWeb\\URI\\": "lib/"
+            "MensBeam\\UTF8\\": "lib/"
         }
     }
 }
