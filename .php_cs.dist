@@ -1,0 +1,29 @@
+<?php
+/** @license MIT
+ * Copyright 2018 J. King et al.
+ * See LICENSE and AUTHORS files for details */
+
+namespace MensBeam\UTF8;
+
+const BASE = __DIR__.DIRECTORY_SEPARATOR;
+
+$paths = [
+    __FILE__,
+    BASE."RoboFile.php",
+    BASE."lib",
+    BASE."tests",
+];
+$rules = [
+    '@PSR2' => true,
+    'braces' => ['position_after_functions_and_oop_constructs' => "same"],
+];
+
+$finder = \PhpCsFixer\Finder::create();
+foreach ($paths as $path) {
+    if (is_file($path)) {
+        $finder = $finder->append([$path]);
+    } else {
+        $finder = $finder->in($path);
+    }
+}
+return \PhpCsFixer\Config::create()->setRules($rules)->setFinder($finder);

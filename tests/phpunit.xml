@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<phpunit
+    colors="true"
+    bootstrap="bootstrap.php"
+    convertErrorsToExceptions="false"
+    convertNoticesToExceptions="false"
+    convertWarningsToExceptions="false"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutTestSize="true"
+    stopOnError="true">
+
+<filter>
+  <whitelist processUncoveredFilesFromWhitelist="true">
+    <directory suffix=".php">../lib</directory>
+  </whitelist>
+</filter>
+
+<testsuites>
+</testsuites>
+</phpunit>
