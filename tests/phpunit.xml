@@ -17,5 +17,8 @@
 </filter>
 
 <testsuites>
+    <testsuite name="Codec">
+        <file>cases/TestCodec.php</file>
+    </testsuite>
 </testsuites>
 </phpunit>

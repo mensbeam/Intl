@@ -232,6 +232,7 @@ abstract class UTF8 {
                         break;
                 }
             } elseif ($b < $lower || $b > $upper) {
+                $next--;
                 switch ($errMode ?? self::$errMode) {
                     case self::M_SKIP:
                         goto start;

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<pre></pre>
+<script>
+var data = [
+    // basics
+    { encoding: 'utf-8', input: [0x61, 0x62, 0x63, 0x31, 0x32, 0x33], name: 'sanity check' },
+    { encoding: 'utf-8', input: [0xE5, 0x8F, 0xA4, 0xE6, 0xB1, 0xA0, 0xE3, 0x82, 0x84, 0xE8, 0x9B, 0x99, 0xE9, 0xA3, 0x9B, 0xE3, 0x81, 0xB3, 0xE8, 0xBE, 0xBC, 0xE3, 0x82, 0x80, 0xE6, 0xB0, 0xB4, 0xE3, 0x81, 0xAE, 0xE9, 0x9F, 0xB3], name: 'multibyte control' },
+    // bad input
+    { encoding: 'utf-8', input: [0xFF], name: 'invalid code' },
+    { encoding: 'utf-8', input: [0xC0], name: 'ends early' },
+    { encoding: 'utf-8', input: [0xE0], name: 'ends early 2' },
+    { encoding: 'utf-8', input: [0xC0, 0x00], name: 'invalid trail' },
+    { encoding: 'utf-8', input: [0xC0, 0xC0], name: 'invalid trail 2' },
+    { encoding: 'utf-8', input: [0xE0, 0x00], name: 'invalid trail 3' },
+    { encoding: 'utf-8', input: [0xE0, 0xC0], name: 'invalid trail 4' },
+    { encoding: 'utf-8', input: [0xE0, 0x80, 0x00], name: 'invalid trail 5' },
+    { encoding: 'utf-8', input: [0xE0, 0x80, 0xC0], name: 'invalid trail 6' },
+    { encoding: 'utf-8', input: [0xFC, 0x80, 0x80, 0x80, 0x80, 0x80], name: '> 0x10FFFF' },
+    { encoding: 'utf-8', input: [0xFE, 0x80, 0x80, 0x80, 0x80, 0x80], name: 'obsolete lead byte' },
+    // Overlong encodings
+    { encoding: 'utf-8', input: [0xC0, 0x80], name: 'overlong U+0000 - 2 bytes' },
+    { encoding: 'utf-8', input: [0xE0, 0x80, 0x80], name: 'overlong U+0000 - 3 bytes' },
+    { encoding: 'utf-8', input: [0xF0, 0x80, 0x80, 0x80], name: 'overlong U+0000 - 4 bytes' },
+    { encoding: 'utf-8', input: [0xF8, 0x80, 0x80, 0x80, 0x80], name: 'overlong U+0000 - 5 bytes' },
+    { encoding: 'utf-8', input: [0xFC, 0x80, 0x80, 0x80, 0x80, 0x80], name: 'overlong U+0000 - 6 bytes' },
+    { encoding: 'utf-8', input: [0xC1, 0xBF], name: 'overlong U+007F - 2 bytes' },
+    { encoding: 'utf-8', input: [0xE0, 0x81, 0xBF], name: 'overlong U+007F - 3 bytes' },
+    { encoding: 'utf-8', input: [0xF0, 0x80, 0x81, 0xBF], name: 'overlong U+007F - 4 bytes' },
+    { encoding: 'utf-8', input: [0xF8, 0x80, 0x80, 0x81, 0xBF], name: 'overlong U+007F - 5 bytes' },
+    { encoding: 'utf-8', input: [0xFC, 0x80, 0x80, 0x80, 0x81, 0xBF], name: 'overlong U+007F - 6 bytes' },
+    { encoding: 'utf-8', input: [0xE0, 0x9F, 0xBF], name: 'overlong U+07FF - 3 bytes' },
+    { encoding: 'utf-8', input: [0xF0, 0x80, 0x9F, 0xBF], name: 'overlong U+07FF - 4 bytes' },
+    { encoding: 'utf-8', input: [0xF8, 0x80, 0x80, 0x9F, 0xBF], name: 'overlong U+07FF - 5 bytes' },
+    { encoding: 'utf-8', input: [0xFC, 0x80, 0x80, 0x80, 0x9F, 0xBF], name: 'overlong U+07FF - 6 bytes' },
+    { encoding: 'utf-8', input: [0xF0, 0x8F, 0xBF, 0xBF], name: 'overlong U+FFFF - 4 bytes' },
+    { encoding: 'utf-8', input: [0xF8, 0x80, 0x8F, 0xBF, 0xBF], name: 'overlong U+FFFF - 5 bytes' },
+    { encoding: 'utf-8', input: [0xFC, 0x80, 0x80, 0x8F, 0xBF, 0xBF], name: 'overlong U+FFFF - 6 bytes' },
+    { encoding: 'utf-8', input: [0xF8, 0x84, 0x8F, 0xBF, 0xBF], name: 'overlong U+10FFFF - 5 bytes' },
+    { encoding: 'utf-8', input: [0xFC, 0x80, 0x84, 0x8F, 0xBF, 0xBF], name: 'overlong U+10FFFF - 6 bytes' },
+    // UTF-16 surrogates encoded as code points in UTF-8
+    { encoding: 'utf-8', input: [0xED, 0xA0, 0x80], name: 'lead surrogate' },
+    { encoding: 'utf-8', input: [0xED, 0xB0, 0x80], name: 'trail surrogate' },
+    { encoding: 'utf-8', input: [0xED, 0xA0, 0x80, 0xED, 0xB0, 0x80], name: 'surrogate pair' },
+    // mixed input
+    { encoding: 'utf-8', input: [0x7A, 0xC2, 0xA2, 0xE6, 0xB0, 0xB4, 0xF0, 0x9D, 0x84, 0x9E, 0xEF, 0xA3, 0xBF, 0xF4, 0x8F, 0xBF, 0xBD, 0xEF, 0xBF, 0xBE], name: 'mixed sample' }
+]
+data.forEach(function(data) {
+    var bytes = ""
+    data.input.forEach((p) => {
+        bytes = bytes + "\\x" + p.toString(16).padStart(2, "0").toUpperCase()
+    })
+    var codes = []
+    var text = new TextDecoder("utf-8").decode(new Uint8Array(data.input))
+    var b = 0
+    for (let a = 0; a < text.length; a++) {
+        let point = text.codePointAt(a)
+        if (point >= 55296 && point <= 57343) {
+            // non-BMP characters have trailing low surrogates in JavaScript strings
+            continue
+        }
+        codes[b++] = point
+    }
+    codes = codes.join(", ")
+    var line = "'" + data.name + "' => [" + '"' + bytes + '", [' + codes + "]],\n"
+    document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
+})
+</script>
