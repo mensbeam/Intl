@@ -185,10 +185,17 @@ abstract class UTF8 {
         // character rather than a whole stream
         $eof = strlen($string);
         start:
+        // optimization for ASCII characters
+        if ($pos < $eof) {
+            $b = $string[$pos];
+            if ($b < "\x80") {
+                $next = $pos + 1;
+                return ord($b);
+            }
+        }
         $point = null;
         $seen = 0;
         $needed = 0;
-        $next = $pos + 1;
         $lower = "\x80";
         $upper = "\xBF";
         while ($pos < $eof && !($needed && $seen >= $needed)) {
