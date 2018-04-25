@@ -9,8 +9,8 @@ namespace MensBeam\UTF8;
 require __DIR__."/../tests/bootstrap.php";
 
 $files = [
-    'HTML specification in English' => ["https://html.spec.whatwg.org/", "html-en.html"],
-    'HTML specification in Chinese' => ["https://whatwg-cn.github.io/html/", "html-zh.html"],
+    'ASCII text'      => ["ascii.txt", false, 0, 0x7F],
+    'Multi-byte text' => ["multi.txt", false, 0x80, 0x10FFFF],
 ];
 
 $tests = [
@@ -51,10 +51,10 @@ if (!file_exists(__DIR__."/docs/")) {
 }
 
 foreach($files as $fName => $file) {
-    list($url, $file) = $file;
+    list($file, $binary, $min, $max) = $file;
     $file = __DIR__."/docs/$file";
     if (!file_exists($file)) {
-        $text = file_get_contents($url);
+        $text = gen_string(1000000, $binary, $min, $max);
         file_put_contents($file, $text);
     } else {
         $text = file_get_contents($file);
@@ -75,5 +75,27 @@ foreach($files as $fName => $file) {
             $t = array_sum($t) / sizeof($t);
             echo number_format($t, 3)." ($n characters)\n";
         }
+    }
+}
+
+function gen_string(int $size, bool $binary, int $lowest, int $highest): string {
+    $a = 0;
+    $out = "";
+    if ($binary) {
+        while ($a++ < $size) {
+            $c = chr(mt_rand(0, 255));
+            $out = "$out$c";
+        }
+        return $out;
+    } else {
+        while ($a++ < $size) {
+            $p = mt_rand($lowest, $highest);
+            if ($p >= 55296 && $p <= 57343) {
+                $p = 0xFFFD;
+            }
+            $c = \IntlChar::chr($p);
+            $out = "$out$c";
+        }
+        return $out;
     }
 }

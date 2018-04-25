@@ -63,7 +63,7 @@ class RoboFile extends \Robo\Tasks {
     /** Runs a performance evaluation.
      * 
      * The performance of the library's basic functionality is tested against 
-     * both IntlCodePointBreakIterator and preg_split
+     * the IntlCodePointBreakIterator class
     */
     public function perf(array $args): Result {
         $execpath = realpath(self::BASE."perf/perf.php");
