@@ -60,6 +60,16 @@ class RoboFile extends \Robo\Tasks {
         return $this->runTests($exec, "typical", array_merge(["--coverage-html", self::BASE_TEST."coverage"], $args));
     }
 
+    /** Runs a performance evaluation.
+     * 
+     * The performance of the library's basic functionality is tested against 
+     * both IntlCodePointBreakIterator and preg_split
+    */
+    public function perf(array $args): Result {
+        $execpath = realpath(self::BASE."perf/perf.php");
+        return $this->taskExec("php")->arg($execpath)->args($args)->run();
+    }
+
     protected function findCoverageEngine(): string {
         $null = null;
         $code = 0;
