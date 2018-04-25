@@ -15,9 +15,9 @@ abstract class UTF8 {
     const M_HALT = 2;
 
     /** Retrieve a character from $string starting at byte offset $pos
-     * 
+     *
      * $next is a variable in which to store the next byte offset at which a character starts
-     * 
+     *
      * The returned character may be a replacement character, or the empty string if $pos is beyond the end of $string
      */
     public static function get(string $string, int $pos, &$next = null, int $errMode = null): string {
@@ -52,10 +52,10 @@ abstract class UTF8 {
         }
     }
 
-    /** Starting from byte offset $pos, advance $num characters through $string and return the byte offset of the found character 
-     * 
+    /** Starting from byte offset $pos, advance $num characters through $string and return the byte offset of the found character
+     *
      * If $num is negative, the operation will be performed in reverse
-     * 
+     *
      * If $pos is omitted, the start of the string will be used for a forward seek, and the end for a reverse seek
      */
     public static function seek(string $string, int $num, int $pos = null, int $errMode = null): int {
@@ -104,10 +104,10 @@ abstract class UTF8 {
             $b >= "\x80" && $b <= "\xBF" && // continuation bytes
             ($t < 4 || $errMode==self::M_SKIP) && // stop after four bytes, unless we're skipping invalid sequences
             $pos > 0 // stop once the start of the string has been reached
-        ); 
+        );
         // attempt to extract a code point at the current position
         $p = self::ord($string, $pos, $n, self::M_REPLACE);
-        // if the position of the character after the one we just consumed is earlier than our start position, 
+        // if the position of the character after the one we just consumed is earlier than our start position,
         // then there was at least one invalid sequence between the consumed character and the start position
         if ($n < $s) {
             if ($errMode==self::M_SKIP) {
@@ -174,16 +174,16 @@ abstract class UTF8 {
     }
 
     /** Decodes the first UTF-8 character from a byte sequence into a numeric code point, starting at byte offset $pos
-     * 
+     *
      * Upon success, returns the numeric code point of the character, an integer between 0 and 1114111
-     * 
+     *
      * Upon error, returns false; if $char is the empty string or $pos is beyond the end of the string, null is returned
-     * 
+     *
      * $next is a variable in which to store the next byte offset at which a character starts
      */
     public static function ord(string $string, int $pos = 0, &$next = null, int $errMode = null) {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
-        // though it differs from a slavish implementation because it operates on only a single 
+        // though it differs from a slavish implementation because it operates on only a single
         // character rather than a whole stream
         start:
         // optimization for ASCII characters
@@ -202,7 +202,7 @@ abstract class UTF8 {
         $upper = 0xBF;
         while ($seen < $needed) {
             $b = ord(@$string[$pos++]);
-            if(!$seen) {
+            if (!$seen) {
                 if ($b >= 0xC2 && $b <= 0xDF) { // two-byte character
                     $needed = 2;
                     $point = $b & 0x1F;
@@ -255,7 +255,7 @@ abstract class UTF8 {
     }
 
     /** Returns the UTF-8 encoding of $codePoint
-     * 
+     *
      * If $codePoint is less than 0 or greater than 1114111, an empty string is returned
      */
     public static function chr(int $codePoint): string {

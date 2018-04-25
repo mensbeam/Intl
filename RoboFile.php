@@ -28,7 +28,7 @@ class RoboFile extends \Robo\Tasks {
     /**
      * Runs the full test suite
      *
-     * This includes pedantic tests which may help to identify problems. 
+     * This includes pedantic tests which may help to identify problems.
      * See help for the "test" task for more details.
     */
     public function testFull(array $args): Result {
@@ -61,13 +61,23 @@ class RoboFile extends \Robo\Tasks {
     }
 
     /** Runs a performance evaluation.
-     * 
-     * The performance of the library's basic functionality is tested against 
+     *
+     * The performance of the library's basic functionality is tested against
      * the IntlCodePointBreakIterator class
     */
     public function perf(array $args): Result {
         $execpath = realpath(self::BASE."perf/perf.php");
         return $this->taskExec("php")->arg($execpath)->args($args)->run();
+    }
+
+    /** Runs the coding standards fixer */
+    public function clean($opts = ['demo|d' => false]): Result {
+        $t = $this->taskExec(realpath(self::BASE."vendor/bin/php-cs-fixer"));
+        $t->arg("fix");
+        if ($opts['demo']) {
+            $t->args("--dry-run", "--diff")->option("--diff-format", "udiff");
+        }
+        return $t->run();
     }
 
     protected function findCoverageEngine(): string {
@@ -97,6 +107,6 @@ class RoboFile extends \Robo\Tasks {
         }
         $execpath = realpath(self::BASE."vendor-bin/phpunit/vendor/phpunit/phpunit/phpunit");
         $confpath = realpath(self::BASE_TEST."phpunit.xml");
-        return $this->taskExec($executor)->arg($execpath)->option("-c", $confpath)->args(array_merge($set,$args))->run();
+        return $this->taskExec($executor)->arg($execpath)->option("-c", $confpath)->args(array_merge($set, $args))->run();
     }
 }
