@@ -9,10 +9,8 @@ namespace MensBeam\UTF8;
 require __DIR__."/../tests/bootstrap.php";
 
 $files = [
-    'HTML single-page specification' => ["https://html.spec.whatwg.org/", "html.html"],
-    'English article on Canada' => ["https://en.wikipedia.org/wiki/Canada", "canada.html"],
-    'Greek article on Greece' => ["https://el.wikipedia.org/wiki/Ελλάδα", "greece.html"],
-    'Japanese article on Japan' => ["https://ja.wikipedia.org/wiki/日本", "japan.html"],
+    'HTML specification in English' => ["https://html.spec.whatwg.org/", "html-en.html"],
+    'HTML specification in Chinese' => ["https://whatwg-cn.github.io/html/", "html-zh.html"],
 ];
 
 $tests = [
