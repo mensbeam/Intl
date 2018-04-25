@@ -193,54 +193,46 @@ abstract class UTF8 {
             $next = $pos + 1;
             return ord($b);
         }
-        $eof = strlen($string);
-        $point = null;
+        $point = 0;
         $seen = 0;
-        $needed = 0;
+        $needed = 1;
         $lower = 0x80;
         $upper = 0xBF;
-        while ($pos < $eof && !($needed && $seen >= $needed)) {
-            $b = ord($string[$pos++]);
-            $next = $pos;
-            $seen++;
-            if(!$needed) {
-                $needed = self::l($b);
-                switch($needed) {
-                    case 1:
-                        $point = $b;
-                        break;
-                    case 2:
-                        $point = $b & 0x1F;
-                        break;
-                    case 3:
-                        if ($b==0xE0) {
-                            $lower = 0xA0;
-                        } elseif ($b==0xED) {
-                            $upper = 0x9F;
-                        }
-                        $point = $b & 0xF;
-                        break;
-                    case 4:
-                        if ($b==0xF0) {
-                            $lower = 0x90;
-                        } elseif ($b==0xF4) {
-                            $upper = 0x8F;
-                        }
-                        $point = $b & 0x7;
-                        break;
-                    case 0:
-                        switch ($errMode ?? self::$errMode) {
-                            case self::M_SKIP:
-                                goto start;
-                            case self::M_REPLACE:
-                                return false;
-                            default:
-                                throw new \Exception;
-                        }
-                        break;
+        while ($seen < $needed) {
+            $b = ord(@$string[$pos++]);
+            if(!$seen) {
+                if ($b >= 0xC2 && $b <= 0xDF) { // two-byte character
+                    $needed = 2;
+                    $point = $b & 0x1F;
+                } elseif ($b >= 0xE0 && $b <= 0xEF) { // three-byte character
+                    $needed = 3;
+                    if ($b==0xE0) {
+                        $lower = 0xA0;
+                    } elseif ($b==0xED) {
+                        $upper = 0x9F;
+                    }
+                    $point = $b & 0xF;
+                } elseif ($b >= 0xF0 && $b <= 0xF4) { // four-byte character
+                    $needed = 4;
+                    if ($b==0xF0) {
+                        $lower = 0x90;
+                    } elseif ($b==0xF4) {
+                        $upper = 0x8F;
+                    }
+                    $point = $b & 0x7;
+                } else { // invalid byte
+                    $next = $pos;
+                    switch ($errMode ?? self::$errMode) {
+                        case self::M_SKIP:
+                            goto start;
+                        case self::M_REPLACE:
+                            return false;
+                        default:
+                            throw new \Exception;
+                    }
                 }
             } elseif ($b < $lower || $b > $upper) {
-                $next--;
+                $next = $pos - 1;
                 switch ($errMode ?? self::$errMode) {
                     case self::M_SKIP:
                         goto start;
@@ -254,19 +246,10 @@ abstract class UTF8 {
                 $upper = 0xBF;
                 $point = ($point << 6) | ($b & 0x3F);
             }
+            $seen++;
         }
-        if ($seen < $needed) {
-            switch ($errMode ?? self::$errMode) {
-                case self::M_SKIP:
-                    goto start;
-                case self::M_REPLACE:
-                    return false;
-                default:
-                    throw new \Exception;
-            }
-        } else {
-            return $point;
-        }
+        $next = $pos;
+        return $point;
     }
 
     /** Returns the UTF-8 encoding of $codePoint
@@ -291,8 +274,7 @@ abstract class UTF8 {
         }
         $bytes = chr(($codePoint >> (6 * $count)) + $offset);
         while ($count > 0) {
-            $temp = $codePoint >> (6 * ($count - 1));
-            $bytes .= chr(0x80 | ($temp & 0x3F));
+            $bytes .= chr(0x80 | (($codePoint >> (6 * ($count - 1))) & 0x3F));
             $count--;
         }
         return $bytes;
