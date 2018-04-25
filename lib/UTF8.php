@@ -23,7 +23,7 @@ abstract class UTF8 {
     public static function get(string $string, int $pos, &$next = null, int $errMode = null): string {
         start:
         // get the byte at the specified position
-        $b = ($pos < strlen($string)) ? $string[$pos] : "";
+        $b = @$string[$pos];
         if ($b < "\x80" || $b=="") {
             // if the byte is an ASCII character or end of input, simply return it
             $next = $pos + 1;
@@ -183,49 +183,47 @@ abstract class UTF8 {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // though it differs from a slavish implementation because it operates on only a single 
         // character rather than a whole stream
-        $eof = strlen($string);
         start:
         // optimization for ASCII characters
-        if ($pos < $eof) {
-            $b = $string[$pos];
-            if ($b < "\x80") {
-                $next = $pos + 1;
-                return ord($b);
-            }
+        $b = @$string[$pos];
+        if ($b < "\x80") {
+            $next = $pos + 1;
+            return ord($b);
         }
+        $eof = strlen($string);
         $point = null;
         $seen = 0;
         $needed = 0;
-        $lower = "\x80";
-        $upper = "\xBF";
+        $lower = 0x80;
+        $upper = 0xBF;
         while ($pos < $eof && !($needed && $seen >= $needed)) {
-            $b = $string[$pos++];
+            $b = ord($string[$pos++]);
             $next = $pos;
             $seen++;
             if(!$needed) {
                 $needed = self::l($b);
                 switch($needed) {
                     case 1:
-                        $point = ord($b);
+                        $point = $b;
                         break;
                     case 2:
-                        $point = ord($b) & 0x1F;
+                        $point = $b & 0x1F;
                         break;
                     case 3:
-                        if ($b=="\xE0") {
-                            $lower = "\xA0";
-                        } elseif ($b=="\xED") {
-                            $upper = "\x9F";
+                        if ($b==0xE0) {
+                            $lower = 0xA0;
+                        } elseif ($b==0xED) {
+                            $upper = 0x9F;
                         }
-                        $point = ord($b) & 0xF;
+                        $point = $b & 0xF;
                         break;
                     case 4:
-                        if ($b=="\xF0") {
-                            $lower = "\x90";
-                        } elseif ($b=="\xF4") {
-                            $upper = "\x8F";
+                        if ($b==0xF0) {
+                            $lower = 0x90;
+                        } elseif ($b==0xF4) {
+                            $upper = 0x8F;
                         }
-                        $point = ord($b) & 0x7;
+                        $point = $b & 0x7;
                         break;
                     case 0:
                         switch ($errMode ?? self::$errMode) {
@@ -249,9 +247,9 @@ abstract class UTF8 {
                         throw new \Exception;
                 }
             } else {
-                $lower = "\x80";
-                $upper = "\xBF";
-                $point = ($point << 6) | (ord($b) & 0x3F);
+                $lower = 0x80;
+                $upper = 0xBF;
+                $point = ($point << 6) | ($b & 0x3F);
             }
         }
         if ($seen < $needed) {
@@ -302,16 +300,16 @@ abstract class UTF8 {
      * 
      * If the byte is not the start of a UTF-8 sequence, 0 is returned
      */
-    protected static function l(string $b): int {
-        if ($b >= "\xC2" && $b <= "\xDF") { // two-byte character
+    protected static function l($b): int {
+        if ($b >= 0xC2 && $b <= 0xDF) { // two-byte character
             return 2;
-        } elseif ($b >= "\xE0" && $b <= "\xEF") { // three-byte character
+        } elseif ($b >= 0xE0 && $b <= 0xEF) { // three-byte character
             return 3;
-        } elseif ($b >= "\xF0" && $b <= "\xF4") { // four-byte character
+        } elseif ($b >= 0xF0 && $b <= 0xF4) { // four-byte character
             return 4;
-        } elseif ($b < "\x80") { // ASCII byte: one-byte character
+        } elseif ($b < 0x80) { // ASCII byte: one-byte character
             return 1;
-        } elseif ($b == "") { // end of input: pretend it's a valid single-byte character
+        } elseif ($b==="") { // end of input: pretend it's a valid single-byte character
             return 1;
         } else { // invalid byte
             return 0;
