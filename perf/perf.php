@@ -73,7 +73,7 @@ foreach($files as $fName => $file) {
                 $t[$a] = microtime(true) - $s;
             }
             $t = array_sum($t) / sizeof($t);
-            echo number_format($t, 3)." ($n characters)\n";
+            echo number_format($t, 3)."\n";
         }
     }
 }

@@ -24,28 +24,30 @@ abstract class UTF8 {
         start:
         // get the byte at the specified position
         $b = @$string[$pos];
-        if ($b < "\x80") {
+        if (ord($b) < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
             $next = $pos + 1;
             return $b;
         } else {
-            $errMode = $errMode ?? self::$errMode;
             // otherwise determine the numeric code point of the character, as well as the position of the next character
             $p = self::ord($string, $pos, $next, self::M_REPLACE);
             if (is_int($p)) {
                 // if the character is valid, return its serialization
                 // we do a round trip (bytes > code point > bytes) to normalize overlong sequences
                 return self::chr($p);
-            } elseif ($errMode==self::M_REPLACE) {
-                // if the byte is invalid and we're supposed to replace, return a replacement character
-                return self::$replacementChar;
-            } elseif ($errMode==self::M_SKIP) {
-                // if the character is invalid and we're supposed to skip invalid characters, advance the position and start over
-                $pos = $next;
-                goto start;
             } else {
-                // if the byte is invalid and we're supposed to halt, halt
-                throw new \Exception;
+                $errMode = $errMode ?? self::$errMode;
+                if ($errMode==self::M_REPLACE) {
+                    // if the byte is invalid and we're supposed to replace, return a replacement character
+                    return self::$replacementChar;
+                } elseif ($errMode==self::M_SKIP) {
+                    // if the character is invalid and we're supposed to skip invalid characters, advance the position and start over
+                    $pos = $next;
+                    goto start;
+                } else {
+                    // if the byte is invalid and we're supposed to halt, halt
+                    throw new \Exception;
+                }
             }
         }
     }
@@ -189,9 +191,9 @@ abstract class UTF8 {
         if ($b=="") {
             $next = $pos + 1;
             return null;
-        } elseif ($b < "\x80") {
+        } elseif (($b = ord($b)) < 0x80) {
             $next = $pos + 1;
-            return ord($b);
+            return $b;
         }
         $point = 0;
         $seen = 0;
@@ -278,26 +280,5 @@ abstract class UTF8 {
             $count--;
         }
         return $bytes;
-    }
-
-    /** 
-     * Returns the expected byte length of a UTF-8 character starting with byte $b 
-     * 
-     * If the byte is not the start of a UTF-8 sequence, 0 is returned
-     */
-    protected static function l($b): int {
-        if ($b >= 0xC2 && $b <= 0xDF) { // two-byte character
-            return 2;
-        } elseif ($b >= 0xE0 && $b <= 0xEF) { // three-byte character
-            return 3;
-        } elseif ($b >= 0xF0 && $b <= 0xF4) { // four-byte character
-            return 4;
-        } elseif ($b < 0x80) { // ASCII byte: one-byte character
-            return 1;
-        } elseif ($b==="") { // end of input: pretend it's a valid single-byte character
-            return 1;
-        } else { // invalid byte
-            return 0;
-        }
     }
 }

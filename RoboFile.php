@@ -98,6 +98,5 @@ class RoboFile extends \Robo\Tasks {
         $execpath = realpath(self::BASE."vendor-bin/phpunit/vendor/phpunit/phpunit/phpunit");
         $confpath = realpath(self::BASE_TEST."phpunit.xml");
         return $this->taskExec($executor)->arg($execpath)->option("-c", $confpath)->args(array_merge($set,$args))->run();
-
     }
 }
