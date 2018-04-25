@@ -24,7 +24,7 @@ abstract class UTF8 {
         start:
         // get the byte at the specified position
         $b = @$string[$pos];
-        if ($b < "\x80" || $b=="") {
+        if ($b < "\x80") {
             // if the byte is an ASCII character or end of input, simply return it
             $next = $pos + 1;
             return $b;
@@ -97,7 +97,7 @@ abstract class UTF8 {
         do {
             $pos--;
             $t++;
-            $b = ($pos < strlen($string)) ? $string[$pos] : "";
+            $b = @$string[$pos];
         } while (
             $b >= "\x80" && $b <= "\xBF" && // continuation bytes
             ($t < 4 || $errMode==self::M_SKIP) && // stop after four bytes, unless we're skipping invalid sequences
@@ -186,7 +186,10 @@ abstract class UTF8 {
         start:
         // optimization for ASCII characters
         $b = @$string[$pos];
-        if ($b < "\x80") {
+        if ($b=="") {
+            $next = $pos + 1;
+            return null;
+        } elseif ($b < "\x80") {
             $next = $pos + 1;
             return ord($b);
         }

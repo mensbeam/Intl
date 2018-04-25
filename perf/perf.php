@@ -14,22 +14,12 @@ $files = [
 ];
 
 $tests = [
-    'Intl code points' => ["intl", function(string $text): int {
-        $t = 0;
-        $i = \IntlBreakIterator::createCodePointInstance();
-        $i->setText($text);
-        foreach ($i as $o) {
-            $p = $i->getLastCodePoint();
-            $t++;
-        }
-        return $t;
-    }],
-    'Native code points' => ["", function(string $text): int {
+    'Native characters' => ["", function(string $text): int {
         $t = 0;
         $pos = 0;
         $eof = strlen($text);
         while ($pos <= $eof) {
-            $p = UTF8::ord($text, $pos, $pos);
+            $p = UTF8::get($text, $pos, $pos);
             $t++;
         }
         return $t;
@@ -44,20 +34,12 @@ $tests = [
         }
         return $t;
     }],
-    'Native characters' => ["", function(string $text): int {
+    'Native code points' => ["", function(string $text): int {
         $t = 0;
         $pos = 0;
         $eof = strlen($text);
         while ($pos <= $eof) {
-            $p = UTF8::get($text, $pos, $pos);
-            $t++;
-        }
-        return $t;
-    }],
-    'PCRE split characters' => ["pcre", function(string $text): int {
-        $t = 0;
-        foreach (preg_split('//u',  $text) as $c) {
-            $p = $c;
+            $p = UTF8::ord($text, $pos, $pos);
             $t++;
         }
         return $t;
