@@ -9,40 +9,33 @@ namespace MensBeam\UTF8;
 require __DIR__."/../tests/bootstrap.php";
 
 $files = [
-    'ASCII text'      => ["ascii.txt", false, 0, 0x7F],
-    'Multi-byte text' => ["multi.txt", false, 0x80, 0x10FFFF],
+    'Best case'      => ["ascii.txt",    [100,0,0,0]],
+    'Worst case'     => ["multi.txt",    [0,0,0,100]],
+    'Japanese'       => ["japanese.txt", [85,0,15,0]],
+    'Greek'          => ["greek.txt",    [83,17,0,0]],
 ];
 
 $tests = [
-    'Native characters' => ["", function(string $text): int {
-        $t = 0;
+    'Native characters' => ["", function(string $text) {
         $pos = 0;
         $eof = strlen($text);
         while ($pos <= $eof) {
-            $p = UTF8::get($text, $pos, $pos);
-            $t++;
+            UTF8::get($text, $pos, $pos);
         }
-        return $t;
     }],
-    'Intl characters' => ["intl", function(string $text): int {
-        $t = 0;
+    'Intl characters' => ["intl", function(string $text) {
         $i = \IntlBreakIterator::createCodePointInstance();
         $i->setText($text);
         foreach ($i as $b) {
-            $p = \IntlChar::chr($i->getLastCodePoint());
-            $t++;
+            \IntlChar::chr($i->getLastCodePoint());
         }
-        return $t;
     }],
-    'Native code points' => ["", function(string $text): int {
-        $t = 0;
+    'Native code points' => ["", function(string $text) {
         $pos = 0;
         $eof = strlen($text);
         while ($pos <= $eof) {
-            $p = UTF8::ord($text, $pos, $pos);
-            $t++;
+            UTF8::ord($text, $pos, $pos);
         }
-        return $t;
     }],
 ];
 
@@ -51,15 +44,19 @@ if (!file_exists(__DIR__."/docs/")) {
 }
 
 foreach($files as $fName => $file) {
-    list($file, $binary, $min, $max) = $file;
+    list($file, $make) = $file;
     $file = __DIR__."/docs/$file";
     if (!file_exists($file)) {
-        $text = gen_string(1000000, $binary, $min, $max);
+        if (is_string($make)) {
+            $text = file_get_contents($make);
+        } else {
+            $text = make_file(...$make);
+        }
         file_put_contents($file, $text);
     } else {
         $text = file_get_contents($file);
     }
-    echo "$fName:\n";
+    echo str_pad("$fName:", 30, " ").compile_statistics($text)."\n";
     foreach($tests as $tName => $test) {
         list($req, $test) = $test;
         if ($req && !extension_loaded($req)) {
@@ -69,7 +66,7 @@ foreach($files as $fName => $file) {
             $t = [];
             for ($a = 0; $a < 5; $a++) {
                 $s = microtime(true);
-                $n = $test($text);
+                $test($text);
                 $t[$a] = microtime(true) - $s;
             }
             $t = array_sum($t) / sizeof($t);
@@ -78,24 +75,68 @@ foreach($files as $fName => $file) {
     }
 }
 
-function gen_string(int $size, bool $binary, int $lowest, int $highest): string {
-    $a = 0;
-    $out = "";
-    if ($binary) {
-        while ($a++ < $size) {
-            $c = chr(mt_rand(0, 255));
-            $out = "$out$c";
-        }
-        return $out;
-    } else {
-        while ($a++ < $size) {
-            $p = mt_rand($lowest, $highest);
-            if ($p >= 55296 && $p <= 57343) {
-                $p = 0xFFFD;
-            }
-            $c = \IntlChar::chr($p);
-            $out = "$out$c";
-        }
-        return $out;
+function compile_statistics(string $text): string {
+    $s = get_statistics($text);
+    for ($a = 1; $a < 5; $a++) {
+        $s[$a] = (int) ($s[$a] / $s[0] * 100);
+        $s[$a] = str_pad((string) $s[$a], 3, " ", \STR_PAD_LEFT)."%";
     }
+    array_shift($s);
+    return "( ".implode(" ", $s)." )";
+}
+
+function get_statistics(string $text): array {
+    $i = \IntlBreakIterator::createCodePointInstance();
+    $i->setText($text);
+    $s = [0,0,0,0,0];
+    foreach ($i as $b) {
+        $p = $i->getLastCodePoint();
+        $s[0]++;
+        if ($p < 0x80) {
+            $s[1]++;
+        } elseif ($p < 0x800) {
+            $s[2]++;
+        } elseif ($p < 0x10000) {
+            $s[3]++;
+        } else {
+            $s[4]++;
+        }
+    }
+    return $s;
+}
+
+function make_file(int $single, int $double, int $triple, int $quadruple): string {
+    $a = 0;
+    $s = $d = $t = $q = 0;
+    $out = "";
+    while ($a < 1000000) {
+        if ($s < $single) {
+            $min = 0;
+            $max = 127;
+            $s++;
+        } elseif ($d < $double) {
+            $min = 0x80;
+            $max = 0x7FF;
+            $d++;
+        } elseif ($t < $triple) {
+            $min = 0x800;
+            $max = 0xFFFF;
+            $t++;
+        } elseif ($q < $quadruple) {
+            $min = 0x10000;
+            $max = 0x10FFFF;
+            $q++;
+        } else {
+            $s = $d = $t = $q = 0;
+            continue;
+        }
+        $p = random_int($min, $max);
+        if ($p >= 55296 && $p <= 57343) {
+            $p = 0xFFFD;
+        }
+        $c = \IntlChar::chr($p);
+        $out .= $c;
+        $a++;
+    }
+    return $out;
 }
