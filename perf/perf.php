@@ -17,10 +17,10 @@ $files = [
 
 $tests = [
     'Native characters' => ["", function(string $text) {
-        $pos = 0;
-        $eof = strlen($text);
-        while ($pos <= $eof) {
-            UTF8::get($text, $pos, $pos);
+        $c = null;
+        $i = new \MensBeam\UTF8\UTF8String($text);
+        while ($c !== "") {
+            $c = $i->nextChr();
         }
     }],
     'Intl characters' => ["intl", function(string $text) {
@@ -31,10 +31,10 @@ $tests = [
         }
     }],
     'Native code points' => ["", function(string $text) {
-        $pos = 0;
-        $eof = strlen($text);
-        while ($pos <= $eof) {
-            UTF8::ord($text, $pos, $pos);
+        $p = null;
+        $i = new \MensBeam\UTF8\UTF8String($text);
+        while ($p !== false) {
+            $p = $i->nextOrd();
         }
     }],
 ];

@@ -14,44 +14,6 @@ abstract class UTF8 {
     const M_SKIP = 1;
     const M_HALT = 2;
 
-    /** Retrieve a character from $string starting at byte offset $pos
-     *
-     * $next is a variable in which to store the next byte offset at which a character starts
-     *
-     * The returned character may be a replacement character, or the empty string if $pos is beyond the end of $string
-     */
-    public static function get(string $string, int $pos, &$next = null, int $errMode = null): string {
-        start:
-        // get the byte at the specified position
-        $b = @$string[$pos];
-        if (ord($b) < 0x80) {
-            // if the byte is an ASCII character or end of input, simply return it
-            $next = $pos + 1;
-            return $b;
-        } else {
-            // otherwise determine the numeric code point of the character, as well as the position of the next character
-            $p = self::ord($string, $pos, $next, self::M_REPLACE);
-            if (is_int($p)) {
-                // if the character is valid, return its serialization
-                // we do a round trip (bytes > code point > bytes) to normalize overlong sequences
-                return self::chr($p);
-            } else {
-                $errMode = $errMode ?? self::$errMode;
-                if ($errMode==self::M_REPLACE) {
-                    // if the byte is invalid and we're supposed to replace, return a replacement character
-                    return self::$replacementChar;
-                } elseif ($errMode==self::M_SKIP) {
-                    // if the character is invalid and we're supposed to skip invalid characters, advance the position and start over
-                    $pos = $next;
-                    goto start;
-                } else {
-                    // if the byte is invalid and we're supposed to halt, halt
-                    throw new \Exception;
-                }
-            }
-        }
-    }
-
     /** Starting from byte offset $pos, advance $num characters through $string and return the byte offset of the found character
      *
      * If $num is negative, the operation will be performed in reverse
@@ -171,87 +133,6 @@ abstract class UTF8 {
             $next = self::sync($string, $start, $errMode);
             return "";
         }
-    }
-
-    /** Decodes the first UTF-8 character from a byte sequence into a numeric code point, starting at byte offset $pos
-     *
-     * Upon success, returns the numeric code point of the character, an integer between 0 and 1114111
-     *
-     * Upon error, returns false; if $char is the empty string or $pos is beyond the end of the string, null is returned
-     *
-     * $next is a variable in which to store the next byte offset at which a character starts
-     */
-    public static function ord(string $string, int $pos = 0, &$next = null, int $errMode = null) {
-        // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
-        // though it differs from a slavish implementation because it operates on only a single
-        // character rather than a whole stream
-        start:
-        // optimization for ASCII characters
-        $b = @$string[$pos];
-        if ($b=="") {
-            $next = $pos + 1;
-            return null;
-        } elseif (($b = ord($b)) < 0x80) {
-            $next = $pos + 1;
-            return $b;
-        }
-        $point = 0;
-        $seen = 0;
-        $needed = 1;
-        $lower = 0x80;
-        $upper = 0xBF;
-        while ($seen < $needed) {
-            $b = ord(@$string[$pos++]);
-            if (!$seen) {
-                if ($b >= 0xC2 && $b <= 0xDF) { // two-byte character
-                    $needed = 2;
-                    $point = $b & 0x1F;
-                } elseif ($b >= 0xE0 && $b <= 0xEF) { // three-byte character
-                    $needed = 3;
-                    if ($b==0xE0) {
-                        $lower = 0xA0;
-                    } elseif ($b==0xED) {
-                        $upper = 0x9F;
-                    }
-                    $point = $b & 0xF;
-                } elseif ($b >= 0xF0 && $b <= 0xF4) { // four-byte character
-                    $needed = 4;
-                    if ($b==0xF0) {
-                        $lower = 0x90;
-                    } elseif ($b==0xF4) {
-                        $upper = 0x8F;
-                    }
-                    $point = $b & 0x7;
-                } else { // invalid byte
-                    $next = $pos;
-                    switch ($errMode ?? self::$errMode) {
-                        case self::M_SKIP:
-                            goto start;
-                        case self::M_REPLACE:
-                            return false;
-                        default:
-                            throw new \Exception;
-                    }
-                }
-            } elseif ($b < $lower || $b > $upper) {
-                $next = $pos - 1;
-                switch ($errMode ?? self::$errMode) {
-                    case self::M_SKIP:
-                        goto start;
-                    case self::M_REPLACE:
-                        return false;
-                    default:
-                        throw new \Exception;
-                }
-            } else {
-                $lower = 0x80;
-                $upper = 0xBF;
-                $point = ($point << 6) | ($b & 0x3F);
-            }
-            $seen++;
-        }
-        $next = $pos;
-        return $point;
     }
 
     /** Returns the UTF-8 encoding of $codePoint

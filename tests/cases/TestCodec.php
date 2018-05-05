@@ -6,40 +6,35 @@
 declare(strict_types=1);
 namespace MensBeam\UTF8\TestCase\Codec;
 
-use MensBeam\UTF8\UTF8;
+use MensBeam\UTF8\UTF8String;
 
-/** @covers \MensBeam\UTF8\UTF8 */
 class TestConf extends \PHPUnit\Framework\TestCase {
-
-    /** @group optional */
-    public function testDecodeSingleCharacter() {
-        for ($a = 0; $a <= 0x10FFFF; $a++) {
-            // the UTF-8 encoding of the code point
-            $bytes = \IntlChar::chr($a);
-            // the expected result of decoding the bytes: surrogates are supposed to result in failures on every byte
-            $exp1 = ($a >= 55296 && $a <= 57343) ? array_fill(0, strlen($bytes), false) : [$a];
-            // the expected next-character poisitions: surrogates are supposed to return multiple positions; others always return only the end of the string
-            $exp2 = ($a >= 55296 && $a <= 57343) ? range(1, strlen($bytes)) : [strlen($bytes)];
-            $act1 = [];
-            $act2 = [];
-            $pos = 0;
-            do {
-                $act1[] = UTF8::ord($bytes, $pos, $pos);
-                $act2[] = $pos;
-            } while ($pos < strlen($bytes));
-            $this->assertSame($exp1, $act1, 'Character '.strtoupper(bin2hex(\IntlChar::chr($a))).' was not decoded correctly.');
-            $this->assertSame($exp2, $act2, 'Next offset for character '.strtoupper(bin2hex(\IntlChar::chr($a))).' is incorrect.');
+    
+    /** 
+     * @dataProvider provideStrings
+     * @covers \MensBeam\UTF8\UTF8String::__construct
+     * @covers \MensBeam\UTF8\UTF8String::nextOrd
+    */
+    public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
+        $s = new UTF8String($input);
+        while (($p = $s->nextOrd()) !== false) {
+            $out[] = $p ?? 0xFFFD;
         }
+        $this->assertEquals($exp, $out);
     }
     
-    /** @dataProvider provideStrings */
-    public function testDecodeMultipleCharacters(string $input, array $exp) {
-        $pos = 0;
-        $out = [];
-        $eof = strlen($input);
-        while ($pos < $eof) {
-            $p = UTF8::ord($input, $pos, $pos);
-            $out[] = is_int($p) ? $p : 0xFFFD;
+    /** 
+     * @dataProvider provideStrings
+     * @covers \MensBeam\UTF8\UTF8String::__construct
+     * @covers \MensBeam\UTF8\UTF8String::nextChr
+    */
+    public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
+        $exp = array_map(function($v) {
+            return \IntlChar::chr($v);
+        }, $exp);
+        $s = new UTF8String($input);
+        while (($c = $s->nextChr()) !== "") {
+            $out[] = $c;
         }
         $this->assertEquals($exp, $out);
     }
