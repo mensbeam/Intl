@@ -16,11 +16,18 @@ $files = [
 ];
 
 $tests = [
-    'Native characters' => ["", function(string $text) {
+    'Native characters (obj)' => ["", function(string $text) {
         $c = null;
         $i = new \MensBeam\UTF8\UTF8String($text);
         while ($c !== "") {
             $c = $i->nextChr();
+        }
+    }],
+    'Native characters (func)' => ["", function(string $text) {
+        $pos = 0;
+        $eof = strlen($text);
+        while ($pos <= $eof) {
+            UTF8::get($text, $pos, $pos);
         }
     }],
     'Intl characters' => ["intl", function(string $text) {
@@ -30,11 +37,18 @@ $tests = [
             \IntlChar::chr($i->getLastCodePoint());
         }
     }],
-    'Native code points' => ["", function(string $text) {
+    'Native code points (obj)' => ["", function(string $text) {
         $p = null;
         $i = new \MensBeam\UTF8\UTF8String($text);
         while ($p !== false) {
             $p = $i->nextOrd();
+        }
+    }],
+    'Native code points (func)' => ["", function(string $text) {
+        $pos = 0;
+        $eof = strlen($text);
+        while ($pos <= $eof) {
+            UTF8::ord($text, $pos, $pos);
         }
     }],
 ];
@@ -69,6 +83,9 @@ foreach($files as $fName => $file) {
                 $test($text);
                 $t[$a] = microtime(true) - $s;
             }
+            sort($t);
+            array_pop($t);
+            array_pop($t);
             $t = array_sum($t) / sizeof($t);
             echo number_format($t, 3)."\n";
         }
