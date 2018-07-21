@@ -16,6 +16,18 @@ class UTF8String {
         $this->string = $string;
     }
 
+    public function posByte(): int {
+        return $this->posByte;
+    }
+
+    public function posChar(): int {
+        return $this->posChar;
+    }
+
+    /** Retrieve the next character in the string
+     * 
+     * The returned character may be a replacement character, or the empty string if the end of the string has already been reached
+     */
     public function nextChr(): string {
         // get the byte at the current position
         $b = @$this->string[$this->posByte];
@@ -30,6 +42,10 @@ class UTF8String {
         }
     }
 
+    /** Decodes the next UTF-8 character from the string and returns its code point number
+     *
+     * If a character could not be decoded, null is returned; if the end of the string has already been reached, false is returned
+     */
     public function nextOrd() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // though it differs from a slavish implementation because it operates on only a single
@@ -85,5 +101,57 @@ class UTF8String {
             $seen++;
         }
         return $point;
+    }
+
+    /** Advance $distance characters through the string
+     *
+     * If $distance is negative, the operation will be performed in reverse
+     *
+     * If the end (or beginning) of the string was reached before the end of the operation, false is returned
+     */
+    public function seek(int $distance): bool {
+        if ($distance > 0) {
+            do {
+                // get the next code point; this automatically increments the character position
+                $p = $this->nextOrd();
+            } while (--$distance && $p !== false); // stop after we have skipped the desired number of characters, or reached EOF
+            return !$distance;
+        } elseif ($distance < 0) {
+            if (!$this->posByte) {
+                // if we're already at the start of the string, we can't go further back
+                return false;
+            }
+            $distance = abs($distance);
+            do {
+                $this->sync($this->posByte - 1);
+                // manually decrement the character position
+                $this->posChar--;
+            } while (--$distance && $this->posByte);
+            return !$distance;
+        } else {
+            return true;
+        }
+    }
+
+    /** Synchronize to the byte offset of the start of the nearest character at or before byte offset $pos */
+    protected function sync(int $pos) {
+        $b = ord(@$this->string[$pos]);
+        if ($b < 0x80) {
+            // if the byte is an ASCII byte or the end of input, then this is already a synchronized position
+            $this->posByte = $pos;
+        } else {
+            $s = $pos;
+            while ($b >= 0x80 && $b <= 0xBF && ($s - $pos) < 3) { // go back at most three bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
+                $b = ord(@$this->string[--$pos]);
+            }
+            $this->posByte = $pos;
+            // decrement the character position because nextOrd() increments it
+            $this->posChar--;
+            if (is_null($this->nextOrd())) {
+                $this->posByte = $s;
+            } else {
+                $this->posByte = $pos;
+            }
+        }
     }
 }

@@ -38,6 +38,23 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         }
         $this->assertEquals($exp, $out);
     }
+    
+    /** 
+     * @dataProvider provideStrings
+     * @covers \MensBeam\UTF8\UTF8String::seek
+     * @covers \MensBeam\UTF8\UTF8String::sync
+     * @covers \MensBeam\UTF8\UTF8String::posChar
+    */
+    public function testSTepBackThroughAString(string $input, array $points) {
+        $s = new UTF8String($input);
+        $a = 0;
+        while (($p1 = $s->nextOrd() ?? 0xFFFD) !== false) {
+            $this->assertTrue($s->seek(-1));
+            $p2 = $s->nextOrd() ?? 0xFFFD;
+            $this->assertSame($p1, $p2, "Mismatch at character position $a");
+            $this->assertSame(++$a, $s->posChar(), "Character position should be $a");
+        }
+    }
 
     public function provideStrings() {
         return [
