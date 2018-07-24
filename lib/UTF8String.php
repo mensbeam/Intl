@@ -141,7 +141,7 @@ class UTF8String {
             $this->posByte = $pos;
         } else {
             $s = $pos;
-            while ($b >= 0x80 && $b <= 0xBF && ($s - $pos) < 3) { // go back at most three bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
+            while ($b >= 0x80 && $b <= 0xBF && $pos > 0 && ($s - $pos) < 3) { // go back at most three bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
                 $b = ord(@$this->string[--$pos]);
             }
             $this->posByte = $pos;
@@ -150,7 +150,7 @@ class UTF8String {
             if (is_null($this->nextOrd())) {
                 $this->posByte = $s;
             } else {
-                $this->posByte = $pos;
+                $this->posByte = ($this->posByte > $s ) ? $pos : $s;
             }
         }
     }
