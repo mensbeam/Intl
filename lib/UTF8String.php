@@ -20,7 +20,7 @@ class UTF8String {
         return $this->posByte;
     }
 
-    public function posChar(): int {
+    public function posChr(): int {
         return $this->posChar;
     }
 
@@ -107,29 +107,33 @@ class UTF8String {
      *
      * If $distance is negative, the operation will be performed in reverse
      *
-     * If the end (or beginning) of the string was reached before the end of the operation, false is returned
+     * If the end (or beginning) of the string was reached before the end of the operation, the remaining number of requested characters is returned
      */
-    public function seek(int $distance): bool {
+    public function seek(int $distance): int {
         if ($distance > 0) {
+            if ($this->posByte == strlen($this->string)) {
+                // if we're already at the end of the string, we can't go further
+                return $distance;
+            }
             do {
                 // get the next code point; this automatically increments the character position
                 $p = $this->nextOrd();
             } while (--$distance && $p !== false); // stop after we have skipped the desired number of characters, or reached EOF
-            return !$distance;
+            return $distance;
         } elseif ($distance < 0) {
+            $distance = abs($distance);
             if (!$this->posByte) {
                 // if we're already at the start of the string, we can't go further back
-                return false;
+                return $distance;
             }
-            $distance = abs($distance);
             do {
                 $this->sync($this->posByte - 1);
                 // manually decrement the character position
                 $this->posChar--;
             } while (--$distance && $this->posByte);
-            return !$distance;
+            return $distance;
         } else {
-            return true;
+            return 0;
         }
     }
 

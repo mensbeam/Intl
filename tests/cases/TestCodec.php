@@ -41,19 +41,71 @@ class TestConf extends \PHPUnit\Framework\TestCase {
     
     /** 
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8String::seek
      * @covers \MensBeam\UTF8\UTF8String::sync
-     * @covers \MensBeam\UTF8\UTF8String::posChar
     */
     public function testSTepBackThroughAString(string $input, array $points) {
         $s = new UTF8String($input);
         $a = 0;
         while (($p1 = $s->nextOrd() ?? 0xFFFD) !== false) {
-            $this->assertTrue($s->seek(-1));
+            $this->assertSame(0, $s->seek(-1));
             $p2 = $s->nextOrd() ?? 0xFFFD;
             $this->assertSame($p1, $p2, "Mismatch at character position $a");
-            $this->assertSame(++$a, $s->posChar(), "Character position should be $a");
+            $this->assertSame(++$a, $s->posChr(), "Character position should be $a");
         }
+    }
+    
+    /** 
+     * @covers \MensBeam\UTF8\UTF8String::seek
+     * @covers \MensBeam\UTF8\UTF8String::posChr
+     * @covers \MensBeam\UTF8\UTF8String::posByte
+    */
+    public function testSeekThroughAString() {
+        /* 
+            Char 0  U+007A   (1 byte)  Offset 0
+            Char 1  U+00A2   (2 bytes) Offset 1
+            Char 2  U+6C34   (3 bytes) Offset 3
+            Char 3  U+1D11E  (4 bytes) Offset 6
+            Char 4  U+F8FF   (3 bytes) Offset 10
+            Char 5  U+10FFFD (4 bytes) Offset 13
+            Char 6  U+FFFE   (3 bytes) Offset 17
+            End of string at char 7, offset 20
+        */
+        $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
+        $s = new UTF8String($input);
+        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(0, $s->seek(0));
+        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(1, $s->seek(-1));
+        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posByte());
+        
+        $this->assertSame(0, $s->seek(1));
+        $this->assertSame(1, $s->posChr());
+        $this->assertSame(1, $s->posByte());
+        
+        $this->assertSame(0, $s->seek(2));
+        $this->assertSame(3, $s->posChr());
+        $this->assertSame(6, $s->posByte());
+        
+        $this->assertSame(0, $s->seek(4));
+        $this->assertSame(7, $s->posChr());
+        $this->assertSame(20, $s->posByte());
+        
+        $this->assertSame(1, $s->seek(1));
+        $this->assertSame(7, $s->posChr());
+        $this->assertSame(20, $s->posByte());
+        
+        $this->assertSame(0, $s->seek(-3));
+        $this->assertSame(4, $s->posChr());
+        $this->assertSame(10, $s->posByte());
+        
+        $this->assertSame(6, $s->seek(-10));
+        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posByte());
     }
 
     public function provideStrings() {
