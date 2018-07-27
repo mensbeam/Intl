@@ -31,7 +31,9 @@ class UTF8String {
     public function nextChr(): string {
         // get the byte at the current position
         $b = @$this->string[$this->posByte];
-        if (ord($b) < 0x80) {
+        if ($b === "") {
+            return "";
+        } elseif (ord($b) < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
             $this->posChar++;
             $this->posByte++;
@@ -50,16 +52,16 @@ class UTF8String {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // though it differs from a slavish implementation because it operates on only a single
         // character rather than a whole stream
-        $this->posChar++;
         // optimization for ASCII characters
         $b = @$this->string[$this->posByte];
         if ($b=="") {
-            $this->posByte++;
             return false;
         } elseif (($b = ord($b)) < 0x80) {
+            $this->posChar++;
             $this->posByte++;
             return $b;
         }
+        $this->posChar++;
         $point = 0;
         $seen = 0;
         $needed = 1;

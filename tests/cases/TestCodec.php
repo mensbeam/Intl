@@ -107,6 +107,36 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         $this->assertSame(0, $s->posChr());
         $this->assertSame(0, $s->posByte());
     }
+    
+    /** 
+     * @covers \MensBeam\UTF8\UTF8String::posChr
+     * @covers \MensBeam\UTF8\UTF8String::posByte
+    */
+    public function testTraversePastTheEndOfAString() {
+        $s = new UTF8String("a");
+        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame("a", $s->nextChr());
+        $this->assertSame(1, $s->posChr());
+        $this->assertSame(1, $s->posByte());
+
+        $this->assertSame("", $s->nextChr());
+        $this->assertSame(1, $s->posChr());
+        $this->assertSame(1, $s->posByte());
+
+        $s = new UTF8String("a");
+        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(ord("a"), $s->nextOrd());
+        $this->assertSame(1, $s->posChr());
+        $this->assertSame(1, $s->posByte());
+
+        $this->assertSame(false, $s->nextOrd());
+        $this->assertSame(1, $s->posChr());
+        $this->assertSame(1, $s->posByte());
+    }
 
     public function provideStrings() {
         return [
