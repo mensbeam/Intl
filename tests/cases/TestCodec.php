@@ -10,7 +10,7 @@ use MensBeam\UTF8\UTF8String;
 
 class TestConf extends \PHPUnit\Framework\TestCase {
     
-    /** 
+    /**
      * @dataProvider provideStrings
      * @covers \MensBeam\UTF8\UTF8String::__construct
      * @covers \MensBeam\UTF8\UTF8String::nextOrd
@@ -23,13 +23,13 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($exp, $out);
     }
     
-    /** 
+    /**
      * @dataProvider provideStrings
      * @covers \MensBeam\UTF8\UTF8String::__construct
      * @covers \MensBeam\UTF8\UTF8String::nextChr
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
-        $exp = array_map(function($v) {
+        $exp = array_map(function ($v) {
             return \IntlChar::chr($v);
         }, $exp);
         $s = new UTF8String($input);
@@ -39,7 +39,7 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         $this->assertEquals($exp, $out);
     }
     
-    /** 
+    /**
      * @dataProvider provideStrings
      * @covers \MensBeam\UTF8\UTF8String::sync
     */
@@ -54,13 +54,13 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         }
     }
     
-    /** 
+    /**
      * @covers \MensBeam\UTF8\UTF8String::seek
      * @covers \MensBeam\UTF8\UTF8String::posChr
      * @covers \MensBeam\UTF8\UTF8String::posByte
     */
     public function testSeekThroughAString() {
-        /* 
+        /*
             Char 0  U+007A   (1 byte)  Offset 0
             Char 1  U+00A2   (2 bytes) Offset 1
             Char 2  U+6C34   (3 bytes) Offset 3
@@ -108,7 +108,7 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         $this->assertSame(0, $s->posByte());
     }
     
-    /** 
+    /**
      * @covers \MensBeam\UTF8\UTF8String::posChr
      * @covers \MensBeam\UTF8\UTF8String::posByte
     */

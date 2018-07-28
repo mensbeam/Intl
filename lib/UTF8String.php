@@ -25,7 +25,7 @@ class UTF8String {
     }
 
     /** Retrieve the next character in the string
-     * 
+     *
      * The returned character may be a replacement character, or the empty string if the end of the string has already been reached
      */
     public function nextChr(): string {
@@ -54,7 +54,7 @@ class UTF8String {
         // character rather than a whole stream
         // optimization for ASCII characters
         $b = @$this->string[$this->posByte];
-        if ($b=="") {
+        if ($b === "") {
             return false;
         } elseif (($b = ord($b)) < 0x80) {
             $this->posChar++;
@@ -156,7 +156,7 @@ class UTF8String {
             if (is_null($this->nextOrd())) {
                 $this->posByte = $s;
             } else {
-                $this->posByte = ($this->posByte > $s ) ? $pos : $s;
+                $this->posByte = ($this->posByte > $s) ? $pos : $s;
             }
         }
     }
