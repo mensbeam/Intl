@@ -20,5 +20,8 @@
     <testsuite name="Class instance">
         <file>cases/TestInstance.php</file>
     </testsuite>
+    <testsuite name="Static methods">
+        <file>cases/TestFunctions.php</file>
+    </testsuite>
 </testsuites>
 </phpunit>

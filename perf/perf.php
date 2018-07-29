@@ -16,6 +16,13 @@ $files = [
 ];
 
 $tests = [
+    'Intl characters' => ["intl", function(string $text) {
+        $i = \IntlBreakIterator::createCodePointInstance();
+        $i->setText($text);
+        foreach ($i as $b) {
+            \IntlChar::chr($i->getLastCodePoint());
+        }
+    }],
     'Native characters (obj)' => ["", function(string $text) {
         $c = null;
         $i = new \MensBeam\UTF8\UTF8String($text);
@@ -25,16 +32,14 @@ $tests = [
     }],
     'Native characters (func)' => ["", function(string $text) {
         $pos = 0;
-        $eof = strlen($text);
-        while ($pos <= $eof) {
-            UTF8::get($text, $pos, $pos);
+        while (($p = UTF8::get($text, $pos, $pos)) !== "") {
         }
     }],
-    'Intl characters' => ["intl", function(string $text) {
+    'Intl code points' => ["intl", function(string $text) {
         $i = \IntlBreakIterator::createCodePointInstance();
         $i->setText($text);
         foreach ($i as $b) {
-            \IntlChar::chr($i->getLastCodePoint());
+            $i->getLastCodePoint();
         }
     }],
     'Native code points (obj)' => ["", function(string $text) {
@@ -46,9 +51,7 @@ $tests = [
     }],
     'Native code points (func)' => ["", function(string $text) {
         $pos = 0;
-        $eof = strlen($text);
-        while ($pos <= $eof) {
-            UTF8::ord($text, $pos, $pos);
+        while (($p = UTF8::ord($text, $pos, $pos)) !== false) {
         }
     }],
 ];

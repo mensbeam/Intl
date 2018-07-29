@@ -7,12 +7,6 @@ declare(strict_types=1);
 namespace MensBeam\UTF8;
 
 abstract class UTF8 {
-    public static $replacementChar = "\u{FFFD}";
-    public static $errMode = self::M_REPLACE;
-
-    const M_REPLACE = 0;
-    const M_SKIP = 1;
-    const M_HALT = 2;
 
     /** Retrieve a character from $string starting at byte offset $pos
      *
@@ -20,35 +14,22 @@ abstract class UTF8 {
      *
      * The returned character may be a replacement character, or the empty string if $pos is beyond the end of $string
      */
-    public static function get(string $string, int $pos, &$next = null, int $errMode = null): string {
+    public static function get(string $string, int $pos, &$next = null): string {
         start:
         // get the byte at the specified position
         $b = @$string[$pos];
         if (ord($b) < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
-            $next = $pos + 1;
+            if ($b !== "") {
+                $next = $pos + 1;
+            } else {
+                $next = $pos;
+            }
             return $b;
         } else {
             // otherwise determine the numeric code point of the character, as well as the position of the next character
-            $p = self::ord($string, $pos, $next, self::M_REPLACE);
-            if (is_int($p)) {
-                // if the character is valid, return its serialization
-                // we do a round trip (bytes > code point > bytes) to normalize overlong sequences
-                return self::chr($p);
-            } else {
-                $errMode = $errMode ?? self::$errMode;
-                if ($errMode==self::M_REPLACE) {
-                    // if the byte is invalid and we're supposed to replace, return a replacement character
-                    return self::$replacementChar;
-                } elseif ($errMode==self::M_SKIP) {
-                    // if the character is invalid and we're supposed to skip invalid characters, advance the position and start over
-                    $pos = $next;
-                    goto start;
-                } else {
-                    // if the byte is invalid and we're supposed to halt, halt
-                    throw new \Exception;
-                }
-            }
+            $p = self::ord($string, $pos, $next);
+            return is_int($p) ? self::chr($p) : "\u{FFFD}";
         }
     }
 
@@ -58,12 +39,11 @@ abstract class UTF8 {
      *
      * If $pos is omitted, the start of the string will be used for a forward seek, and the end for a reverse seek
      */
-    public static function seek(string $string, int $num, int $pos = null, int $errMode = null): int {
-        $errMode = $errMode ?? self::$errMode;
+    public static function seek(string $string, int $num, int $pos = null): int {
         if ($num > 0) {
             $pos = $pos ?? 0;
             do {
-                $c = self::get($string, $pos, $pos, $errMode); // the current position is getting overwritten with the next position, by reference
+                $c = self::get($string, $pos, $pos); // the current position is getting overwritten with the next position, by reference
             } while (--$num && $c != ""); // stop after we have skipped the desired number of characters, or reached EOF
             return $pos;
         } elseif ($num < 0) {
@@ -74,71 +54,32 @@ abstract class UTF8 {
             }
             $num = abs($num);
             do {
-                $pos = self::sync($string, $pos -1, $errMode);
+                $pos = self::sync($string, $pos -1);
                 $num--;
             } while ($num && $pos);
             return $pos;
         } else {
             // seeking zero characters is equivalent to a sync
-            return self::sync($string, $pos, $errMode);
+            return self::sync($string, $pos);
         }
     }
 
     /** Synchronize to the byte offset of the start of the nearest character at or before byte offset $pos */
-    public static function sync(string $string, int $pos, int $errMode = null): int {
-        $errMode = $errMode ?? self::$errMode;
-        start:
-        if (!$pos || $pos >= strlen($string)) {
-            // if we're at the start of the string or past its end, then this is the character start
-            return $pos;
-        }
-        // save the start position for later, and increment before the coming decrement loop
-        $s = $pos++;
-        // examine the current byte and skip up to three continuation bytes, going backward and counting the number of examined bytes (between 1 and 4)
-        $t = 0;
-        do {
-            $pos--;
-            $t++;
-            $b = @$string[$pos];
-        } while (
-            $b >= "\x80" && $b <= "\xBF" && // continuation bytes
-            ($t < 4 || $errMode==self::M_SKIP) && // stop after four bytes, unless we're skipping invalid sequences
-            $pos > 0 // stop once the start of the string has been reached
-        );
-        // attempt to extract a code point at the current position
-        $p = self::ord($string, $pos, $n, self::M_REPLACE);
-        // if the position of the character after the one we just consumed is earlier than our start position,
-        // then there was at least one invalid sequence between the consumed character and the start position
-        if ($n < $s) {
-            if ($errMode==self::M_SKIP) {
-                // if we're supposed to skip invalid sequences, there is no need to do anything
-            } elseif ($errMode==self::M_REPLACE) {
-                // if we're supposed to replace invalid sequences, return the starting offset: it is itself a character
+    public static function sync(string $string, int $pos): int {
+        $b = ord(@$string[$pos]);
+        if ($b < 0x80) {
+            // if the byte is an ASCII byte or the end of input, then this is already a synchronized position
+            return min(max($pos,0), strlen($string));
+        } else {
+            $s = $pos;
+            while ($b >= 0x80 && $b <= 0xBF && $pos > 0 && ($s - $pos) < 3) { // go back at most three bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
+                $b = ord(@$string[--$pos]);
+            }
+            if (is_null(self::ord($string, $pos, $next))) {
                 return $s;
             } else {
-                // otherwise if the character is invalid and we're expected to halt, halt
-                throw new \Exception;
+                return ($next > $s) ? $pos : $s;
             }
-        }
-        // if the consumed character is valid, return the current position
-        if (is_int($p)) {
-            return $pos;
-        } elseif ($errMode==self::M_SKIP) {
-            // if we're supposed to skip invalid sequences:
-            if ($pos < 1) {
-                // if we're already at the start of the string, give up
-                return $pos;
-            } else {
-                // otherwise skip over the last examined byte and start over
-                $pos--;
-                goto start;
-            }
-        } elseif ($errMode==self::M_REPLACE) {
-            // if we're supposed to replace invalid sequences, return the current offset: we've synchronized
-            return $pos;
-        } else {
-            // otherwise if the character is invalid and we're expected to halt, halt
-            throw new \Exception;
         }
     }
 
@@ -177,20 +118,19 @@ abstract class UTF8 {
      *
      * Upon success, returns the numeric code point of the character, an integer between 0 and 1114111
      *
-     * Upon error, returns false; if $char is the empty string or $pos is beyond the end of the string, null is returned
+     * Upon error, returns null; if $char is the empty string or $pos is beyond the end of the string, false is returned
      *
      * $next is a variable in which to store the next byte offset at which a character starts
      */
-    public static function ord(string $string, int $pos = 0, &$next = null, int $errMode = null) {
+    public static function ord(string $string, int $pos = 0, &$next = null) {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // though it differs from a slavish implementation because it operates on only a single
         // character rather than a whole stream
-        start:
         // optimization for ASCII characters
         $b = @$string[$pos];
         if ($b=="") {
-            $next = $pos + 1;
-            return null;
+            $next = $pos;
+            return false;
         } elseif (($b = ord($b)) < 0x80) {
             $next = $pos + 1;
             return $b;
@@ -224,25 +164,11 @@ abstract class UTF8 {
                     $point = $b & 0x7;
                 } else { // invalid byte
                     $next = $pos;
-                    switch ($errMode ?? self::$errMode) {
-                        case self::M_SKIP:
-                            goto start;
-                        case self::M_REPLACE:
-                            return false;
-                        default:
-                            throw new \Exception;
-                    }
+                    return null;
                 }
             } elseif ($b < $lower || $b > $upper) {
                 $next = $pos - 1;
-                switch ($errMode ?? self::$errMode) {
-                    case self::M_SKIP:
-                        goto start;
-                    case self::M_REPLACE:
-                        return false;
-                    default:
-                        throw new \Exception;
-                }
+                return null;
             } else {
                 $lower = 0x80;
                 $upper = 0xBF;
