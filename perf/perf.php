@@ -17,10 +17,15 @@ $files = [
 
 $tests = [
     'Intl characters' => ["intl", function(string $text) {
-        $i = \IntlBreakIterator::createCodePointInstance();
-        $i->setText($text);
-        foreach ($i as $b) {
-            \IntlChar::chr($i->getLastCodePoint());
+        $i = (function($text) {
+            $i = \IntlBreakIterator::createCodePointInstance();
+            $i->setText($text);
+            foreach ($i as $b) {
+                yield \IntlChar::chr($i->getLastCodePoint());
+            }
+        })($text);
+        foreach ($i as $c) {
+            $b = $c;
         }
     }],
     'Native characters (obj)' => ["", function(string $text) {
@@ -36,10 +41,15 @@ $tests = [
         }
     }],
     'Intl code points' => ["intl", function(string $text) {
-        $i = \IntlBreakIterator::createCodePointInstance();
-        $i->setText($text);
-        foreach ($i as $b) {
-            $i->getLastCodePoint();
+        $i = (function($text) {
+            $i = \IntlBreakIterator::createCodePointInstance();
+            $i->setText($text);
+            foreach ($i as $b) {
+                yield $i->getLastCodePoint();
+            }
+        })($text);
+        foreach ($i as $c) {
+            $b = $c;
         }
     }],
     'Native code points (obj)' => ["", function(string $text) {
