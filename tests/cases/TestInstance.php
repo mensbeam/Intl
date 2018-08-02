@@ -137,6 +137,88 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
         $this->assertSame(1, $s->posChr());
         $this->assertSame(1, $s->posByte());
     }
+    
+    /**
+     * @covers \MensBeam\UTF8\UTF8::peekChr
+    */
+    public function testPeekAtCharacters() {
+        /*
+            Char 0  U+007A   (1 byte)  Offset 0
+            Char 1  U+00A2   (2 bytes) Offset 1
+            Char 2  U+6C34   (3 bytes) Offset 3
+            Char 3  U+1D11E  (4 bytes) Offset 6
+            Char 4  U+F8FF   (3 bytes) Offset 10
+            Char 5  U+10FFFD (4 bytes) Offset 13
+            Char 6  U+FFFE   (3 bytes) Offset 17
+            End of string at char 7, offset 20
+        */
+        $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
+        $s = new UTF8($input);
+        $s->seek(2);
+        $this->assertSame(2, $s->posChr());
+        $this->assertSame(3, $s->posByte());
+
+        $this->assertSame(bin2hex("\u{6C34}"), bin2hex($s->peekChr()));
+        $this->assertSame(2, $s->posChr());
+        $this->assertSame(3, $s->posByte());
+
+        $this->assertSame(bin2hex("\u{6C34}\u{1D11E}"), bin2hex($s->peekChr(2)));
+        $this->assertSame(2, $s->posChr());
+        $this->assertSame(3, $s->posByte());
+
+        $s->seek(3);
+        $this->assertSame(5, $s->posChr());
+        $this->assertSame(13, $s->posByte());
+
+        $this->assertSame(bin2hex("\u{10FFFD}\u{FFFE}"), bin2hex($s->peekChr(3)));
+        $this->assertSame(5, $s->posChr());
+        $this->assertSame(13, $s->posByte());
+
+        $this->assertSame("", $s->peekChr(-5));
+        $this->assertSame(5, $s->posChr());
+        $this->assertSame(13, $s->posByte());
+    }
+    
+    /**
+     * @covers \MensBeam\UTF8\UTF8::peekOrd
+    */
+    public function testPeekAtCodePoints() {
+        /*
+            Char 0  U+007A   (1 byte)  Offset 0
+            Char 1  U+00A2   (2 bytes) Offset 1
+            Char 2  U+6C34   (3 bytes) Offset 3
+            Char 3  U+1D11E  (4 bytes) Offset 6
+            Char 4  U+F8FF   (3 bytes) Offset 10
+            Char 5  U+10FFFD (4 bytes) Offset 13
+            Char 6  U+FFFE   (3 bytes) Offset 17
+            End of string at char 7, offset 20
+        */
+        $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
+        $s = new UTF8($input);
+        $s->seek(2);
+        $this->assertSame(2, $s->posChr());
+        $this->assertSame(3, $s->posByte());
+
+        $this->assertSame([0x6C34], $s->peekOrd());
+        $this->assertSame(2, $s->posChr());
+        $this->assertSame(3, $s->posByte());
+
+        $this->assertSame([0x6C34, 0x1D11E], $s->peekOrd(2));
+        $this->assertSame(2, $s->posChr());
+        $this->assertSame(3, $s->posByte());
+
+        $s->seek(3);
+        $this->assertSame(5, $s->posChr());
+        $this->assertSame(13, $s->posByte());
+
+        $this->assertSame([0x10FFFD, 0xFFFE], $s->peekOrd(3));
+        $this->assertSame(5, $s->posChr());
+        $this->assertSame(13, $s->posByte());
+
+        $this->assertSame([], $s->peekOrd(-5));
+        $this->assertSame(5, $s->posChr());
+        $this->assertSame(13, $s->posByte());
+    }
 
     public function provideStrings() {
         return [

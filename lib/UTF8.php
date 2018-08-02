@@ -139,6 +139,32 @@ class UTF8 {
         }
     }
 
+    /** Retrieves the next $num characters from the string, without advancing the character pointer */
+    public function peekChr(int $num = 1): string {
+        $out = "";
+        $pC = $this->posChar;
+        $pB = $this->posByte;
+        while ($num-- > 0 && ($b = $this->nextChr()) !== "") {
+            $out .= $b;
+        }
+        $this->posChar = $pC;
+        $this->posByte = $pB;
+        return $out;
+    }
+
+    /** Retrieves the next $num code points from the string, without advancing the character pointer */
+    public function peekOrd(int $num = 1): array {
+        $out = [];
+        $pC = $this->posChar;
+        $pB = $this->posByte;
+        while ($num-- > 0 && ($b = $this->nextOrd()) !== false) {
+            $out[] = $b;
+        }
+        $this->posChar = $pC;
+        $this->posByte = $pB;
+        return $out;
+    }
+
     /** Synchronize to the byte offset of the start of the nearest character at or before byte offset $pos */
     protected function sync(int $pos) {
         $b = ord(@$this->string[$pos]);
