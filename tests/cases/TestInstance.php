@@ -11,6 +11,20 @@ use MensBeam\UTF8\UTF8;
 class TestInstance extends \PHPUnit\Framework\TestCase {
     
     /**
+     * @covers \MensBeam\UTF8\UTF8::chr
+    */
+    public function testEncodeCodePoints() {
+        $input = [122, 162, 27700, 119070, 63743, 1114109, 65534];
+        $exp = ["\x7A", "\xC2\xA2", "\xE6\xB0\xB4", "\xF0\x9D\x84\x9E", "\xEF\xA3\xBF", "\xF4\x8F\xBF\xBD", "\xEF\xBF\xBE"];
+        for ($a = 0; $a < sizeof($input); $a++) {
+            $out = UTF8::chr($input[$a]);
+            $this->assertSame(bin2hex($exp[$a]), bin2hex($out), "Character $a was not encoded correctly");
+        }
+        $this->assertSame("", UTF8::chr(\PHP_INT_MAX));
+        $this->assertSame("", UTF8::chr(\PHP_INT_MIN));
+    }
+    
+    /**
      * @dataProvider provideStrings
      * @covers \MensBeam\UTF8\UTF8::__construct
      * @covers \MensBeam\UTF8\UTF8::nextOrd
