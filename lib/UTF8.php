@@ -10,6 +10,7 @@ class UTF8 {
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
+    protected $length = null;
 
 
     public function __construct(string $string) {
@@ -163,6 +164,22 @@ class UTF8 {
         $this->posChar = $pC;
         $this->posByte = $pB;
         return $out;
+    }
+
+    /** Calculates the length of the string in code points 
+     * 
+     * Note that this involves processing to the end of the string
+    */
+    public function len(): int {
+        return $this->length ?? (function() {
+            $pC = $this->posChar;
+            $pB = $this->posByte;
+            while ($this->nextChr() !== "");
+            $this->length = $this->posChar;
+            $this->posChar = $pC;
+            $this->posByte = $pB;
+            return $this->length;
+        })();
     }
 
     /** Synchronize to the byte offset of the start of the nearest character at or before byte offset $pos */
