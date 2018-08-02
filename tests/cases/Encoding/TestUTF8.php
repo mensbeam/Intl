@@ -4,14 +4,14 @@
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
-namespace MensBeam\UTF8\TestCase\Codec;
+namespace MensBeam\Intl\TestCase\Encoding;
 
-use MensBeam\UTF8\UTF8;
+use MensBeam\Intl\Encoding\UTF8;
 
-class TestInstance extends \PHPUnit\Framework\TestCase {
+class TestUTF8 extends \PHPUnit\Framework\TestCase {
     
     /**
-     * @covers \MensBeam\UTF8\UTF8::chr
+     * @covers MensBeam\Intl\Encoding\UTF8::chr
     */
     public function testEncodeCodePoints() {
         $input = [122, 162, 27700, 119070, 63743, 1114109, 65534];
@@ -26,8 +26,8 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8::__construct
-     * @covers \MensBeam\UTF8\UTF8::nextOrd
+     * @covers MensBeam\Intl\Encoding\UTF8::__construct
+     * @covers MensBeam\Intl\Encoding\UTF8::nextOrd
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         $s = new UTF8($input);
@@ -40,8 +40,8 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8::__construct
-     * @covers \MensBeam\UTF8\UTF8::nextChr
+     * @covers MensBeam\Intl\Encoding\UTF8::__construct
+     * @covers MensBeam\Intl\Encoding\UTF8::nextChr
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         $out = [];
@@ -57,7 +57,7 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8::sync
+     * @covers MensBeam\Intl\Encoding\UTF8::sync
     */
     public function testSTepBackThroughAString(string $input, array $points) {
         $s = new UTF8($input);
@@ -72,9 +72,9 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     }
     
     /**
-     * @covers \MensBeam\UTF8\UTF8::seek
-     * @covers \MensBeam\UTF8\UTF8::posChr
-     * @covers \MensBeam\UTF8\UTF8::posByte
+     * @covers MensBeam\Intl\Encoding\UTF8::seek
+     * @covers MensBeam\Intl\Encoding\UTF8::posChr
+     * @covers MensBeam\Intl\Encoding\UTF8::posByte
     */
     public function testSeekThroughAString() {
         /*
@@ -126,8 +126,8 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     }
     
     /**
-     * @covers \MensBeam\UTF8\UTF8::posChr
-     * @covers \MensBeam\UTF8\UTF8::posByte
+     * @covers MensBeam\Intl\Encoding\UTF8::posChr
+     * @covers MensBeam\Intl\Encoding\UTF8::posByte
     */
     public function testTraversePastTheEndOfAString() {
         $s = new UTF8("a");
@@ -156,7 +156,7 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     }
     
     /**
-     * @covers \MensBeam\UTF8\UTF8::peekChr
+     * @covers MensBeam\Intl\Encoding\UTF8::peekChr
     */
     public function testPeekAtCharacters() {
         /*
@@ -197,7 +197,7 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     }
     
     /**
-     * @covers \MensBeam\UTF8\UTF8::peekOrd
+     * @covers MensBeam\Intl\Encoding\UTF8::peekOrd
     */
     public function testPeekAtCodePoints() {
         /*
@@ -239,7 +239,7 @@ class TestInstance extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8::len
+     * @covers MensBeam\Intl\Encoding\UTF8::len
     */
     public function testGetStringLength(string $input, array $points) {
         $s = new UTF8($input);

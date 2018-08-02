@@ -4,7 +4,7 @@
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
-namespace MensBeam\UTF8;
+namespace MensBeam\Intl\Encoding;
 
 class UTF8 {
     protected $string;
