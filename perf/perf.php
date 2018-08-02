@@ -28,16 +28,11 @@ $tests = [
             $b = $c;
         }
     }],
-    'Native characters (obj)' => ["", function(string $text) {
+    'Native characters' => ["", function(string $text) {
         $c = null;
         $i = new \MensBeam\UTF8\UTF8String($text);
         while ($c !== "") {
             $c = $i->nextChr();
-        }
-    }],
-    'Native characters (func)' => ["", function(string $text) {
-        $pos = 0;
-        while (($p = UTF8::get($text, $pos, $pos)) !== "") {
         }
     }],
     'Intl code points' => ["intl", function(string $text) {
@@ -52,16 +47,11 @@ $tests = [
             $b = $c;
         }
     }],
-    'Native code points (obj)' => ["", function(string $text) {
+    'Native code points' => ["", function(string $text) {
         $p = null;
         $i = new \MensBeam\UTF8\UTF8String($text);
         while ($p !== false) {
             $p = $i->nextOrd();
-        }
-    }],
-    'Native code points (func)' => ["", function(string $text) {
-        $pos = 0;
-        while (($p = UTF8::ord($text, $pos, $pos)) !== false) {
         }
     }],
 ];

@@ -17,11 +17,8 @@
 </filter>
 
 <testsuites>
-    <testsuite name="Class instance">
+    <testsuite name="UTF-8">
         <file>cases/TestInstance.php</file>
-    </testsuite>
-    <testsuite name="Static methods">
-        <file>cases/TestFunctions.php</file>
     </testsuite>
 </testsuites>
 </phpunit>
