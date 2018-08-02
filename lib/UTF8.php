@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\UTF8;
 
-class UTF8String {
+class UTF8 {
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
@@ -159,5 +159,33 @@ class UTF8String {
                 $this->posByte = ($this->posByte > $s) ? $pos : $s;
             }
         }
+    }
+
+    /** Returns the UTF-8 encoding of $codePoint
+     *
+     * If $codePoint is less than 0 or greater than 1114111, an empty string is returned
+     */
+    public static function chr(int $codePoint): string {
+        // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
+        if ($codePoint < 0 || $codePoint > 0x10FFFF) {
+            return "";
+        } elseif ($codePoint < 128) {
+            return chr($codePoint);
+        } elseif ($codePoint < 0x800) {
+            $count = 1;
+            $offset = 0xC0;
+        } elseif ($codePoint < 0x10000) {
+            $count = 2;
+            $offset = 0xE0;
+        } else {
+            $count = 3;
+            $offset = 0xF0;
+        }
+        $bytes = chr(($codePoint >> (6 * $count)) + $offset);
+        while ($count > 0) {
+            $bytes .= chr(0x80 | (($codePoint >> (6 * ($count - 1))) & 0x3F));
+            $count--;
+        }
+        return $bytes;
     }
 }

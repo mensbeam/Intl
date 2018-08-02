@@ -30,7 +30,7 @@ $tests = [
     }],
     'Native characters' => ["", function(string $text) {
         $c = null;
-        $i = new \MensBeam\UTF8\UTF8String($text);
+        $i = new \MensBeam\UTF8\UTF8($text);
         while ($c !== "") {
             $c = $i->nextChr();
         }
@@ -49,7 +49,7 @@ $tests = [
     }],
     'Native code points' => ["", function(string $text) {
         $p = null;
-        $i = new \MensBeam\UTF8\UTF8String($text);
+        $i = new \MensBeam\UTF8\UTF8($text);
         while ($p !== false) {
             $p = $i->nextOrd();
         }

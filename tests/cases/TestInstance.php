@@ -6,17 +6,17 @@
 declare(strict_types=1);
 namespace MensBeam\UTF8\TestCase\Codec;
 
-use MensBeam\UTF8\UTF8String;
+use MensBeam\UTF8\UTF8;
 
-class TestConf extends \PHPUnit\Framework\TestCase {
+class TestInstance extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8String::__construct
-     * @covers \MensBeam\UTF8\UTF8String::nextOrd
+     * @covers \MensBeam\UTF8\UTF8::__construct
+     * @covers \MensBeam\UTF8\UTF8::nextOrd
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
-        $s = new UTF8String($input);
+        $s = new UTF8($input);
         while (($p = $s->nextOrd()) !== false) {
             $out[] = $p ?? 0xFFFD;
         }
@@ -25,14 +25,14 @@ class TestConf extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8String::__construct
-     * @covers \MensBeam\UTF8\UTF8String::nextChr
+     * @covers \MensBeam\UTF8\UTF8::__construct
+     * @covers \MensBeam\UTF8\UTF8::nextChr
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         $exp = array_map(function ($v) {
             return \IntlChar::chr($v);
         }, $exp);
-        $s = new UTF8String($input);
+        $s = new UTF8($input);
         while (($c = $s->nextChr()) !== "") {
             $out[] = $c;
         }
@@ -41,10 +41,10 @@ class TestConf extends \PHPUnit\Framework\TestCase {
     
     /**
      * @dataProvider provideStrings
-     * @covers \MensBeam\UTF8\UTF8String::sync
+     * @covers \MensBeam\UTF8\UTF8::sync
     */
     public function testSTepBackThroughAString(string $input, array $points) {
-        $s = new UTF8String($input);
+        $s = new UTF8($input);
         $a = 0;
         while (($p1 = $s->nextOrd() ?? 0xFFFD) !== false) {
             $this->assertSame(0, $s->seek(-1));
@@ -55,9 +55,9 @@ class TestConf extends \PHPUnit\Framework\TestCase {
     }
     
     /**
-     * @covers \MensBeam\UTF8\UTF8String::seek
-     * @covers \MensBeam\UTF8\UTF8String::posChr
-     * @covers \MensBeam\UTF8\UTF8String::posByte
+     * @covers \MensBeam\UTF8\UTF8::seek
+     * @covers \MensBeam\UTF8\UTF8::posChr
+     * @covers \MensBeam\UTF8\UTF8::posByte
     */
     public function testSeekThroughAString() {
         /*
@@ -71,7 +71,7 @@ class TestConf extends \PHPUnit\Framework\TestCase {
             End of string at char 7, offset 20
         */
         $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
-        $s = new UTF8String($input);
+        $s = new UTF8($input);
         $this->assertSame(0, $s->posChr());
         $this->assertSame(0, $s->posByte());
 
@@ -109,11 +109,11 @@ class TestConf extends \PHPUnit\Framework\TestCase {
     }
     
     /**
-     * @covers \MensBeam\UTF8\UTF8String::posChr
-     * @covers \MensBeam\UTF8\UTF8String::posByte
+     * @covers \MensBeam\UTF8\UTF8::posChr
+     * @covers \MensBeam\UTF8\UTF8::posByte
     */
     public function testTraversePastTheEndOfAString() {
-        $s = new UTF8String("a");
+        $s = new UTF8("a");
         $this->assertSame(0, $s->posChr());
         $this->assertSame(0, $s->posByte());
 
@@ -125,7 +125,7 @@ class TestConf extends \PHPUnit\Framework\TestCase {
         $this->assertSame(1, $s->posChr());
         $this->assertSame(1, $s->posByte());
 
-        $s = new UTF8String("a");
+        $s = new UTF8("a");
         $this->assertSame(0, $s->posChr());
         $this->assertSame(0, $s->posByte());
 
