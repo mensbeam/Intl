@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class UTF8  implements \Iterator {
+class UTF8 implements \Iterator {
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
@@ -167,41 +167,35 @@ class UTF8  implements \Iterator {
     /** Retrieves the next $num characters from the string, without advancing the character pointer */
     public function peekChr(int $num = 1): string {
         $out = "";
-        $pC = $this->posChar;
-        $pB = $this->posByte;
+        $state = $this->stateSave();
         while ($num-- > 0 && ($b = $this->nextChr()) !== "") {
             $out .= $b;
         }
-        $this->posChar = $pC;
-        $this->posByte = $pB;
+        $this->stateApply($state);
         return $out;
     }
 
     /** Retrieves the next $num code points from the string, without advancing the character pointer */
     public function peekOrd(int $num = 1): array {
         $out = [];
-        $pC = $this->posChar;
-        $pB = $this->posByte;
+        $state = $this->stateSave();
         while ($num-- > 0 && ($b = $this->nextOrd()) !== false) {
             $out[] = $b;
         }
-        $this->posChar = $pC;
-        $this->posByte = $pB;
+        $this->stateApply($state);
         return $out;
     }
 
-    /** Calculates the length of the string in code points 
-     * 
+    /** Calculates the length of the string in code points
+     *
      * Note that this involves processing to the end of the string
     */
     public function len(): int {
         return $this->lenChar ?? (function() {
-            $pC = $this->posChar;
-            $pB = $this->posByte;
-            while ($this->nextChr() !== "");
+            $state = $this->stateSave();
+            while ($this->nextOrd() !== false);
             $this->lenChar = $this->posChar;
-            $this->posChar = $pC;
-            $this->posByte = $pB;
+            $this->stateApply($state);
             return $this->lenChar;
         })();
     }
@@ -225,6 +219,19 @@ class UTF8  implements \Iterator {
             } else {
                 $this->posByte = ($this->posByte > $s) ? $pos : $s;
             }
+        }
+    }
+
+    protected function stateSave(): array {
+        return [
+            'posChar' => $this->posChar,
+            'posByte' => $this->posByte,
+        ];
+    }
+
+    protected function stateApply(array $state) {
+        foreach($state as $key => $value) {
+            $this->$key = $value;
         }
     }
 

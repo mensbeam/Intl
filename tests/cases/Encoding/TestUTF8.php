@@ -9,7 +9,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 use MensBeam\Intl\Encoding\UTF8;
 
 class TestUTF8 extends \PHPUnit\Framework\TestCase {
-    
+
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::chr
     */
@@ -23,7 +23,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $this->assertSame("", UTF8::chr(\PHP_INT_MAX));
         $this->assertSame("", UTF8::chr(\PHP_INT_MIN));
     }
-    
+
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::__construct
@@ -37,7 +37,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         }
         $this->assertEquals($exp, $out);
     }
-    
+
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::__construct
@@ -54,7 +54,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         }
         $this->assertEquals($exp, $out);
     }
-    
+
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::rewind
@@ -77,7 +77,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
             $a++;
         }
     }
-    
+
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::sync
@@ -93,7 +93,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
             $this->assertSame(++$a, $s->posChr(), "Character position should be $a");
         }
     }
-    
+
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::seek
      * @covers MensBeam\Intl\Encoding\UTF8::posChr
@@ -122,32 +122,32 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $this->assertSame(1, $s->seek(-1));
         $this->assertSame(0, $s->posChr());
         $this->assertSame(0, $s->posByte());
-        
+
         $this->assertSame(0, $s->seek(1));
         $this->assertSame(1, $s->posChr());
         $this->assertSame(1, $s->posByte());
-        
+
         $this->assertSame(0, $s->seek(2));
         $this->assertSame(3, $s->posChr());
         $this->assertSame(6, $s->posByte());
-        
+
         $this->assertSame(0, $s->seek(4));
         $this->assertSame(7, $s->posChr());
         $this->assertSame(20, $s->posByte());
-        
+
         $this->assertSame(1, $s->seek(1));
         $this->assertSame(7, $s->posChr());
         $this->assertSame(20, $s->posByte());
-        
+
         $this->assertSame(0, $s->seek(-3));
         $this->assertSame(4, $s->posChr());
         $this->assertSame(10, $s->posByte());
-        
+
         $this->assertSame(6, $s->seek(-10));
         $this->assertSame(0, $s->posChr());
         $this->assertSame(0, $s->posByte());
     }
-    
+
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::posChr
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
@@ -177,7 +177,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $this->assertSame(1, $s->posChr());
         $this->assertSame(1, $s->posByte());
     }
-    
+
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::peekChr
     */
@@ -218,7 +218,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $this->assertSame(5, $s->posChr());
         $this->assertSame(13, $s->posByte());
     }
-    
+
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::peekOrd
     */
@@ -259,10 +259,12 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $this->assertSame(5, $s->posChr());
         $this->assertSame(13, $s->posByte());
     }
-    
+
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::len
+     * @covers MensBeam\Intl\Encoding\UTF8::stateSave
+     * @covers MensBeam\Intl\Encoding\UTF8::stateApply
     */
     public function testGetStringLength(string $input, array $points) {
         $s = new UTF8($input);
