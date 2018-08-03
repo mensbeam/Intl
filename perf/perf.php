@@ -4,7 +4,7 @@
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
-namespace MensBeam\UTF8;
+namespace MensBeam\Intl\Encoding;
 
 require __DIR__."/../tests/bootstrap.php";
 
@@ -30,7 +30,14 @@ $tests = [
     }],
     'Native characters' => ["", function(string $text) {
         $c = null;
-        $i = new \MensBeam\UTF8\UTF8($text);
+        $i = new UTF8($text);
+        while ($c !== "") {
+            $c = $i->nextChr();
+        }
+    }],
+    'Native iterator' => ["", function(string $text) {
+        $c = null;
+        $i = new UTF8($text);
         while ($c !== "") {
             $c = $i->nextChr();
         }
@@ -49,7 +56,7 @@ $tests = [
     }],
     'Native code points' => ["", function(string $text) {
         $p = null;
-        $i = new \MensBeam\UTF8\UTF8($text);
+        $i = new UTF8($text);
         while ($p !== false) {
             $p = $i->nextOrd();
         }

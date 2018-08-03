@@ -6,15 +6,39 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class UTF8 {
+class UTF8  implements \Iterator {
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
-    protected $length = null;
+    protected $lenByte = null;
+    protected $lenChar = null;
+    protected $current;
 
+    public function rewind() {
+        $this->posByte = 0;
+        $this->posChar = 0;
+        $this->current = null;
+    }
+
+    public function valid() {
+        return $this->posByte < $this->lenByte;
+    }
+
+    public function current() {
+        return $this->current ?? ($this->current = $this->nextChr());
+    }
+
+    public function key() {
+        return isset($this->current) ? $this->posChar - 1 : $this->posChar;
+    }
+
+    public function next() {
+        $this->current = null;
+    }
 
     public function __construct(string $string) {
         $this->string = $string;
+        $this->lenByte = strlen($string);
     }
 
     public function posByte(): int {
@@ -171,14 +195,14 @@ class UTF8 {
      * Note that this involves processing to the end of the string
     */
     public function len(): int {
-        return $this->length ?? (function() {
+        return $this->lenChar ?? (function() {
             $pC = $this->posChar;
             $pB = $this->posByte;
             while ($this->nextChr() !== "");
-            $this->length = $this->posChar;
+            $this->lenChar = $this->posChar;
             $this->posChar = $pC;
             $this->posByte = $pB;
-            return $this->length;
+            return $this->lenChar;
         })();
     }
 
