@@ -32,14 +32,14 @@ $tests = [
         $c = null;
         $i = new UTF8($text);
         while ($c !== "") {
-            $c = $i->nextChr();
+            $c = $i->nextChar();
         }
     }],
     'Native iterator' => ["", function(string $text) {
         $c = null;
         $i = new UTF8($text);
         while ($c !== "") {
-            $c = $i->nextChr();
+            $c = $i->nextChar();
         }
     }],
     'Intl code points' => ["intl", function(string $text) {
@@ -58,7 +58,7 @@ $tests = [
         $p = null;
         $i = new UTF8($text);
         while ($p !== false) {
-            $p = $i->nextOrd();
+            $p = $i->nextCode();
         }
     }],
 ];

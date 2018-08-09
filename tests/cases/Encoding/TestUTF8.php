@@ -11,28 +11,28 @@ use MensBeam\Intl\Encoding\UTF8;
 class TestUTF8 extends \PHPUnit\Framework\TestCase {
 
     /**
-     * @covers MensBeam\Intl\Encoding\UTF8::chr
+     * @covers MensBeam\Intl\Encoding\UTF8::encode
     */
     public function testEncodeCodePoints() {
         $input = [122, 162, 27700, 119070, 63743, 1114109, 65534];
         $exp = ["\x7A", "\xC2\xA2", "\xE6\xB0\xB4", "\xF0\x9D\x84\x9E", "\xEF\xA3\xBF", "\xF4\x8F\xBF\xBD", "\xEF\xBF\xBE"];
         for ($a = 0; $a < sizeof($input); $a++) {
-            $out = UTF8::chr($input[$a]);
+            $out = UTF8::encode($input[$a]);
             $this->assertSame(bin2hex($exp[$a]), bin2hex($out), "Character $a was not encoded correctly");
         }
-        $this->assertSame("", UTF8::chr(\PHP_INT_MAX));
-        $this->assertSame("", UTF8::chr(\PHP_INT_MIN));
+        $this->assertSame("", UTF8::encode(\PHP_INT_MAX));
+        $this->assertSame("", UTF8::encode(\PHP_INT_MIN));
     }
 
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::__construct
-     * @covers MensBeam\Intl\Encoding\UTF8::nextOrd
+     * @covers MensBeam\Intl\Encoding\UTF8::nextCode
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         $s = new UTF8($input);
         $out = [];
-        while (($p = $s->nextOrd()) !== false) {
+        while (($p = $s->nextCode()) !== false) {
             $out[] = $p ?? 0xFFFD;
         }
         $this->assertEquals($exp, $out);
@@ -41,7 +41,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::__construct
-     * @covers MensBeam\Intl\Encoding\UTF8::nextChr
+     * @covers MensBeam\Intl\Encoding\UTF8::nextChar
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         $out = [];
@@ -49,7 +49,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
             return \IntlChar::chr($v);
         }, $exp);
         $s = new UTF8($input);
-        while (($c = $s->nextChr()) !== "") {
+        while (($c = $s->nextChar()) !== "") {
             $out[] = $c;
         }
         $this->assertEquals($exp, $out);
@@ -86,17 +86,17 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $s = new UTF8($input);
         $a = 0;
         $this->assertTrue(true); // prevent risky test of empty string
-        while (($p1 = $s->nextOrd() ?? 0xFFFD) !== false) {
+        while (($p1 = $s->nextCode() ?? 0xFFFD) !== false) {
             $this->assertSame(0, $s->seek(-1));
-            $p2 = $s->nextOrd() ?? 0xFFFD;
+            $p2 = $s->nextCode() ?? 0xFFFD;
             $this->assertSame($p1, $p2, "Mismatch at character position $a");
-            $this->assertSame(++$a, $s->posChr(), "Character position should be $a");
+            $this->assertSame(++$a, $s->posChar(), "Character position should be $a");
         }
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::seek
-     * @covers MensBeam\Intl\Encoding\UTF8::posChr
+     * @covers MensBeam\Intl\Encoding\UTF8::posChar
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
     */
     public function testSeekThroughAString() {
@@ -112,74 +112,74 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         */
         $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
         $s = new UTF8($input);
-        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
         $this->assertSame(0, $s->seek(0));
-        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
         $this->assertSame(1, $s->seek(-1));
-        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
         $this->assertSame(0, $s->seek(1));
-        $this->assertSame(1, $s->posChr());
+        $this->assertSame(1, $s->posChar());
         $this->assertSame(1, $s->posByte());
 
         $this->assertSame(0, $s->seek(2));
-        $this->assertSame(3, $s->posChr());
+        $this->assertSame(3, $s->posChar());
         $this->assertSame(6, $s->posByte());
 
         $this->assertSame(0, $s->seek(4));
-        $this->assertSame(7, $s->posChr());
+        $this->assertSame(7, $s->posChar());
         $this->assertSame(20, $s->posByte());
 
         $this->assertSame(1, $s->seek(1));
-        $this->assertSame(7, $s->posChr());
+        $this->assertSame(7, $s->posChar());
         $this->assertSame(20, $s->posByte());
 
         $this->assertSame(0, $s->seek(-3));
-        $this->assertSame(4, $s->posChr());
+        $this->assertSame(4, $s->posChar());
         $this->assertSame(10, $s->posByte());
 
         $this->assertSame(6, $s->seek(-10));
-        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\UTF8::posChr
+     * @covers MensBeam\Intl\Encoding\UTF8::posChar
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
     */
     public function testTraversePastTheEndOfAString() {
         $s = new UTF8("a");
-        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
-        $this->assertSame("a", $s->nextChr());
-        $this->assertSame(1, $s->posChr());
+        $this->assertSame("a", $s->nextChar());
+        $this->assertSame(1, $s->posChar());
         $this->assertSame(1, $s->posByte());
 
-        $this->assertSame("", $s->nextChr());
-        $this->assertSame(1, $s->posChr());
+        $this->assertSame("", $s->nextChar());
+        $this->assertSame(1, $s->posChar());
         $this->assertSame(1, $s->posByte());
 
         $s = new UTF8("a");
-        $this->assertSame(0, $s->posChr());
+        $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
-        $this->assertSame(ord("a"), $s->nextOrd());
-        $this->assertSame(1, $s->posChr());
+        $this->assertSame(ord("a"), $s->nextCode());
+        $this->assertSame(1, $s->posChar());
         $this->assertSame(1, $s->posByte());
 
-        $this->assertSame(false, $s->nextOrd());
-        $this->assertSame(1, $s->posChr());
+        $this->assertSame(false, $s->nextCode());
+        $this->assertSame(1, $s->posChar());
         $this->assertSame(1, $s->posByte());
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\UTF8::peekChr
+     * @covers MensBeam\Intl\Encoding\UTF8::peekChar
     */
     public function testPeekAtCharacters() {
         /*
@@ -195,32 +195,32 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
         $s = new UTF8($input);
         $s->seek(2);
-        $this->assertSame(2, $s->posChr());
+        $this->assertSame(2, $s->posChar());
         $this->assertSame(3, $s->posByte());
 
-        $this->assertSame(bin2hex("\u{6C34}"), bin2hex($s->peekChr()));
-        $this->assertSame(2, $s->posChr());
+        $this->assertSame(bin2hex("\u{6C34}"), bin2hex($s->peekChar()));
+        $this->assertSame(2, $s->posChar());
         $this->assertSame(3, $s->posByte());
 
-        $this->assertSame(bin2hex("\u{6C34}\u{1D11E}"), bin2hex($s->peekChr(2)));
-        $this->assertSame(2, $s->posChr());
+        $this->assertSame(bin2hex("\u{6C34}\u{1D11E}"), bin2hex($s->peekChar(2)));
+        $this->assertSame(2, $s->posChar());
         $this->assertSame(3, $s->posByte());
 
         $s->seek(3);
-        $this->assertSame(5, $s->posChr());
+        $this->assertSame(5, $s->posChar());
         $this->assertSame(13, $s->posByte());
 
-        $this->assertSame(bin2hex("\u{10FFFD}\u{FFFE}"), bin2hex($s->peekChr(3)));
-        $this->assertSame(5, $s->posChr());
+        $this->assertSame(bin2hex("\u{10FFFD}\u{FFFE}"), bin2hex($s->peekChar(3)));
+        $this->assertSame(5, $s->posChar());
         $this->assertSame(13, $s->posByte());
 
-        $this->assertSame("", $s->peekChr(-5));
-        $this->assertSame(5, $s->posChr());
+        $this->assertSame("", $s->peekChar(-5));
+        $this->assertSame(5, $s->posChar());
         $this->assertSame(13, $s->posByte());
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\UTF8::peekOrd
+     * @covers MensBeam\Intl\Encoding\UTF8::peekCode
     */
     public function testPeekAtCodePoints() {
         /*
@@ -236,27 +236,27 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
         $s = new UTF8($input);
         $s->seek(2);
-        $this->assertSame(2, $s->posChr());
+        $this->assertSame(2, $s->posChar());
         $this->assertSame(3, $s->posByte());
 
-        $this->assertSame([0x6C34], $s->peekOrd());
-        $this->assertSame(2, $s->posChr());
+        $this->assertSame([0x6C34], $s->peekCode());
+        $this->assertSame(2, $s->posChar());
         $this->assertSame(3, $s->posByte());
 
-        $this->assertSame([0x6C34, 0x1D11E], $s->peekOrd(2));
-        $this->assertSame(2, $s->posChr());
+        $this->assertSame([0x6C34, 0x1D11E], $s->peekCode(2));
+        $this->assertSame(2, $s->posChar());
         $this->assertSame(3, $s->posByte());
 
         $s->seek(3);
-        $this->assertSame(5, $s->posChr());
+        $this->assertSame(5, $s->posChar());
         $this->assertSame(13, $s->posByte());
 
-        $this->assertSame([0x10FFFD, 0xFFFE], $s->peekOrd(3));
-        $this->assertSame(5, $s->posChr());
+        $this->assertSame([0x10FFFD, 0xFFFE], $s->peekCode(3));
+        $this->assertSame(5, $s->posChar());
         $this->assertSame(13, $s->posByte());
 
-        $this->assertSame([], $s->peekOrd(-5));
-        $this->assertSame(5, $s->posChr());
+        $this->assertSame([], $s->peekCode(-5));
+        $this->assertSame(5, $s->posChar());
         $this->assertSame(13, $s->posByte());
     }
 
@@ -269,11 +269,11 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
     public function testGetStringLength(string $input, array $points) {
         $s = new UTF8($input);
         $s->seek(1);
-        $posChar = $s->posChr();
+        $posChar = $s->posChar();
         $posByte = $s->posByte();
 
         $this->assertSame(sizeof($points), $s->len());
-        $this->assertSame($posChar, $s->posChr());
+        $this->assertSame($posChar, $s->posChar());
         $this->assertSame($posByte, $s->posByte());
     }
 

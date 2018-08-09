@@ -25,7 +25,7 @@ class UTF8 implements \Iterator {
     }
 
     public function current() {
-        return $this->current ?? ($this->current = $this->nextChr());
+        return $this->current ?? ($this->current = $this->nextChar());
     }
 
     public function key() {
@@ -45,15 +45,15 @@ class UTF8 implements \Iterator {
         return $this->posByte;
     }
 
-    public function posChr(): int {
+    public function posChar(): int {
         return $this->posChar;
     }
 
-    /** Retrieve the next character in the string
+    /** Retrieve the next character in the string, in UTF-8 encoding
      *
-     * The returned character may be a replacement character, or the empty string if the end of the string has already been reached
+     * The returned character may be a replacement character, or the empty string if the end of the string has been reached
      */
-    public function nextChr(): string {
+    public function nextChar(): string {
         // get the byte at the current position
         $b = @$this->string[$this->posByte];
         if ($b === "") {
@@ -65,15 +65,15 @@ class UTF8 implements \Iterator {
             return $b;
         } else {
             // otherwise return the serialization of the code point at the current position
-            return UTF8::chr($this->nextOrd() ?? 0xFFFD);
+            return UTF8::encode($this->nextCode() ?? 0xFFFD);
         }
     }
 
-    /** Decodes the next UTF-8 character from the string and returns its code point number
+    /** Decodes the next character from the string and returns its code point number
      *
      * If a character could not be decoded, null is returned; if the end of the string has already been reached, false is returned
      */
-    public function nextOrd() {
+    public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // though it differs from a slavish implementation because it operates on only a single
         // character rather than a whole stream
@@ -144,7 +144,7 @@ class UTF8 implements \Iterator {
             }
             do {
                 // get the next code point; this automatically increments the character position
-                $p = $this->nextOrd();
+                $p = $this->nextCode();
             } while (--$distance && $p !== false); // stop after we have skipped the desired number of characters, or reached EOF
             return $distance;
         } elseif ($distance < 0) {
@@ -165,10 +165,10 @@ class UTF8 implements \Iterator {
     }
 
     /** Retrieves the next $num characters from the string, without advancing the character pointer */
-    public function peekChr(int $num = 1): string {
+    public function peekChar(int $num = 1): string {
         $out = "";
         $state = $this->stateSave();
-        while ($num-- > 0 && ($b = $this->nextChr()) !== "") {
+        while ($num-- > 0 && ($b = $this->nextChar()) !== "") {
             $out .= $b;
         }
         $this->stateApply($state);
@@ -176,10 +176,10 @@ class UTF8 implements \Iterator {
     }
 
     /** Retrieves the next $num code points from the string, without advancing the character pointer */
-    public function peekOrd(int $num = 1): array {
+    public function peekCode(int $num = 1): array {
         $out = [];
         $state = $this->stateSave();
-        while ($num-- > 0 && ($b = $this->nextOrd()) !== false) {
+        while ($num-- > 0 && ($b = $this->nextCode()) !== false) {
             $out[] = $b;
         }
         $this->stateApply($state);
@@ -193,7 +193,7 @@ class UTF8 implements \Iterator {
     public function len(): int {
         return $this->lenChar ?? (function() {
             $state = $this->stateSave();
-            while ($this->nextOrd() !== false);
+            while ($this->nextCode() !== false);
             $this->lenChar = $this->posChar;
             $this->stateApply($state);
             return $this->lenChar;
@@ -212,9 +212,9 @@ class UTF8 implements \Iterator {
                 $b = ord(@$this->string[--$pos]);
             }
             $this->posByte = $pos;
-            // decrement the character position because nextOrd() increments it
+            // decrement the character position because nextCode() increments it
             $this->posChar--;
-            if (is_null($this->nextOrd())) {
+            if (is_null($this->nextCode())) {
                 $this->posByte = $s;
             } else {
                 $this->posByte = ($this->posByte > $s) ? $pos : $s;
@@ -239,7 +239,7 @@ class UTF8 implements \Iterator {
      *
      * If $codePoint is less than 0 or greater than 1114111, an empty string is returned
      */
-    public static function chr(int $codePoint): string {
+    public static function encode(int $codePoint): string {
         // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {
             return "";
