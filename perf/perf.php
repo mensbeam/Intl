@@ -70,7 +70,7 @@ if (!file_exists(__DIR__."/docs/")) {
     mkdir(__DIR__."/docs/");
 }
 
-foreach($files as $fName => $file) {
+foreach ($files as $fName => $file) {
     list($file, $make) = $file;
     $file = __DIR__."/docs/$file";
     if (!file_exists($file)) {
@@ -84,7 +84,7 @@ foreach($files as $fName => $file) {
         $text = file_get_contents($file);
     }
     echo str_pad("$fName:", 30, " ").compile_statistics($text)."\n";
-    foreach($tests as $tName => $test) {
+    foreach ($tests as $tName => $test) {
         list($req, $test) = $test;
         if ($req && !extension_loaded($req)) {
             continue;

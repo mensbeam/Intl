@@ -46,7 +46,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         $out = [];
-        $exp = array_map(function ($v) {
+        $exp = array_map(function($v) {
             return \IntlChar::chr($v);
         }, $exp);
         $s = new UTF8($input);
@@ -83,7 +83,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         }
         $this->assertSame(sizeof($exp), $a);
 
-        $exp = array_map(function ($v) {
+        $exp = array_map(function($v) {
             return \IntlChar::chr($v);
         }, $exp);
 
@@ -102,7 +102,6 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
             $a++;
         }
         $this->assertSame(sizeof($exp), $a);
-
     }
 
     /**

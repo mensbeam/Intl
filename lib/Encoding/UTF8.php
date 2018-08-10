@@ -66,7 +66,7 @@ class UTF8 {
     /** Decodes the next character from the string and returns its code point number
      *
      * If the end of the string has been reached, false is returned
-     * 
+     *
      * @return int|bool
      */
     public function nextCode() {
@@ -188,8 +188,8 @@ class UTF8 {
         }
     }
 
-    /** Seeks to the start of the string 
-     * 
+    /** Seeks to the start of the string
+     *
      * This is usually faster than using the seek method for the same purpose
     */
     public function rewind() {
@@ -285,14 +285,14 @@ class UTF8 {
 
     /** Sets the decoder's state to the values specified */
     protected function stateApply(array $state) {
-        foreach($state as $key => $value) {
+        foreach ($state as $key => $value) {
             $this->$key = $value;
         }
     }
 
     /** Handles decoding and encoding errors */
     protected static function err(int $mode, $data = null) {
-        switch($mode) {
+        switch ($mode) {
             case self::MODE_NULL:
                 // used internally during backward seeking
                 return null;
