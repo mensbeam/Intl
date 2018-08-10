@@ -1,8 +1,8 @@
 {
-    "name": "mensbeam/utf8",
+    "name": "mensbeam/intl",
     "type": "library",
-    "description": "A set of tools for working with UTF-8 strings without mbstring or intl",
-    "keywords": ["utf-8", "utf8"],
+    "description": "A set of dependency-free basic internationalization tools",
+    "keywords": ["internationalization", "intl", "encoding", "unicode", "charset", "utf-8", "utf8"],
     "license": "MIT",
     "authors": [
         {
