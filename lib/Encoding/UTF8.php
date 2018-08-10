@@ -17,31 +17,15 @@ class UTF8 {
     const E_INVALID_BYTE = 2;
     const E_INVALID_MODE = 3;
 
+    const NAME = "UTF-8";
+    const LABELS = ["unicode-1-1-utf-8", "utf-8", "utf8"];
+
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
     protected $lenByte = null;
     protected $lenChar = null;
     protected $errMode = self::MODE_REPLACE;
-    protected $current;
-
-    public function rewind() {
-        $this->posByte = 0;
-        $this->posChar = 0;
-        $this->current = null;
-    }
-
-    public function chars(): \Generator {
-        while (($c = $this->nextChar()) !== "") {
-            yield ($this->posChar - 1) => $c;
-        }
-    }
-
-    public function codes(): \Generator {
-        while (($c = $this->nextCode()) !== false) {
-            yield ($this->posChar - 1) => $c;
-        }
-    }
 
     public function __construct(string $string, bool $fatal = false) {
         $this->string = $string;
@@ -49,10 +33,12 @@ class UTF8 {
         $this->errMode = $fatal ? self::MODE_FATAL_DEC : self::MODE_REPLACE;
     }
 
+    /** Returns the current byte position of the decoder */
     public function posByte(): int {
         return $this->posByte;
     }
 
+    /** Returns the current character position of the decoder */
     public function posChar(): int {
         return $this->posChar;
     }
@@ -79,7 +65,9 @@ class UTF8 {
 
     /** Decodes the next character from the string and returns its code point number
      *
-     * If a character could not be decoded, null is returned; if the end of the string has already been reached, false is returned
+     * If the end of the string has been reached, false is returned
+     * 
+     * @return int|bool
      */
     public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
@@ -135,6 +123,34 @@ class UTF8 {
         return $point;
     }
 
+    /** Returns the UTF-8 encoding of $codePoint
+     *
+     * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
+     */
+    public static function encode(int $codePoint, bool $fatal = true): string {
+        // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
+        if ($codePoint < 0 || $codePoint > 0x10FFFF) {
+            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);
+        } elseif ($codePoint < 128) {
+            return chr($codePoint);
+        } elseif ($codePoint < 0x800) {
+            $count = 1;
+            $offset = 0xC0;
+        } elseif ($codePoint < 0x10000) {
+            $count = 2;
+            $offset = 0xE0;
+        } else {
+            $count = 3;
+            $offset = 0xF0;
+        }
+        $bytes = chr(($codePoint >> (6 * $count)) + $offset);
+        while ($count > 0) {
+            $bytes .= chr(0x80 | (($codePoint >> (6 * ($count - 1))) & 0x3F));
+            $count--;
+        }
+        return $bytes;
+    }
+
     /** Advance $distance characters through the string
      *
      * If $distance is negative, the operation will be performed in reverse
@@ -172,7 +188,16 @@ class UTF8 {
         }
     }
 
-    /** Retrieves the next $num characters from the string, without advancing the character pointer */
+    /** Seeks to the start of the string 
+     * 
+     * This is usually faster than using the seek method for the same purpose
+    */
+    public function rewind() {
+        $this->posByte = 0;
+        $this->posChar = 0;
+    }
+
+    /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer */
     public function peekChar(int $num = 1): string {
         $out = "";
         $state = $this->stateSave();
@@ -202,7 +227,7 @@ class UTF8 {
 
     /** Calculates the length of the string in code points
      *
-     * Note that this involves processing to the end of the string
+     * Note that this may involve processing to the end of the string
     */
     public function len(): int {
         return $this->lenChar ?? (function() {
@@ -212,6 +237,20 @@ class UTF8 {
             $this->stateApply($state);
             return $this->lenChar;
         })();
+    }
+
+    /** Generates an iterator which steps through each character in the string */
+    public function chars(): \Generator {
+        while (($c = $this->nextChar()) !== "") {
+            yield ($this->posChar - 1) => $c;
+        }
+    }
+
+    /** Generates an iterator which steps through each code point in the string  */
+    public function codes(): \Generator {
+        while (($c = $this->nextCode()) !== false) {
+            yield ($this->posChar - 1) => $c;
+        }
     }
 
     /** Synchronize to the byte offset of the start of the nearest character at or before byte offset $pos */
@@ -236,6 +275,7 @@ class UTF8 {
         }
     }
 
+    /** Returns a copy of the decoder's state to keep in memory */
     protected function stateSave(): array {
         return [
             'posChar' => $this->posChar,
@@ -243,12 +283,14 @@ class UTF8 {
         ];
     }
 
+    /** Sets the decoder's state to the values specified */
     protected function stateApply(array $state) {
         foreach($state as $key => $value) {
             $this->$key = $value;
         }
     }
 
+    /** Handles decoding and encoding errors */
     protected static function err(int $mode, $data = null) {
         switch($mode) {
             case self::MODE_NULL:
@@ -270,33 +312,5 @@ class UTF8 {
                 // indicative of internal bug; should never be triggered
                 throw new DecoderException("Invalid replacement mode {$mode}", self::E_INVALID_MODE); // @codeCoverageIgnore
         }
-    }
-
-    /** Returns the UTF-8 encoding of $codePoint
-     *
-     * If $codePoint is less than 0 or greater than 1114111, an empty string is returned
-     */
-    public static function encode(int $codePoint, bool $fatal = true): string {
-        // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
-        if ($codePoint < 0 || $codePoint > 0x10FFFF) {
-            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);
-        } elseif ($codePoint < 128) {
-            return chr($codePoint);
-        } elseif ($codePoint < 0x800) {
-            $count = 1;
-            $offset = 0xC0;
-        } elseif ($codePoint < 0x10000) {
-            $count = 2;
-            $offset = 0xE0;
-        } else {
-            $count = 3;
-            $offset = 0xF0;
-        }
-        $bytes = chr(($codePoint >> (6 * $count)) + $offset);
-        while ($count > 0) {
-            $bytes .= chr(0x80 | (($codePoint >> (6 * ($count - 1))) & 0x3F));
-            $count--;
-        }
-        return $bytes;
     }
 }
