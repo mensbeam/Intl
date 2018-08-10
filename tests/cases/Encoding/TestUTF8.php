@@ -59,21 +59,50 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::rewind
-     * @covers MensBeam\Intl\Encoding\UTF8::valid
-     * @covers MensBeam\Intl\Encoding\UTF8::current
-     * @covers MensBeam\Intl\Encoding\UTF8::key
-     * @covers MensBeam\Intl\Encoding\UTF8::next
+     * @covers MensBeam\Intl\Encoding\UTF8::chars
+     * @covers MensBeam\Intl\Encoding\UTF8::codes
     */
     public function testIterateThroughAString(string $input, array $exp) {
         $out = [];
         $s = new UTF8($input);
         $a = 0;
         $this->assertTrue(true); // prevent risky test of empty string
-        foreach ($s as $index => $p) {
+        foreach ($s->codes() as $index => $p) {
             $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
             $this->assertSame($exp[$a], $p, "Character at index $a decoded incorrectly");
             $a++;
         }
+        $a = 0;
+        foreach ($s->codes() as $p) {
+            $a++;
+        }
+        $this->assertSame(0, $a);
+        $s->rewind();
+        foreach ($s->codes() as $p) {
+            $a++;
+        }
+        $this->assertSame(sizeof($exp), $a);
+
+        $exp = array_map(function ($v) {
+            return \IntlChar::chr($v);
+        }, $exp);
+
+        foreach ($s->chars() as $index => $p) {
+            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
+            $this->assertSame(bin2hex($exp[$a]), bin2hex($p), "Character at index $a decoded incorrectly");
+            $a++;
+        }
+        $a = 0;
+        foreach ($s->chars() as $p) {
+            $a++;
+        }
+        $this->assertSame(0, $a);
+        $s->rewind();
+        foreach ($s->chars() as $p) {
+            $a++;
+        }
+        $this->assertSame(sizeof($exp), $a);
+
     }
 
     /**

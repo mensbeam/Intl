@@ -35,6 +35,11 @@ $tests = [
             $c = $i->nextChar();
         }
     }],
+    'Character generator' => ["", function(string $text) {
+        $c = null;
+        $i = new UTF8($text);
+        foreach ($i->chars() as $c);
+    }],
     'Intl code points' => ["intl", function(string $text) {
         $i = (function($text) {
             $i = \IntlBreakIterator::createCodePointInstance();
@@ -54,10 +59,10 @@ $tests = [
             $p = $i->nextCode();
         }
     }],
-    'Code point iterator' => ["", function(string $text) {
+    'Code point generator' => ["", function(string $text) {
         $c = null;
         $i = new UTF8($text);
-        foreach ($i as $c);
+        foreach ($i->codes() as $c);
     }],
 ];
 

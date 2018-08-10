@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class UTF8 implements \Iterator {
+class UTF8 {
     const MODE_NULL = 0;
     const MODE_REPLACE = 1;
     const MODE_HTML = 2;
@@ -31,20 +31,16 @@ class UTF8 implements \Iterator {
         $this->current = null;
     }
 
-    public function valid() {
-        return $this->posByte < $this->lenByte;
+    public function chars(): \Generator {
+        while (($c = $this->nextChar()) !== "") {
+            yield ($this->posChar - 1) => $c;
+        }
     }
 
-    public function current() {
-        return $this->current ?? ($this->current = $this->nextCode());
-    }
-
-    public function key() {
-        return isset($this->current) ? $this->posChar - 1 : $this->posChar;
-    }
-
-    public function next() {
-        $this->current = null;
+    public function codes(): \Generator {
+        while (($c = $this->nextCode()) !== false) {
+            yield ($this->posChar - 1) => $c;
+        }
     }
 
     public function __construct(string $string, bool $fatal = false) {
