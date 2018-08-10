@@ -27,6 +27,10 @@ class UTF8 {
     protected $lenChar = null;
     protected $errMode = self::MODE_REPLACE;
 
+    /** Constructs a new decoder
+     * 
+     * If $fatal is true, an exception will be thrown whenever an invalid code sequence is encountered; otherwise replacement characters will be substituted
+     */
     public function __construct(string $string, bool $fatal = false) {
         $this->string = $string;
         $this->lenByte = strlen($string);
@@ -123,9 +127,11 @@ class UTF8 {
         return $point;
     }
 
-    /** Returns the UTF-8 encoding of $codePoint
+    /** Returns the encoding of $codePoint as a byte string
      *
      * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
+     * 
+     * If $fatal is true, an exception will be thrown if the code point cannot be encoded into a character; otherwise HTML character references will be substituted. When encoding to UTF-8, all Unicode characters can be encoded, so the argument is ignored
      */
     public static function encode(int $codePoint, bool $fatal = true): string {
         // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
