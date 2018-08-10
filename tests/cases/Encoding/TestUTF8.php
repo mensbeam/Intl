@@ -7,21 +7,22 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\UTF8;
+use MensBeam\Intl\Encoding\EncoderException;
+use MensBeam\Intl\Encoding\DecoderException;
 
 class TestUTF8 extends \PHPUnit\Framework\TestCase {
 
     /**
+     * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\UTF8::encode
     */
-    public function testEncodeCodePoints() {
-        $input = [122, 162, 27700, 119070, 63743, 1114109, 65534];
-        $exp = ["\x7A", "\xC2\xA2", "\xE6\xB0\xB4", "\xF0\x9D\x84\x9E", "\xEF\xA3\xBF", "\xF4\x8F\xBF\xBD", "\xEF\xBF\xBE"];
-        for ($a = 0; $a < sizeof($input); $a++) {
-            $out = UTF8::encode($input[$a]);
-            $this->assertSame(bin2hex($exp[$a]), bin2hex($out), "Character $a was not encoded correctly");
+    public function testEncodeCodePoints(int $input, $exp) {
+        if ($exp instanceof \Throwable) {
+            $this->expectException(get_class($exp));
+            $this->expectExceptionCode($exp->getCode());
         }
-        $this->assertSame("", UTF8::encode(\PHP_INT_MAX));
-        $this->assertSame("", UTF8::encode(\PHP_INT_MIN));
+        $out = UTF8::encode($input);
+        $this->assertSame(bin2hex($exp), bin2hex($out));
     }
 
     /**
@@ -33,7 +34,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $s = new UTF8($input);
         $out = [];
         while (($p = $s->nextCode()) !== false) {
-            $out[] = $p ?? 0xFFFD;
+            $out[] = $p;
         }
         $this->assertEquals($exp, $out);
     }
@@ -86,9 +87,9 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $s = new UTF8($input);
         $a = 0;
         $this->assertTrue(true); // prevent risky test of empty string
-        while (($p1 = $s->nextCode() ?? 0xFFFD) !== false) {
+        while (($p1 = $s->nextCode()) !== false) {
             $this->assertSame(0, $s->seek(-1));
-            $p2 = $s->nextCode() ?? 0xFFFD;
+            $p2 = $s->nextCode();
             $this->assertSame($p1, $p2, "Mismatch at character position $a");
             $this->assertSame(++$a, $s->posChar(), "Character position should be $a");
         }
@@ -275,6 +276,62 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
         $this->assertSame(sizeof($points), $s->len());
         $this->assertSame($posChar, $s->posChar());
         $this->assertSame($posByte, $s->posByte());
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF8::err
+    */
+    public function testReplacementModes() {
+        $input = "\x30\xFF\x30";
+        // officially test replacement characters and null replacement (already effectively tested by other tests)
+        $s = new UTF8($input, false);
+        $s->seek(1);
+        $this->assertSame(0xFFFD, $s->nextCode());
+        $s->seek(-2);
+        // test fatal mode
+        $s = new UTF8($input, true);
+        $s->seek(1);
+        try {
+            $p = $s->nextCode();
+        } catch (DecoderException $e) {
+            $p = $e;
+        } finally {
+            $this->assertInstanceOf(DecoderException::class, $p);
+        }
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame(0x30, $s->nextCode());
+        $s->seek(-2);
+        $this->assertSame(1, $s->posChar());
+        try {
+            $p = $s->peekCode();
+        } catch (DecoderException $e) {
+            $p = $e;
+        } finally {
+            $this->assertInstanceOf(DecoderException::class, $p);
+        }
+        $this->assertSame(1, $s->posChar());
+        try {
+            $p = $s->peekChar();
+        } catch (DecoderException $e) {
+            $p = $e;
+        } finally {
+            $this->assertInstanceOf(DecoderException::class, $p);
+        }
+        $this->assertSame(1, $s->posChar());
+    }
+
+    public function provideCodePoints() {
+        return [
+            "122"     => [122, "\x7A"],
+            "162"     => [162, "\xC2\xA2"],
+            "27700"   => [27700, "\xE6\xB0\xB4"],
+            "119070"  => [119070, "\xF0\x9D\x84\x9E"],
+            "63743"   => [63743, "\xEF\xA3\xBF"],
+            "1114109" => [1114109, "\xF4\x8F\xBF\xBD"],
+            "65534"   => [65534, "\xEF\xBF\xBE"],
+            "-1"      => [-1, new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
+            "1114112" => [1114112, new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
+        ];
     }
 
     public function provideStrings() {

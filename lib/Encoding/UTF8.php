@@ -7,11 +7,22 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 class UTF8 implements \Iterator {
+    const MODE_NULL = 0;
+    const MODE_REPLACE = 1;
+    const MODE_HTML = 2;
+    const MODE_FATAL_DEC = 3;
+    const MODE_FATAL_ENC = 4;
+
+    const E_INVALID_CODE_POINT = 1;
+    const E_INVALID_BYTE = 2;
+    const E_INVALID_MODE = 3;
+
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
     protected $lenByte = null;
     protected $lenChar = null;
+    protected $errMode = self::MODE_REPLACE;
     protected $current;
 
     public function rewind() {
@@ -36,9 +47,10 @@ class UTF8 implements \Iterator {
         $this->current = null;
     }
 
-    public function __construct(string $string) {
+    public function __construct(string $string, bool $fatal = false) {
         $this->string = $string;
         $this->lenByte = strlen($string);
+        $this->errMode = $fatal ? self::MODE_FATAL_DEC : self::MODE_REPLACE;
     }
 
     public function posByte(): int {
@@ -65,7 +77,7 @@ class UTF8 implements \Iterator {
             return $b;
         } else {
             // otherwise return the serialization of the code point at the current position
-            return UTF8::encode($this->nextCode() ?? 0xFFFD);
+            return UTF8::encode($this->nextCode());
         }
     }
 
@@ -75,8 +87,6 @@ class UTF8 implements \Iterator {
      */
     public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
-        // though it differs from a slavish implementation because it operates on only a single
-        // character rather than a whole stream
         // optimization for ASCII characters
         $b = @$this->string[$this->posByte];
         if ($b === "") {
@@ -115,11 +125,10 @@ class UTF8 implements \Iterator {
                     }
                     $point = $b & 0x7;
                 } else { // invalid byte
-                    return null;
+                    return self::err($this->errMode, [$this->posChar, $this->posByte]);
                 }
             } elseif ($b < $lower || $b > $upper) {
-                $this->posByte--;
-                return null;
+                return self::err($this->errMode, [$this->posChar, $this->posByte--]);
             } else {
                 $lower = 0x80;
                 $upper = 0xBF;
@@ -153,11 +162,14 @@ class UTF8 implements \Iterator {
                 // if we're already at the start of the string, we can't go further back
                 return $distance;
             }
+            $mode = $this->errMode;
+            $this->errMode = self::MODE_NULL;
             do {
                 $this->sync($this->posByte - 1);
                 // manually decrement the character position
                 $this->posChar--;
             } while (--$distance && $this->posByte);
+            $this->errMode = $mode;
             return $distance;
         } else {
             return 0;
@@ -168,10 +180,13 @@ class UTF8 implements \Iterator {
     public function peekChar(int $num = 1): string {
         $out = "";
         $state = $this->stateSave();
-        while ($num-- > 0 && ($b = $this->nextChar()) !== "") {
-            $out .= $b;
+        try {
+            while ($num-- > 0 && ($b = $this->nextChar()) !== "") {
+                $out .= $b;
+            }
+        } finally {
+            $this->stateApply($state);
         }
-        $this->stateApply($state);
         return $out;
     }
 
@@ -179,10 +194,13 @@ class UTF8 implements \Iterator {
     public function peekCode(int $num = 1): array {
         $out = [];
         $state = $this->stateSave();
-        while ($num-- > 0 && ($b = $this->nextCode()) !== false) {
-            $out[] = $b;
+        try {
+            while ($num-- > 0 && ($b = $this->nextCode()) !== false) {
+                $out[] = $b;
+            }
+        } finally {
+            $this->stateApply($state);
         }
-        $this->stateApply($state);
         return $out;
     }
 
@@ -235,14 +253,37 @@ class UTF8 implements \Iterator {
         }
     }
 
+    protected static function err(int $mode, $data = null) {
+        switch($mode) {
+            case self::MODE_NULL:
+                // used internally during backward seeking
+                return null;
+            case self::MODE_REPLACE:
+                // standard "replace" mode
+                return 0xFFFD;
+            case self::MODE_HTML: // @codeCoverageIgnore
+                // the "html" replacement mode; not applicable to Unicode transformation formats
+                return "&#".(string) $data.";"; // @codeCoverageIgnore
+            case self::MODE_FATAL_DEC:
+                // fatal replacement mode for decoders
+                throw new DecoderException("Invalid code sequence at character offset {$data[0]} (byte offset {$data[1]})", self::E_INVALID_BYTE);
+            case self::MODE_FATAL_ENC: // @codeCoverageIgnore
+                // fatal replacement mode for decoders; not applicable to Unicode transformation formats
+                throw new EncoderException("Code point $data not available in target encoding", self::E_INVALID_BYTE); // @codeCoverageIgnore
+            default:
+                // indicative of internal bug; should never be triggered
+                throw new DecoderException("Invalid replacement mode {$mode}", self::E_INVALID_MODE); // @codeCoverageIgnore
+        }
+    }
+
     /** Returns the UTF-8 encoding of $codePoint
      *
      * If $codePoint is less than 0 or greater than 1114111, an empty string is returned
      */
-    public static function encode(int $codePoint): string {
+    public static function encode(int $codePoint, bool $fatal = true): string {
         // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {
-            return "";
+            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);
         } elseif ($codePoint < 128) {
             return chr($codePoint);
         } elseif ($codePoint < 0x800) {
