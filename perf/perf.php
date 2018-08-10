@@ -35,13 +35,6 @@ $tests = [
             $c = $i->nextChar();
         }
     }],
-    'Native iterator' => ["", function(string $text) {
-        $c = null;
-        $i = new UTF8($text);
-        while ($c !== "") {
-            $c = $i->nextChar();
-        }
-    }],
     'Intl code points' => ["intl", function(string $text) {
         $i = (function($text) {
             $i = \IntlBreakIterator::createCodePointInstance();
@@ -60,6 +53,11 @@ $tests = [
         while ($p !== false) {
             $p = $i->nextCode();
         }
+    }],
+    'Code point iterator' => ["", function(string $text) {
+        $c = null;
+        $i = new UTF8($text);
+        foreach ($i as $c);
     }],
 ];
 

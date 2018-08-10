@@ -36,7 +36,7 @@ class UTF8 implements \Iterator {
     }
 
     public function current() {
-        return $this->current ?? ($this->current = $this->nextChar());
+        return $this->current ?? ($this->current = $this->nextCode());
     }
 
     public function key() {

@@ -66,15 +66,12 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
     */
     public function testIterateThroughAString(string $input, array $exp) {
         $out = [];
-        $exp = array_map(function ($v) {
-            return \IntlChar::chr($v);
-        }, $exp);
         $s = new UTF8($input);
         $a = 0;
         $this->assertTrue(true); // prevent risky test of empty string
-        foreach ($s as $index => $c) {
+        foreach ($s as $index => $p) {
             $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
-            $this->assertSame(bin2hex($exp[$a]), bin2hex($c), "Character at index $a decoded incorrectly");
+            $this->assertSame($exp[$a], $p, "Character at index $a decoded incorrectly");
             $a++;
         }
     }
