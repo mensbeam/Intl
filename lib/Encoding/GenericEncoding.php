@@ -124,15 +124,15 @@ trait GenericEncoding {
             case self::MODE_REPLACE:
                 // standard "replace" mode
                 return 0xFFFD;
-            case self::MODE_HTML: // @codeCoverageIgnore
+            case self::MODE_HTML:
                 // the "html" replacement mode; not applicable to Unicode transformation formats
-                return "&#".(string) $data.";"; // @codeCoverageIgnore
+                return "&#".(string) $data.";";
             case self::MODE_FATAL_DEC:
                 // fatal replacement mode for decoders
                 throw new DecoderException("Invalid code sequence at character offset {$data[0]} (byte offset {$data[1]})", self::E_INVALID_BYTE);
-            case self::MODE_FATAL_ENC: // @codeCoverageIgnore
+            case self::MODE_FATAL_ENC:
                 // fatal replacement mode for decoders; not applicable to Unicode transformation formats
-                throw new EncoderException("Code point $data not available in target encoding", self::E_INVALID_BYTE); // @codeCoverageIgnore
+                throw new EncoderException("Code point $data not available in target encoding", self::E_UNAVAILABLE_CODE_POINT);
             default:
                 // indicative of internal bug; should never be triggered
                 throw new DecoderException("Invalid replacement mode {$mode}", self::E_INVALID_MODE); // @codeCoverageIgnore
