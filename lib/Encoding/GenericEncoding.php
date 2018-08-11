@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 trait GenericEncoding {
-
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;
@@ -16,7 +15,7 @@ trait GenericEncoding {
     protected $errMode = self::MODE_REPLACE;
 
     /** Constructs a new decoder
-     * 
+     *
      * If $fatal is true, an exception will be thrown whenever an invalid code sequence is encountered; otherwise replacement characters will be substituted
      */
     public function __construct(string $string, bool $fatal = false) {

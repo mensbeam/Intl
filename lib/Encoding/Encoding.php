@@ -19,7 +19,7 @@ interface Encoding {
     const E_UNAVAILABLE_CODE_POINT = 4;
 
     /** Constructs a new decoder
-     * 
+     *
      * If $fatal is true, an exception will be thrown whenever an invalid code sequence is encountered; otherwise replacement characters will be substituted
      */
     public function __construct(string $string, bool $fatal = false);
