@@ -53,7 +53,7 @@ class TestSingleByte extends \PHPUnit\Framework\TestCase {
             "ISO-8859-7"     => "ISO88597",
             "ISO-8859-8"     => "ISO88598",
             "ISO-8859-8-I"   => "ISO88598I",
-            "ISO-8859-10"    => "ISO85910",
+            "ISO-8859-10"    => "ISO885910",
             "ISO-8859-13"    => "ISO885913",
             "ISO-8859-14"    => "ISO885914",
             "ISO-8859-15"    => "ISO885915",
