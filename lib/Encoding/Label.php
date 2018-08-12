@@ -1,0 +1,272 @@
+<?php
+/** @license MIT
+ * Copyright 2018 J. King et al.
+ * See LICENSE and AUTHORS files for details */
+
+declare(strict_types=1);
+namespace MensBeam\Intl\Encoding;
+
+class Label {
+    const LABELS = [
+        'ansi_x3.4-1968'      => "Windows1252",
+        'arabic'              => "ISO88596",
+        'ascii'               => "Windows1252",
+        'asmo-708'            => "ISO88596",
+        'big5'                => "Big5",
+        'big5-hkscs'          => "Big5",
+        'chinese'             => "GBK",
+        'cn-big5'             => "Big5",
+        'cp1250'              => "Windows1250",
+        'cp1251'              => "Windows1251",
+        'cp1252'              => "Windows1252",
+        'cp1253'              => "Windows1253",
+        'cp1254'              => "Windows1254",
+        'cp1255'              => "Windows1255",
+        'cp1256'              => "Windows1256",
+        'cp1257'              => "Windows1257",
+        'cp1258'              => "Windows1258",
+        'cp819'               => "Windows1252",
+        'cp866'               => "IBM866",
+        'csbig5'              => "Big5",
+        'cseuckr'             => "EUCKR",
+        'cseucpkdfmtjapanese' => "EUCJP",
+        'csgb2312'            => "GBK",
+        'csibm866'            => "IBM866",
+        'csiso2022jp'         => "ISO2022JP",
+        'csiso2022kr'         => "Replacement",
+        'csiso58gb231280'     => "GBK",
+        'csiso88596e'         => "ISO88596",
+        'csiso88596i'         => "ISO88596",
+        'csiso88598e'         => "ISO88598",
+        'csiso88598i'         => "ISO88598I",
+        'csisolatin1'         => "Windows1252",
+        'csisolatin2'         => "ISO88592",
+        'csisolatin3'         => "ISO88593",
+        'csisolatin4'         => "ISO88594",
+        'csisolatin5'         => "Windows1254",
+        'csisolatin6'         => "ISO885910",
+        'csisolatin9'         => "ISO885915",
+        'csisolatinarabic'    => "ISO88596",
+        'csisolatincyrillic'  => "ISO88595",
+        'csisolatingreek'     => "ISO88597",
+        'csisolatinhebrew'    => "ISO88598",
+        'cskoi8r'             => "KOI8R",
+        'csksc56011987'       => "EUCKR",
+        'csmacintosh'         => "Macintosh",
+        'csshiftjis'          => "ShiftJIS",
+        'cyrillic'            => "ISO88595",
+        'dos-874'             => "Windows874",
+        'ecma-114'            => "ISO88596",
+        'ecma-118'            => "ISO88597",
+        'elot_928'            => "ISO88597",
+        'euc-jp'              => "EUCJP",
+        'euc-kr'              => "EUCKR",
+        'gb18030'             => "GB18030",
+        'gb2312'              => "GBK",
+        'gb_2312'             => "GBK",
+        'gb_2312-80'          => "GBK",
+        'gbk'                 => "GBK",
+        'greek'               => "ISO88597",
+        'greek8'              => "ISO88597",
+        'hebrew'              => "ISO88598",
+        'hz-gb-2312'          => "Replacement",
+        'ibm819'              => "Windows1252",
+        'ibm866'              => "IBM866",
+        'iso-2022-cn'         => "Replacement",
+        'iso-2022-cn-ext'     => "Replacement",
+        'iso-2022-jp'         => "ISO2022JP",
+        'iso-2022-kr'         => "Replacement",
+        'iso-8859-1'          => "Windows1252",
+        'iso-8859-10'         => "ISO885910",
+        'iso-8859-11'         => "Windows874",
+        'iso-8859-13'         => "ISO885913",
+        'iso-8859-14'         => "ISO885914",
+        'iso-8859-15'         => "ISO885915",
+        'iso-8859-16'         => "ISO885916",
+        'iso-8859-2'          => "ISO88592",
+        'iso-8859-3'          => "ISO88593",
+        'iso-8859-4'          => "ISO88594",
+        'iso-8859-5'          => "ISO88595",
+        'iso-8859-6'          => "ISO88596",
+        'iso-8859-6-e'        => "ISO88596",
+        'iso-8859-6-i'        => "ISO88596",
+        'iso-8859-7'          => "ISO88597",
+        'iso-8859-8'          => "ISO88598",
+        'iso-8859-8-e'        => "ISO88598",
+        'iso-8859-8-i'        => "ISO88598I",
+        'iso-8859-9'          => "Windows1254",
+        'iso-ir-100'          => "Windows1252",
+        'iso-ir-101'          => "ISO88592",
+        'iso-ir-109'          => "ISO88593",
+        'iso-ir-110'          => "ISO88594",
+        'iso-ir-126'          => "ISO88597",
+        'iso-ir-127'          => "ISO88596",
+        'iso-ir-138'          => "ISO88598",
+        'iso-ir-144'          => "ISO88595",
+        'iso-ir-148'          => "Windows1254",
+        'iso-ir-149'          => "EUCKR",
+        'iso-ir-157'          => "ISO885910",
+        'iso-ir-58'           => "GBK",
+        'iso8859-1'           => "Windows1252",
+        'iso8859-10'          => "ISO885910",
+        'iso8859-11'          => "Windows874",
+        'iso8859-13'          => "ISO885913",
+        'iso8859-14'          => "ISO885914",
+        'iso8859-15'          => "ISO885915",
+        'iso8859-2'           => "ISO88592",
+        'iso8859-3'           => "ISO88593",
+        'iso8859-4'           => "ISO88594",
+        'iso8859-5'           => "ISO88595",
+        'iso8859-6'           => "ISO88596",
+        'iso8859-7'           => "ISO88597",
+        'iso8859-8'           => "ISO88598",
+        'iso8859-9'           => "Windows1254",
+        'iso88591'            => "Windows1252",
+        'iso885910'           => "ISO885910",
+        'iso885911'           => "Windows874",
+        'iso885913'           => "ISO885913",
+        'iso885914'           => "ISO885914",
+        'iso885915'           => "ISO885915",
+        'iso88592'            => "ISO88592",
+        'iso88593'            => "ISO88593",
+        'iso88594'            => "ISO88594",
+        'iso88595'            => "ISO88595",
+        'iso88596'            => "ISO88596",
+        'iso88597'            => "ISO88597",
+        'iso88598'            => "ISO88598",
+        'iso88599'            => "Windows1254",
+        'iso_8859-1'          => "Windows1252",
+        'iso_8859-15'         => "ISO885915",
+        'iso_8859-1:1987'     => "Windows1252",
+        'iso_8859-2'          => "ISO88592",
+        'iso_8859-2:1987'     => "ISO88592",
+        'iso_8859-3'          => "ISO88593",
+        'iso_8859-3:1988'     => "ISO88593",
+        'iso_8859-4'          => "ISO88594",
+        'iso_8859-4:1988'     => "ISO88594",
+        'iso_8859-5'          => "ISO88595",
+        'iso_8859-5:1988'     => "ISO88595",
+        'iso_8859-6'          => "ISO88596",
+        'iso_8859-6:1987'     => "ISO88596",
+        'iso_8859-7'          => "ISO88597",
+        'iso_8859-7:1987'     => "ISO88597",
+        'iso_8859-8'          => "ISO88598",
+        'iso_8859-8:1988'     => "ISO88598",
+        'iso_8859-9'          => "Windows1254",
+        'iso_8859-9:1989'     => "Windows1254",
+        'koi'                 => "KOI8R",
+        'koi8'                => "KOI8R",
+        'koi8-r'              => "KOI8R",
+        'koi8-ru'             => "KOI8U",
+        'koi8-u'              => "KOI8U",
+        'koi8_r'              => "KOI8R",
+        'korean'              => "EUCKR",
+        'ks_c_5601-1987'      => "EUCKR",
+        'ks_c_5601-1989'      => "EUCKR",
+        'ksc5601'             => "EUCKR",
+        'ksc_5601'            => "EUCKR",
+        'l1'                  => "Windows1252",
+        'l2'                  => "ISO88592",
+        'l3'                  => "ISO88593",
+        'l4'                  => "ISO88594",
+        'l5'                  => "Windows1254",
+        'l6'                  => "ISO885910",
+        'l9'                  => "ISO885915",
+        'latin1'              => "Windows1252",
+        'latin2'              => "ISO88592",
+        'latin3'              => "ISO88593",
+        'latin4'              => "ISO88594",
+        'latin5'              => "Windows1254",
+        'latin6'              => "ISO885910",
+        'logical'             => "ISO88598I",
+        'mac'                 => "Macintosh",
+        'macintosh'           => "Macintosh",
+        'ms932'               => "ShiftJIS",
+        'ms_kanji'            => "ShiftJIS",
+        'replacement'         => "Replacement",
+        'shift-jis'           => "ShiftJIS",
+        'shift_jis'           => "ShiftJIS",
+        'sjis'                => "ShiftJIS",
+        'sun_eu_greek'        => "ISO88597",
+        'tis-620'             => "Windows874",
+        'unicode-1-1-utf-8'   => "UTF8",
+        'us-ascii'            => "Windows1252",
+        'utf-16'              => "UTF16LE",
+        'utf-16be'            => "UTF16BE",
+        'utf-16le'            => "UTF16LE",
+        'utf-8'               => "UTF8",
+        'utf8'                => "UTF8",
+        'visual'              => "ISO88598",
+        'windows-1250'        => "Windows1250",
+        'windows-1251'        => "Windows1251",
+        'windows-1252'        => "Windows1252",
+        'windows-1253'        => "Windows1253",
+        'windows-1254'        => "Windows1254",
+        'windows-1255'        => "Windows1255",
+        'windows-1256'        => "Windows1256",
+        'windows-1257'        => "Windows1257",
+        'windows-1258'        => "Windows1258",
+        'windows-31j'         => "ShiftJIS",
+        'windows-874'         => "Windows874",
+        'windows-949'         => "EUCKR",
+        'x-cp1250'            => "Windows1250",
+        'x-cp1251'            => "Windows1251",
+        'x-cp1252'            => "Windows1252",
+        'x-cp1253'            => "Windows1253",
+        'x-cp1254'            => "Windows1254",
+        'x-cp1255'            => "Windows1255",
+        'x-cp1256'            => "Windows1256",
+        'x-cp1257'            => "Windows1257",
+        'x-cp1258'            => "Windows1258",
+        'x-euc-jp'            => "EUCJP",
+        'x-gbk'               => "GBK",
+        'x-mac-cyrillic'      => "XMacCyrillic",
+        'x-mac-roman'         => "Macintosh",
+        'x-mac-ukrainian'     => "XMacCyrillic",
+        'x-sjis'              => "ShiftJIS",
+        'x-user-defined'      => "XUserDefined",
+        'x-x-big5'            => "Big5",
+        '866'                 => "IBM866",
+    ];
+
+    public static function match(string $label) {
+        $class = self::LABELS[self::normalize($label)];
+        if ($class) {
+            return __NAMESPACE__;
+        } else {
+            return false;
+        }
+    }
+
+    public static function normalize(string $label): string {
+        return strtolower(trim($label, " \t\r\n\x0C"));
+    }
+
+    public static function name(string $label) {
+        $class = self::match($label);
+        if ($class) {
+            return $class::NAME;
+        } else {
+            return false;
+        }
+    }
+
+    public static function list(string $label) {
+        $class = self::match($label);
+        if ($class) {
+            return $class::LABELS;
+        } else {
+            return false;
+        }
+    }
+
+    public static function equiv(string $label1, string $label2): bool {
+        $class1 = self::match($label1);
+        $class2 = self::match($label2);
+        if ($class1 && $class2) {
+            return $class1 == $class2;
+        } else {
+            return false;
+        }
+    }
+}
