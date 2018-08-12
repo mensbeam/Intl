@@ -1,0 +1,10 @@
+Version 0.2.0 (2018-08-11)
+==========================
+
+New features:
+- Implementation of all single-byte WHATWG encodings
+
+Version 0.1.0 (2018-08-10)
+==========================
+
+Initial release
