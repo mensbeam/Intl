@@ -12,26 +12,6 @@ class UTF8 implements StatelessEncoding {
     const NAME = "UTF-8";
     const LABELS = ["unicode-1-1-utf-8", "utf-8", "utf8"];
 
-    /** Retrieve the next character in the string, in UTF-8 encoding
-     *
-     * The returned character may be a replacement character, or the empty string if the end of the string has been reached
-     */
-    public function nextChar(): string {
-        // get the byte at the current position
-        $b = @$this->string[$this->posByte];
-        if ($b === "") {
-            return "";
-        } elseif (ord($b) < 0x80) {
-            // if the byte is an ASCII character or end of input, simply return it
-            $this->posChar++;
-            $this->posByte++;
-            return $b;
-        } else {
-            // otherwise return the serialization of the code point at the current position
-            return UTF8::encode($this->nextCode());
-        }
-    }
-
     /** Decodes the next character from the string and returns its code point number
      *
      * If the end of the string has been reached, false is returned

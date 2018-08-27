@@ -43,6 +43,27 @@ trait GenericEncoding {
         $this->posChar = 0;
     }
 
+    /** Retrieve the next character in the string, in UTF-8 encoding
+     *
+     * The returned character may be a replacement character, or the empty string if the end of the string has been reached
+     */
+    public function nextChar(): string {
+        // get the byte at the current position
+        $b = @$this->string[$this->posByte];
+        if ($b === "") {
+            // if the byte is end of input, simply return it
+            return "";
+        } elseif (ord($b) < 0x80) {
+            // if the byte is an ASCII character, simply return it
+            $this->posChar++;
+            $this->posByte++;
+            return $b;
+        } else {
+            // otherwise return the serialization of the code point at the current position
+            return UTF8::encode($this->nextCode());
+        }
+    }
+
     /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer */
     public function peekChar(int $num = 1): string {
         $out = "";
