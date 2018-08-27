@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta charset=gb18030>
+<!-- Correct results are provided by Firefox -->
+<pre></pre>
+<script>
+var data = [
+    // basics
+    { encoding: 'gb18030', input: [0x40], name: 'sanity check' },
+    { encoding: 'gb18030', input: [0x80], name: 'special case for 0x80' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0x37], name: 'four-byte special case' },
+    { encoding: 'gb18030', input: [0xA8, 0x4E], name: 'two-byte character' },
+    { encoding: 'gb18030', input: [0x82, 0x31, 0xA2, 0x37], name: 'four-byte character' },
+    { encoding: 'gb18030', input: [0x82], name: 'EOF after first byte' },
+    { encoding: 'gb18030', input: [0x82, 0x30], name: 'EOF after second byte' },
+    { encoding: 'gb18030', input: [0x82, 0x30, 0x81], name: 'EOF after third byte' },
+    { encoding: 'gb18030', input: [0xFF, 0x35, 0xF4, 0x37], name: 'bad first byte' },
+    { encoding: 'gb18030', input: [0x81, 0xFF, 0xF4, 0x37], name: 'bad second byte' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xFF, 0x37], name: 'bad third byte' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0xFF], name: 'bad fourth byte' },
+    { encoding: 'gb18030', input: [0x00, 0x35, 0xF4, 0x37], name: 'control first byte' },
+    { encoding: 'gb18030', input: [0x81, 0x00, 0xF4, 0x37], name: 'control second byte' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0x00, 0x37], name: 'control third byte' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0x00], name: 'control fourth byte' },
+    { encoding: 'gb18030', input: [0xFF, 0x35, 0xF4, 0x37, 0x00, 0x00, 0x00, 0x00], name: 'bad first byte 2' },
+    { encoding: 'gb18030', input: [0x81, 0xFF, 0xF4, 0x37, 0x00, 0x00, 0x00, 0x00], name: 'bad second byte 2' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xFF, 0x37, 0x00, 0x00, 0x00, 0x00], name: 'bad third byte 2' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0xFF, 0x00, 0x00, 0x00, 0x00], name: 'bad fourth byte 2' },
+    { encoding: 'gb18030', input: [0x00, 0x35, 0xF4, 0x37, 0x00, 0x00, 0x00, 0x00], name: 'control first byte 2' },
+    { encoding: 'gb18030', input: [0x81, 0x00, 0xF4, 0x37, 0x00, 0x00, 0x00, 0x00], name: 'control second byte 2' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0x00, 0x37, 0x00, 0x00, 0x00, 0x00], name: 'control third byte 2' },
+    { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0x00, 0x00, 0x00, 0x00, 0x00], name: 'control fourth byte 2' },
+    { encoding: 'gb18030', input: [0x84, 0x32, 0xA4, 0x39], name: 'void sequence' },
+    { encoding: 'gb18030', input: [0xFE, 0x39, 0xFE, 0x39], name: 'void sequence 2' },
+]
+data.forEach(function(data) {
+    var bytes = ""
+    data.input.forEach((p) => {
+        bytes = bytes + p.toString(16).padStart(2, "0").toUpperCase()
+    })
+    var codes = []
+    var text = new TextDecoder(data.encoding).decode(new Uint8Array(data.input))
+    var b = 0
+    for (let a = 0; a < text.length; a++) {
+        let point = text.codePointAt(a)
+        if (point >= 55296 && point <= 57343) {
+            // non-BMP characters have trailing low surrogates in JavaScript strings
+            continue
+        }
+        codes[b++] = point
+    }
+    codes = codes.join(", ")
+    var line = "'" + data.name + "' => [" + '"' + bytes + '", [' + codes + "]],\n"
+    document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
+})
+var l = document.createElement("a")
+l.href = "http://example.com/?" + String.fromCodePoint(0xFFFF)
+//document.write(l.search.substr(1))
+</script>

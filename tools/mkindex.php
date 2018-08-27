@@ -2,7 +2,7 @@
 // retrieve the relevant index file
 $label = $argv[1] ?? "";
 $label = trim(strtolower($label));
-$data = file_get_contents("https://encoding.spec.whatwg.org/index-$label.txt") or die("index file for $label could not be retrieved from network.");
+$data = file_get_contents("https://encoding.spec.whatwg.org/index-$label.txt") or die("index file for '$label' could not be retrieved from network.");
 // find lines that contain data
 preg_match_all("/^\s*(\d+)\s+0x([0-9A-Z]+)/m", $data, $matches, \PREG_SET_ORDER);
 // set up
