@@ -64,6 +64,36 @@ trait GenericEncoding {
         }
     }
 
+    /** Advance $distance characters through the string
+     *
+     * If $distance is negative, the operation will be performed in reverse
+     *
+     * If the end (or beginning) of the string was reached before the end of the operation, the remaining number of requested characters is returned
+     */
+    public function seek(int $distance): int {
+        if ($distance > 0) {
+            if ($this->posByte == strlen($this->string)) {
+                return $distance;
+            }
+            do {
+                $p = $this->nextCode();
+            } while (--$distance && $p !== false);
+            return $distance;
+        } elseif ($distance < 0) {
+            $distance = abs($distance);
+            if (!$this->posByte) {
+                return $distance;
+            }
+            $mode = $this->errMode;
+            $this->errMode = self::MODE_NULL;
+            $out = $this->seekBack($distance);
+            $this->errMode = $mode;
+            return $out;
+        } else {
+            return 0;
+        }
+    }
+
     /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer */
     public function peekChar(int $num = 1): string {
         $out = "";

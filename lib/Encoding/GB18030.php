@@ -10,5 +10,4 @@ class GB18030 extends GBCommon {
     const GBK = false;
     const NAME = "gb18030";
     const LABELS = ["gb18030"];
-
 }

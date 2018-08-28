@@ -20,5 +20,4 @@ class GBK extends GBCommon {
         "iso-ir-58",
         "x-gbk",
     ];
-
 }
