@@ -31,28 +31,44 @@ var data = [
     { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0x00, 0x00, 0x00, 0x00, 0x00], name: 'control fourth byte 2' },
     { encoding: 'gb18030', input: [0x84, 0x32, 0xA4, 0x39], name: 'void sequence' },
     { encoding: 'gb18030', input: [0xFE, 0x39, 0xFE, 0x39], name: 'void sequence 2' },
-]
+];
 data.forEach(function(data) {
-    var bytes = ""
+    var bytes = "";
     data.input.forEach((p) => {
         bytes = bytes + p.toString(16).padStart(2, "0").toUpperCase()
-    })
-    var codes = []
-    var text = new TextDecoder(data.encoding).decode(new Uint8Array(data.input))
-    var b = 0
+    });
+    var codes = [];
+    var text = new TextDecoder(data.encoding).decode(new Uint8Array(data.input));
+    var b = 0;
     for (let a = 0; a < text.length; a++) {
-        let point = text.codePointAt(a)
+        let point = text.codePointAt(a);
         if (point >= 55296 && point <= 57343) {
             // non-BMP characters have trailing low surrogates in JavaScript strings
-            continue
+            continue;
         }
-        codes[b++] = point
+        codes[b++] = point;
     }
-    codes = codes.join(", ")
-    var line = "'" + data.name + "' => [" + '"' + bytes + '", [' + codes + "]],\n"
+    codes = codes.join(", ");
+    var line = "'" + data.name + "' => [" + '"' + bytes + '", [' + codes + "]],\n";
     document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
 })
-var l = document.createElement("a")
-l.href = "http://example.com/?" + String.fromCodePoint(0xFFFF)
-//document.write(l.search.substr(1))
+
+document.getElementsByTagName("pre")[0].appendChild(document.createTextNode("\n\n\n"));
+
+[0x64, 0x20AC, 0x2164, 0x3A74, 0xE7C7, 0x1D11E].forEach(function(code) {
+    var l = document.createElement("a");
+    l.href = "http://example.com/?" + String.fromCodePoint(code);
+    var url = l.search.substr(1);
+    var bytes = "";
+    for (let a = 0; a < url.length; a++) {
+        if (url.charAt(a) == "%") {
+            bytes = bytes.concat(url.charAt(a + 1), url.charAt(a + 2));
+            a = a + 2;
+        } else {
+            bytes = bytes.concat(url.charCodeAt(a).toString(16).padStart(2, "0"));
+        }
+    }
+    var line = "0x" + code.toString(16).toUpperCase() + ", " + bytes.toUpperCase() + "\n";
+    document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
+})
 </script>

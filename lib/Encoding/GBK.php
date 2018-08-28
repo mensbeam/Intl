@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 class GBK extends GBCommon {
+    const GBK = true;
     const NAME = "GBK";
     const LABELS = [
         "chinese",
@@ -20,5 +21,4 @@ class GBK extends GBCommon {
         "x-gbk",
     ];
 
-    const GBK = true;
 }

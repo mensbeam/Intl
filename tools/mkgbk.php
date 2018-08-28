@@ -29,9 +29,11 @@ foreach ($matches as $match) {
 }
 // fudge the top of the ranges
 // see https://encoding.spec.whatwg.org/#index-gb18030-ranges-code-point Step 1
+// we also add 0x110000 (one beyond the top of the Unicode range) to the offsets for encoding
 $penult = array_pop($dec_max);
 $dec_max = array_merge($dec_max, [39420, $penult, 1237576]);
 array_splice($dec_off, -1, 0, "null");
+$dec_off[] = 0x110000;
 
 // output
 $dec_gbk = implode(",", $dec_gbk);
