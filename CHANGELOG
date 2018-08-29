@@ -2,7 +2,7 @@ Version 0.3.0 (2018-08-29)
 ==========================
 
 New features:
-- Implementation gb18030 and GBK encodings
+- Implemention of gb18030 and GBK encodings
 
 Version 0.2.0 (2018-08-11)
 ==========================
