@@ -35,12 +35,14 @@ abstract class GBCommon implements StatelessEncoding {
                     return 0x20AC;
                 } elseif ($b > 0x80 && $b < 0xFF) {
                     $first = $b;
+                    continue;
                 } else {
                     return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                 }
             } elseif ($second === 0) {
-                if ($b > 0x29 && $b < 0x40) {
+                if ($b > 0x2F && $b < 0x3A) {
                     $second = $b;
+                    continue;
                 } else {
                     if (($b > 0x39 && $b < 0x7F) || ($b > 0x7F && $b < 0xFF)) {
                         $offset = ($b < 0x7F) ? 0x40 : 0x41;
@@ -55,12 +57,13 @@ abstract class GBCommon implements StatelessEncoding {
             } elseif ($third === 0) {
                 if ($b > 0x80 && $b < 0xFF) {
                     $third = $b;
+                    continue;
                 } else {
                     $this->posByte -= 2;
                     return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                 }
             } else {
-                if ($b > 0x29 && $b < 0x40) {
+                if ($b > 0x2F && $b < 0x3A) {
                     // look up code point
                     $pointer = (($first - 0x81) * (10 * 126 * 10)) + (($second - 0x30) * (10 * 126)) + (($third - 0x81) * 10) + $b - 0x30;
                     if ($pointer === 7457) {
@@ -84,6 +87,7 @@ abstract class GBCommon implements StatelessEncoding {
                 }
             }
         }
+        $this->posByte--;
         if (($first + $second + $third) == 0) {
             // clean EOF
             $this->posChar--;
@@ -91,7 +95,7 @@ abstract class GBCommon implements StatelessEncoding {
         } else {
             // dirty EOF; note how many bytes the last character had
             $this->dirtyEOF = ($third ? 3 : ($second ? 2 : 1));
-            return self::err($this->errMode, [$this->posChar - 1, --$this->posByte]);
+            return self::err($this->errMode, [$this->posChar - 1, $this->posByte - $this->dirtyEOF]);
         }
     }
 
@@ -154,43 +158,49 @@ abstract class GBCommon implements StatelessEncoding {
             }
             // go back one byte
             $b1 = ord(@$this->string[--$this->posByte]);
-            if ($b1 < 0x30 || $b1 == 0x80 || $b1 == 0xFF || $this->posByte == 0) { // these bytes are never part of a sequence, and the first byte is necessarily the start of a sequence
+            if ($b1 < 0x30 || $b1 == 0x7F || $this->posByte == 0) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
                 // the byte is a character
                 continue;
-            } else {
-                // go back a second byte
-                $b2 = ord(@$this->string[--$this->posByte]);
-                if ($b2 < 0x81 || $b2 == 0xFF) { // these bytes never appear second-to-last in a sequence
-                    // the first byte was a character
-                    $this->posByte += 1;
-                    continue;
-                } elseif ($b1 > 0x39) {
-                    // two-byte character
-                    continue;
-                } elseif ($this->posByte < 2) { // byte values indicate a four-byte character, but there are insufficient bytes in the string
-                    // the first byte was a character
-                    $this->posByte += 1;
-                    continue;
-                } else {
-                    // go back a third byte
-                    $b3 = ord(@$this->string[--$this->posByte]);
-                    if ($b3 < 0x30 || $b3 > 0x39) { // these bytes never appear third-to-last in a sequence
-                        // the first byte was a character
-                        $this->posByte += 2;
-                        continue;
-                    } else {
-                        // go back a fourth byte
-                        $b4 = ord(@$this->string[--$this->posByte]);
-                        if ($b4 < 0x81 || $b4 == 0xFF) { // these bytes never appear first in a sequence
-                            // the first byte was a character
-                            $this->posByte += 3;
-                            continue;
-                        } else {
-                            // four-byte character
-                            continue;
-                        }
+            }
+            // go back a second byte
+            $b2 = ord(@$this->string[--$this->posByte]);
+            if ($b2 < 0x81 || $b2 == 0xFF) { // these bytes never appear second-to-last in a sequence
+                // the first byte was a character
+                $this->posByte += 1;
+                continue;
+            } elseif ($b1 < 0x40 && $this->posByte < 2) { // byte values indicate a four-byte character, but there are insufficient bytes in the string
+                // the first byte was a character
+                $this->posByte += 1;
+                continue;
+            } elseif ($b1 > 0x39) { // the second byte is part of a two-byte sequence, but it's unclear if it's the lead or trail byte
+                $start = $this->posByte + 2;
+                // go back bytes until a definite trail byte or end of string
+                while ($this->posByte > 0) {
+                    if ($b2 < 0x81 || $b2 == 0xFF) {
+                        $this->posByte++;
+                        break;
                     }
+                    $b2 = ord(@$this->string[--$this->posByte]);
                 }
+                // if the number of ambiguous bytes is odd, the character is a single-byte character, otherwise it is double-byte
+                $this->posByte = $start - (($start - $this->posByte) % 2 ? 1 : 2);
+                continue;
+            }
+            // go back a third byte
+            $b3 = ord(@$this->string[--$this->posByte]);
+            if ($b3 > 0x39 || $b3 < 0x30) { // these bytes never appear in the second position of a four-byte sequence
+                // the first byte was a character
+                $this->posByte += 2;
+                continue;
+            }
+            // go back a fourth byte
+            $b4 = ord(@$this->string[--$this->posByte]);
+            if (($b4 < 0x81 || $b4 == 0xFF)) { // these bytes never appear first in a four-byte sequence
+                // the first byte was a character
+                $this->posByte += 3;
+                continue;
+            } else {
+                // this is a four-byte character
             }
         }
         return $distance;

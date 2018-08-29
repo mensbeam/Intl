@@ -36,7 +36,8 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::posChar
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
-        $s = new GB18030(hex2bin($input));
+        $input = $this->prepString($input);
+        $s = new GB18030($input);
         $out = [];
         $a = 0;
         $this->assertSame($a, $s->posChar());
@@ -45,6 +46,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
             $out[] = $p;
         }
         $this->assertSame($exp, $out);
+        $this->assertSame($s->posByte(), strlen($input));
     }
 
     /**
@@ -56,33 +58,32 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
         $exp = array_map(function($v) {
             return \IntlChar::chr($v);
         }, $exp);
-        $s = new GB18030(hex2bin($input));
+        $input = $this->prepString($input);
+        $s = new GB18030($input);
         $out = [];
         while (($p = $s->nextChar()) !== "") {
             $out[] = $p;
         }
         $this->assertSame($exp, $out);
+        $this->assertSame($s->posByte(), strlen($input));
     }
 
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\GB18030::seekBack
     */
-    public function testSTepBackThroughAString(string $input, array $points) {
-        $s = new GB18030(hex2bin($input));
-        $a = 0;
-        $test1 = [];
-        $test2 = [];
-        while (($p1 = $s->nextCode()) !== false) {
-            $test1[] = $p1;
-            $this->assertSame(0, $s->seek(-1));
-            $p2 = $s->nextCode();
-            $test2[] = $p2;
-            $this->assertSame($p1, $p2, "Mismatch at character position $a");
-            $this->assertSame(++$a, $s->posChar(), "Character position should be $a");
+    public function testSTepBackThroughAString(string $input, array $exp) {
+        $input = $this->prepString($input);
+        $s = new GB18030($input);
+        $exp = array_reverse($exp);
+        $act = [];
+        while ($s->nextCode() !== false);
+        while($s->posByte()) {
+            $s->seek(-1);
+            $act[] = $s->nextCode();
+            $s->seek(-1);
         }
-        $this->assertSame($points, $test1);
-        $this->assertSame($points, $test2);
+        $this->assertEquals($exp, $act);
     }
 
     public function provideCodePoints() {
@@ -133,34 +134,52 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
             // valid single characters
             'sanity check' => ["40", [64]],
             'special case for 0x80' => ["80", [8364]],
-            'four-byte special case' => ["8135F437", [59335]],
-            'two-byte character' => ["A84E", [8735]],
-            'four-byte character' => ["8231A237", [15081]],
+            'four-byte special case' => ["81 35 F4 37", [59335]],
+            'two-byte character' => ["A8 4E", [8735]],
+            'four-byte character' => ["82 31 A2 37", [15081]],
             // cut sequences
             'EOF after first byte' => ["82", [65533]],
-            'EOF after second byte' => ["8230", [65533]],
-            'EOF after third byte' => ["823081", [65533]],
+            'EOF after second byte' => ["82 30", [65533]],
+            'EOF after third byte' => ["82 30 81", [65533]],
             // invalid sequences
-            'bad first byte' => ["FF35F437", [65533, 53, 65533]],
-            'bad second byte' => ["81FFF437", [65533, 65533]],
-            'bad third byte' => ["8135FF37", [65533, 53, 65533, 55]],
-            'bad fourth byte' => ["8135F4FF", [65533, 53, 65533]],
-            'control first byte' => ["0035F437", [0, 53, 65533]],
-            'control second byte' => ["8100F437", [65533, 0, 65533]],
-            'control third byte' => ["81350037", [65533, 53, 0, 55]],
-            'control fourth byte' => ["8135F400", [65533, 53, 65533, 0]],
+            'bad first byte' => ["FF 35 F4 37", [65533, 53, 65533]],
+            'bad second byte' => ["81 FF F4 37", [65533, 65533]],
+            'bad third byte' => ["81 35 FF 37", [65533, 53, 65533, 55]],
+            'bad fourth byte' => ["81 35 F4 FF", [65533, 53, 65533]],
+            'control first byte' => ["00 35 F4 37", [0, 53, 65533]],
+            'control second byte' => ["81 00 F4 37", [65533, 0, 65533]],
+            'control third byte' => ["81 35 00 37", [65533, 53, 0, 55]],
+            'control fourth byte' => ["81 35 F4 00", [65533, 53, 65533, 0]],
             // invalid sequences with clean EOF
-            'bad first byte (padded)' => ["FF35F43700000000", [65533, 53, 65533, 55, 0, 0, 0, 0]],
-            'bad second byte (padded)' => ["81FFF43700000000", [65533, 65533, 55, 0, 0, 0, 0]],
-            'bad third byte (padded)' => ["8135FF3700000000", [65533, 53, 65533, 55, 0, 0, 0, 0]],
-            'bad fourth byte (padded)' => ["8135F4FF00000000", [65533, 53, 65533, 0, 0, 0, 0]],
-            'control first byte (padded)' => ["0035F43700000000", [0, 53, 65533, 55, 0, 0, 0, 0]],
-            'control second byte (padded)' => ["8100F43700000000", [65533, 0, 65533, 55, 0, 0, 0, 0]],
-            'control third byte (padded)' => ["8135003700000000", [65533, 53, 0, 55, 0, 0, 0, 0]],
-            'control fourth byte (padded)' => ["8135F40000000000", [65533, 53, 65533, 0, 0, 0, 0, 0]],
+            'bad first byte (padded)' => ["FF 35 F4 37 00 00 00 00", [65533, 53, 65533, 55, 0, 0, 0, 0]],
+            'bad second byte (padded)' => ["81 FF F4 37 00 00 00 00", [65533, 65533, 55, 0, 0, 0, 0]],
+            'bad third byte (padded)' => ["81 35 FF 37 00 00 00 00", [65533, 53, 65533, 55, 0, 0, 0, 0]],
+            'bad fourth byte (padded)' => ["81 35 F4 FF 00 00 00 00", [65533, 53, 65533, 0, 0, 0, 0]],
+            'control first byte (padded)' => ["00 35 F4 37 00 00 00 00", [0, 53, 65533, 55, 0, 0, 0, 0]],
+            'control second byte (padded)' => ["81 00 F4 37 00 00 00 00", [65533, 0, 65533, 55, 0, 0, 0, 0]],
+            'control third byte (padded)' => ["81 35 00 37 00 00 00 00", [65533, 53, 0, 55, 0, 0, 0, 0]],
+            'control fourth byte (padded)' => ["81 35 F4 00 00 00 00 00", [65533, 53, 65533, 0, 0, 0, 0, 0]],
             // out-of-range sequences
-            'void sequence' => ["8432A439", [65533]],
-            'void sequence 2' => ["FE39FE39", [65533]],
+            'void sequence' => ["84 32 A4 39", [65533]],
+            'void sequence 2' => ["FE 39 FE 39", [65533]],
+            // backward seeking tests
+            'seek test 1' => ["81 81 81 30", [20118, 65533]],
+            'seek test 2' => ["81 81 80", [20118, 8364]],
+            'seek test 3' => ["81 81 00", [20118, 0]],
+            'seek test 4' => ["81 81 81 00", [20118, 65533, 0]],
+            'seek test 5' => ["81 30 30 30", [65533, 48, 48, 48]],
+            'seek test 6' => ["81 30 81 81", [65533, 48, 20118]],
+            'seek test 7' => ["30 30 81 81", [48, 48, 20118]],
+            'seek test 8' => ["F8 83 FE 80", [40229, 18211]],
+            'seek test 1 (padded)' => ["00 00 00 00 81 81 81 30 00 00 00 00", [0, 0, 0, 0, 20118, 65533, 48, 0, 0, 0, 0]],
+            'seek test 2 (padded)' => ["00 00 00 00 81 81 80 00 00 00 00", [0, 0, 0, 0, 20118, 8364, 0, 0, 0, 0]],
+            'seek test 3 (padded)' => ["00 00 00 00 81 81 00 00 00 00 00", [0, 0, 0, 0, 20118, 0, 0, 0, 0, 0]],
+            'seek test 4 (padded)' => ["00 00 00 00 81 81 81 00 00 00 00 00", [0, 0, 0, 0, 20118, 65533, 0, 0, 0, 0, 0]],
+            'seek test 5 (padded)' => ["00 00 00 00 81 30 30 30 00 00 00 00", [0, 0, 0, 0, 65533, 48, 48, 48, 0, 0, 0, 0]],
+            'seek test 6 (padded)' => ["00 00 00 00 81 30 81 81 00 00 00 00", [0, 0, 0, 0, 65533, 48, 20118, 0, 0, 0, 0]],
+            'seek test 7 (padded)' => ["00 00 00 00 30 30 81 81 00 00 00 00", [0, 0, 0, 0, 48, 48, 20118, 0, 0, 0, 0]],
+            'seek test 8 (padded)' => ["00 00 00 00 F8 83 FE 80 00 00 00 00", [0, 0, 0, 0, 40229, 18211, 0, 0, 0, 0]],
+
         ];
     }
 
@@ -184,5 +203,9 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
                 $this->assertFalse($s->nextCode());
             }
         }
+    }
+
+    protected function prepString(string $str): string {
+        return hex2bin(str_replace(" ", "", $str));
     }
 }

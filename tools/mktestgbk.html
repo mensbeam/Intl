@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <meta charset=gb18030>
 <!-- Correct results are provided by Firefox -->
-<pre></pre>
+<pre style="font-family: 'Consolas', monospace;"></pre>
 <script>
 var data = [
-    // basics
+    { encoding: 'gb18030', input: [], name: 'empty string' },
     { encoding: 'gb18030', input: [0x40], name: 'sanity check' },
     { encoding: 'gb18030', input: [0x80], name: 'special case for 0x80' },
     { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0x37], name: 'four-byte special case' },
@@ -31,11 +31,27 @@ var data = [
     { encoding: 'gb18030', input: [0x81, 0x35, 0xF4, 0x00, 0x00, 0x00, 0x00, 0x00], name: 'control fourth byte (padded)' },
     { encoding: 'gb18030', input: [0x84, 0x32, 0xA4, 0x39], name: 'void sequence' },
     { encoding: 'gb18030', input: [0xFE, 0x39, 0xFE, 0x39], name: 'void sequence 2' },
+    { encoding: 'gb18030', input: [0x81, 0x81, 0x81, 0x30], name: 'seek test 1' },
+    { encoding: 'gb18030', input: [0x81, 0x81, 0x80], name: 'seek test 2' },
+    { encoding: 'gb18030', input: [0x81, 0x81, 0x00], name: 'seek test 3' },
+    { encoding: 'gb18030', input: [0x81, 0x81, 0x81, 0x00], name: 'seek test 4' },
+    { encoding: 'gb18030', input: [0x81, 0x30, 0x30, 0x30], name: 'seek test 5' },
+    { encoding: 'gb18030', input: [0x81, 0x30, 0x81, 0x81], name: 'seek test 6' },
+    { encoding: 'gb18030', input: [0x30, 0x30, 0x81, 0x81], name: 'seek test 7' },
+    { encoding: 'gb18030', input: [0xF8, 0x83, 0xFE, 0x80], name: 'seek test 8' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x81, 0x81, 0x81, 0x30, 0x00, 0x00, 0x00, 0x00], name: 'seek test 1 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x81, 0x81, 0x80, 0x00, 0x00, 0x00, 0x00], name: 'seek test 2 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x81, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00], name: 'seek test 3 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x81, 0x81, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00], name: 'seek test 4 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x81, 0x30, 0x30, 0x30, 0x00, 0x00, 0x00, 0x00], name: 'seek test 5 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x81, 0x30, 0x81, 0x81, 0x00, 0x00, 0x00, 0x00], name: 'seek test 6 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0x30, 0x30, 0x81, 0x81, 0x00, 0x00, 0x00, 0x00], name: 'seek test 7 (padded)' },
+    { encoding: 'gb18030', input: [0x00, 0x00, 0x00, 0x00, 0xF8, 0x83, 0xFE, 0x80, 0x00, 0x00, 0x00, 0x00], name: 'seek test 8 (padded)' },
 ];
 data.forEach(function(data) {
-    var bytes = "";
+    var bytes = [];
     data.input.forEach((p) => {
-        bytes = bytes + p.toString(16).padStart(2, "0").toUpperCase()
+        bytes.push(p.toString(16).padStart(2, "0").toUpperCase());
     });
     var codes = [];
     var text = new TextDecoder(data.encoding).decode(new Uint8Array(data.input));
@@ -48,6 +64,7 @@ data.forEach(function(data) {
         }
         codes[b++] = point;
     }
+    bytes = bytes.join(" ");
     codes = codes.join(", ");
     var line = "'" + data.name + "' => [" + '"' + bytes + '", [' + codes + "]],\n";
     document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
@@ -62,8 +79,8 @@ document.getElementsByTagName("pre")[0].appendChild(document.createTextNode("\n\
     var bytes = "";
     for (let a = 0; a < url.length; a++) {
         if (url.charAt(a) == "%") {
-            bytes = bytes.concat(url.charAt(a + 1), url.charAt(a + (padded)));
-            a = a + (padded);
+            bytes = bytes.concat(url.charAt(a + 1), url.charAt(a + 2));
+            a = a + 2;
         } else {
             bytes = bytes.concat(url.charCodeAt(a).toString(16).padStart(2, "0"));
         }
