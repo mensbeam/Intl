@@ -169,8 +169,8 @@ trait GenericEncoding {
     protected static function err(int $mode, $data = null) {
         switch ($mode) {
             case self::MODE_NULL:
-                // used internally during backward seeking
-                return null;
+                // used internally during backward seeking for some encodings
+                return null; // @codeCoverageIgnore
             case self::MODE_REPLACE:
                 // standard "replace" mode
                 return 0xFFFD;

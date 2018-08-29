@@ -44,7 +44,7 @@ abstract class GBCommon implements StatelessEncoding {
                     $second = $b;
                     continue;
                 } else {
-                    if (($b > 0x39 && $b < 0x7F) || ($b > 0x7F && $b < 0xFF)) {
+                    if (($b > 0x3A && $b < 0x7F) || ($b > 0x7F && $b < 0xFF)) {
                         $offset = ($b < 0x7F) ? 0x40 : 0x41;
                         $pointer = ($first - 0x81) * 190 + ($b - $offset);
                         return self::TABLE_GBK[$pointer];

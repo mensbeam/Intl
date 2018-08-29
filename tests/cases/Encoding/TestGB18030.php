@@ -12,6 +12,20 @@ use MensBeam\Intl\Encoding\EncoderException;
 use MensBeam\Intl\Encoding\DecoderException;
 
 class TestGB18030 extends \PHPUnit\Framework\TestCase {
+    /*
+        Char 0  U+007A   (1 byte)  Offset 0
+        Char 1  U+00A2   (4 bytes) Offset 1
+        Char 2  U+6C34   (2 bytes) Offset 5
+        Char 3  U+1D11E  (4 bytes) Offset 7
+        Char 4  U+F8FF   (4 bytes) Offset 11
+        Char 5  U+10FFFD (4 bytes) Offset 15
+        Char 6  U+FFFE   (4 bytes) Offset 19
+        End of string at char 7, offset 23
+    */
+    protected $seekString = "7A 81 30 84 34 CB AE 94 32 BE 34 84 30 81 30 E3 32 9A 33 84 31 A4 38";
+    protected $seekOffsets = [0, 1, 5, 7, 11, 15, 19, 23];
+    /* This string contains one invalid character sandwiched between two valid characters */
+    protected $brokenString = "30 FF 30";
 
     /**
      * @dataProvider provideCodePoints
@@ -33,7 +47,6 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\GB18030::__construct
      * @covers MensBeam\Intl\Encoding\GB18030::nextCode
-     * @covers MensBeam\Intl\Encoding\GB18030::posChar
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         $input = $this->prepString($input);
@@ -84,6 +97,267 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
             $s->seek(-1);
         }
         $this->assertEquals($exp, $act);
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::seek
+     * @covers MensBeam\Intl\Encoding\GB18030::posChar
+     * @covers MensBeam\Intl\Encoding\GB18030::posByte
+     * @covers MensBeam\Intl\Encoding\GB18030::rewind
+    */
+    public function testSeekThroughAString() {
+        $input = $this->prepString($this->seekString);
+        $off = $this->seekOffsets;
+        $s = new GB18030($input);
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(0, $s->seek(0));
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(1, $s->seek(-1));
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(0, $s->seek(1));
+        $this->assertSame(1, $s->posChar());
+        $this->assertSame($off[1], $s->posByte());
+
+        $this->assertSame(0, $s->seek(2));
+        $this->assertSame(3, $s->posChar());
+        $this->assertSame($off[3], $s->posByte());
+
+        $this->assertSame(0, $s->seek(4));
+        $this->assertSame(7, $s->posChar());
+        $this->assertSame($off[7], $s->posByte());
+
+        $this->assertSame(1, $s->seek(1));
+        $this->assertSame(7, $s->posChar());
+        $this->assertSame($off[7], $s->posByte());
+
+        $this->assertSame(0, $s->seek(-3));
+        $this->assertSame(4, $s->posChar());
+        $this->assertSame($off[4], $s->posByte());
+
+        $this->assertSame(6, $s->seek(-10));
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(0, $s->seek(5));
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+
+        $s->rewind(0);
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::posChar
+     * @covers MensBeam\Intl\Encoding\GB18030::posByte
+    */
+    public function testTraversePastTheEndOfAString() {
+        $s = new GB18030("a");
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame("a", $s->nextChar());
+        $this->assertSame(1, $s->posChar());
+        $this->assertSame(1, $s->posByte());
+
+        $this->assertSame("", $s->nextChar());
+        $this->assertSame(1, $s->posChar());
+        $this->assertSame(1, $s->posByte());
+
+        $s = new GB18030("a");
+        $this->assertSame(0, $s->posChar());
+        $this->assertSame(0, $s->posByte());
+
+        $this->assertSame(ord("a"), $s->nextCode());
+        $this->assertSame(1, $s->posChar());
+        $this->assertSame(1, $s->posByte());
+
+        $this->assertSame(false, $s->nextCode());
+        $this->assertSame(1, $s->posChar());
+        $this->assertSame(1, $s->posByte());
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::peekChar
+     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
+     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
+    */
+    public function testPeekAtCharacters() {
+        $input = $this->prepString($this->seekString);
+        $off = $this->seekOffsets;
+        $s = new GB18030($input);
+        $s->seek(2);
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame($off[2], $s->posByte());
+
+        $this->assertSame(bin2hex("\u{6C34}"), bin2hex($s->peekChar()));
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame($off[2], $s->posByte());
+
+        $this->assertSame(bin2hex("\u{6C34}\u{1D11E}"), bin2hex($s->peekChar(2)));
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame($off[2], $s->posByte());
+
+        $s->seek(3);
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+
+        $this->assertSame(bin2hex("\u{10FFFD}\u{FFFE}"), bin2hex($s->peekChar(3)));
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+
+        $this->assertSame("", $s->peekChar(-5));
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::peekCode
+     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
+     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
+    */
+    public function testPeekAtCodePoints() {
+        $input = $this->prepString($this->seekString);
+        $off = $this->seekOffsets;
+        $s = new GB18030($input);
+        $s->seek(2);
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame($off[2], $s->posByte());
+
+        $this->assertSame([0x6C34], $s->peekCode());
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame($off[2], $s->posByte());
+
+        $this->assertSame([0x6C34, 0x1D11E], $s->peekCode(2));
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame($off[2], $s->posByte());
+
+        $s->seek(3);
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+
+        $this->assertSame([0x10FFFD, 0xFFFE], $s->peekCode(3));
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+
+        $this->assertSame([], $s->peekCode(-5));
+        $this->assertSame(5, $s->posChar());
+        $this->assertSame($off[5], $s->posByte());
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::len
+     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
+     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
+    */
+    public function testGetStringLength(string $input, array $points) {
+        $input = $this->prepString($input);
+        $s = new GB18030($input);
+        $s->seek(1);
+        $posChar = $s->posChar();
+        $posByte = $s->posByte();
+
+        $this->assertSame(sizeof($points), $s->len());
+        $this->assertSame($posChar, $s->posChar());
+        $this->assertSame($posByte, $s->posByte());
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::err
+    */
+    public function testReplacementModes() {
+        $input = $this->prepString($this->brokenString);
+        // officially test replacement characters (already effectively tested by other tests)
+        $s = new GB18030($input, false);
+        $s->seek(1);
+        $this->assertSame(0xFFFD, $s->nextCode());
+        $s->seek(-2);
+        // test fatal mode
+        $s = new GB18030($input, true);
+        $s->seek(1);
+        try {
+            $p = $s->nextCode();
+        } catch (DecoderException $e) {
+            $p = $e;
+        } finally {
+            $this->assertInstanceOf(DecoderException::class, $p);
+        }
+        $this->assertSame(2, $s->posChar());
+        $this->assertSame(0x30, $s->nextCode());
+        $s->seek(-2);
+        $this->assertSame(1, $s->posChar());
+        try {
+            $p = $s->peekCode();
+        } catch (DecoderException $e) {
+            $p = $e;
+        } finally {
+            $this->assertInstanceOf(DecoderException::class, $p);
+        }
+        $this->assertSame(1, $s->posChar());
+        try {
+            $p = $s->peekChar();
+        } catch (DecoderException $e) {
+            $p = $e;
+        } finally {
+            $this->assertInstanceOf(DecoderException::class, $p);
+        }
+        $this->assertSame(1, $s->posChar());
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::rewind
+     * @covers MensBeam\Intl\Encoding\GB18030::chars
+     * @covers MensBeam\Intl\Encoding\GB18030::codes
+    */
+    public function testIterateThroughAString(string $input, array $exp) {
+        $input = $this->prepString($input);
+        $s = new GB18030($input);
+        $out = [];
+        $a = 0;
+        $this->assertTrue(true); // prevent risky test of empty string
+        foreach ($s->codes() as $index => $p) {
+            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
+            $this->assertSame($exp[$a], $p, "Character at index $a decoded incorrectly");
+            $a++;
+        }
+        $a = 0;
+        foreach ($s->codes() as $p) {
+            $a++;
+        }
+        $this->assertSame(0, $a);
+        $s->rewind();
+        foreach ($s->codes() as $p) {
+            $a++;
+        }
+        $this->assertSame(sizeof($exp), $a);
+
+        $exp = array_map(function($v) {
+            return \IntlChar::chr($v);
+        }, $exp);
+
+        foreach ($s->chars() as $index => $p) {
+            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
+            $this->assertSame(bin2hex($exp[$a]), bin2hex($p), "Character at index $a decoded incorrectly");
+            $a++;
+        }
+        $a = 0;
+        foreach ($s->chars() as $p) {
+            $a++;
+        }
+        $this->assertSame(0, $a);
+        $s->rewind();
+        foreach ($s->chars() as $p) {
+            $a++;
+        }
+        $this->assertSame(sizeof($exp), $a);
     }
 
     public function provideCodePoints() {

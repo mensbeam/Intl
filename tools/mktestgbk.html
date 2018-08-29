@@ -76,16 +76,45 @@ document.getElementsByTagName("pre")[0].appendChild(document.createTextNode("\n\
     var l = document.createElement("a");
     l.href = "http://example.com/?" + String.fromCodePoint(code);
     var url = l.search.substr(1);
-    var bytes = "";
+    var bytes = [];
     for (let a = 0; a < url.length; a++) {
         if (url.charAt(a) == "%") {
-            bytes = bytes.concat(url.charAt(a + 1), url.charAt(a + 2));
+            bytes.push(url.charAt(a + 1) + url.charAt(a + 2));
             a = a + 2;
         } else {
-            bytes = bytes.concat(url.charCodeAt(a).toString(16).padStart(2, "0"));
+            bytes.push(url.charCodeAt(a).toString(16).padStart(2, "0"));
         }
     }
-    var line = "0x" + code.toString(16).toUpperCase() + ", " + bytes.toUpperCase() + "\n";
+    var line = "0x" + code.toString(16).toUpperCase() + ", " + bytes.join(" ").toUpperCase() + "\n";
+    document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
+})
+
+document.getElementsByTagName("pre")[0].appendChild(document.createTextNode("\n\n\n"));
+    /*
+        Char 0  U+007A   (1 byte)  Offset 0
+        Char 1  U+00A2   (2 bytes) Offset 1
+        Char 2  U+6C34   (3 bytes) Offset 3
+        Char 3  U+1D11E  (4 bytes) Offset 6
+        Char 4  U+F8FF   (3 bytes) Offset 10
+        Char 5  U+10FFFD (4 bytes) Offset 13
+        Char 6  U+FFFE   (3 bytes) Offset 17
+        End of string at char 7, offset 20
+    */
+
+[0x7A, 0xA2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE].forEach(function(code) {
+    var l = document.createElement("a");
+    l.href = "http://example.com/?" + String.fromCodePoint(code);
+    var url = l.search.substr(1);
+    var bytes = [];
+    for (let a = 0; a < url.length; a++) {
+        if (url.charAt(a) == "%") {
+            bytes.push(url.charAt(a + 1) + url.charAt(a + 2));
+            a = a + 2;
+        } else {
+            bytes.push(url.charCodeAt(a).toString(16).padStart(2, "0"));
+        }
+    }
+    var line = bytes.join(" ").toUpperCase() + "\n";
     document.getElementsByTagName("pre")[0].appendChild(document.createTextNode(line));
 })
 </script>
