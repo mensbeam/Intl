@@ -10,7 +10,6 @@ use MensBeam\Intl\Encoding\EncoderException;
 use MensBeam\Intl\Encoding\DecoderException;
 
 abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
-
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         $class = $this->testedClass;
         if ($exp instanceof \Throwable) {
@@ -60,7 +59,7 @@ abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
         $exp = array_reverse($exp);
         $act = [];
         while ($s->nextCode() !== false);
-        while($s->posByte()) {
+        while ($s->posByte()) {
             $s->seek(-1);
             $act[] = $s->nextCode();
             $s->seek(-1);

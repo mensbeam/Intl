@@ -10,7 +10,7 @@ use MensBeam\Intl\Encoding\SingleByteEncoding;
 use MensBeam\Intl\Encoding\EncoderException;
 use MensBeam\Intl\Encoding\DecoderException;
 
-class TestSingleByte  extends \MensBeam\Intl\Test\EncodingTest {
+class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
     // maps taken from https://github.com/web-platform-tests/wpt/blob/d6c29bef8d4bcdfe4f689defca73360b07647d71/encoding/single-byte-decoder.html
     // ISO-8859-8 was duplicated for ISO-8859-8-I
     protected static $maps = [

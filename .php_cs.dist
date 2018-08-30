@@ -7,6 +7,8 @@ namespace MensBeam\UTF8;
 
 const BASE = __DIR__.DIRECTORY_SEPARATOR;
 
+ini_set("memory_limit", "-1");
+
 $paths = [
     __FILE__,
     BASE."RoboFile.php",

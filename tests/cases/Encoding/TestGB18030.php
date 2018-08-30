@@ -136,7 +136,7 @@ class TestGB18030 extends \MensBeam\Intl\Test\EncodingTest {
 
     public function provideCodePoints() {
         // bytes confirmed using Firefox
-       $series = [
+        $series = [
             "GBK ASCII (fatal)"        => [GBK::class,     true,  0x64,     "64"],
             "GBK 0x20AC (fatal)"       => [GBK::class,     true,  0x20AC,   "80"],
             "GBK 0x2164 (fatal)"       => [GBK::class,     true,  0x2164,   "A2 F5"],

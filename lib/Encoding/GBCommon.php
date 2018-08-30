@@ -26,7 +26,7 @@ abstract class GBCommon implements StatelessEncoding {
         $second = 0;
         $third = 0;
         $this->posChar++;
-        while(($b = @$this->string[$this->posByte++]) !== "") {
+        while (($b = @$this->string[$this->posByte++]) !== "") {
             $b = ord($b);
             if ($first === 0) {
                 if ($b < 0x80) {
