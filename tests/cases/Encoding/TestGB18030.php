@@ -10,7 +10,7 @@ use MensBeam\Intl\Encoding\GBK;
 use MensBeam\Intl\Encoding\GB18030;
 use MensBeam\Intl\Encoding\EncoderException;
 
-class TestGB18030 extends \MensBeam\Intl\Test\EncodingTest {
+class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = GB18030::class;
     /*
         Char 0  U+007A   (1 byte)  Offset 0

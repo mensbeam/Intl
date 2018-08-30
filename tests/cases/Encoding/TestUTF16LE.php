@@ -9,7 +9,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 use MensBeam\Intl\Encoding\UTF16LE;
 use MensBeam\Intl\Encoding\UTF16BE;
 
-class TestUTF16LE extends \MensBeam\Intl\Test\EncodingTest {
+class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     protected $testedClass = UTF16LE::class;
     /*
         Char 0  U+007A   (2 byte)  Offset 0
@@ -27,15 +27,6 @@ class TestUTF16LE extends \MensBeam\Intl\Test\EncodingTest {
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "0000 00DC 0000";
     protected $lowerA = "a\x00";
-
-    /**
-     * @dataProvider provideCodePoints
-     * @coversNothing
-    */
-    public function testEncodeCodePoints(bool $fatal, $input, $exp) {
-        // UTF-16 has no encoder
-        $this->assertTrue(true);
-    }
 
     /**
      * @dataProvider provideStrings
@@ -124,11 +115,6 @@ class TestUTF16LE extends \MensBeam\Intl\Test\EncodingTest {
     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
-    }
-
-    public function provideCodePoints() {
-        // UTF-16 has no encoder
-        return [[true, 0, ""]];
     }
 
     public function provideStrings() {

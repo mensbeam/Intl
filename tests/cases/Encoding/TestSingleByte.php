@@ -9,7 +9,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 use MensBeam\Intl\Encoding\SingleByteEncoding;
 use MensBeam\Intl\Encoding\EncoderException;
 
-class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
+class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     // maps taken from https://github.com/web-platform-tests/wpt/blob/d6c29bef8d4bcdfe4f689defca73360b07647d71/encoding/single-byte-decoder.html
     // ISO-8859-8 was duplicated for ISO-8859-8-I
     protected static $maps = [
@@ -115,11 +115,13 @@ class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
     }
 
     /**
+     * @dataProvider provideStrings
      * @coversNothing
     */
-    public function testSTepBackThroughAString(string $input = "", array $exp = []) {
+    public function testSTepBackThroughAString(string $input, array $exp, string $class = SingleByteEncoding::class) {
         // this test has no meaning for single-byte encodings
-        $this->assertTrue(true);
+        $this->testedClass = $class;
+        return parent::testSTepBackThroughAString($input, $exp);
     }
 
     /**

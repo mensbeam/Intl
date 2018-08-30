@@ -9,7 +9,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 use MensBeam\Intl\Encoding\UTF8;
 use MensBeam\Intl\Encoding\EncoderException;
 
-class TestUTF8 extends \MensBeam\Intl\Test\EncodingTest {
+class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = UTF8::class;
     /*
         Char 0  U+007A   (1 byte)  Offset 0

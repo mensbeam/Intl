@@ -6,21 +6,9 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Test;
 
-use MensBeam\Intl\Encoding\EncoderException;
 use MensBeam\Intl\Encoding\DecoderException;
 
-abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
-    public function testEncodeCodePoints(bool $fatal, $input, $exp) {
-        $class = $this->testedClass;
-        if ($exp instanceof \Throwable) {
-            $this->expectException(get_class($exp));
-            $this->expectExceptionCode($exp->getCode());
-        } else {
-            $exp = strtolower(str_replace(" ", "", $exp));
-        }
-        $out = $class::encode($input, $fatal);
-        $this->assertSame($exp, bin2hex($out));
-    }
+abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
 
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         $class = $this->testedClass;
