@@ -34,7 +34,7 @@ abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
             $out[] = $p;
         }
         $this->assertSame($exp, $out);
-        $this->assertSame($s->posByte(), strlen($input));
+        $this->assertSame(strlen($input), $s->posByte());
     }
 
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
@@ -49,7 +49,7 @@ abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
             $out[] = $p;
         }
         $this->assertSame($exp, $out);
-        $this->assertSame($s->posByte(), strlen($input));
+        $this->assertSame(strlen($input), $s->posByte());
     }
 
     public function testSTepBackThroughAString(string $input, array $exp) {
@@ -118,29 +118,30 @@ abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
 
     public function testTraversePastTheEndOfAString() {
         $class = $this->testedClass;
-        $s = new $class("a");
+        $s = new $class($this->lowerA);
+        $l = strlen($this->lowerA);
         $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
         $this->assertSame("a", $s->nextChar());
         $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
+        $this->assertSame($l, $s->posByte());
 
         $this->assertSame("", $s->nextChar());
         $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
+        $this->assertSame($l, $s->posByte());
 
-        $s = new $class("a");
+        $s = new $class($this->lowerA);
         $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
 
         $this->assertSame(ord("a"), $s->nextCode());
         $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
+        $this->assertSame($l, $s->posByte());
 
         $this->assertSame(false, $s->nextCode());
         $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
+        $this->assertSame($l, $s->posByte());
     }
 
     public function testPeekAtCharacters() {
@@ -220,7 +221,7 @@ abstract class EncodingTest extends \PHPUnit\Framework\TestCase {
 
     public function testReplacementModes() {
         $class = $this->testedClass;
-        $input = $this->prepString("00".$this->brokenChar."00");
+        $input = $this->prepString($this->brokenChar);
         // officially test replacement characters (already effectively tested by other tests)
         $s = new $class($input, false);
         $s->seek(1);

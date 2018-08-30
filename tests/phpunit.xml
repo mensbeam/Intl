@@ -19,6 +19,8 @@
 <testsuites>
     <testsuite name="Encoding">
         <file>cases/Encoding/TestUTF8.php</file>
+        <file>cases/Encoding/TestUTF16LE.php</file>
+        <file>cases/Encoding/TestUTF16BE.php</file>
         <file>cases/Encoding/TestSingleByte.php</file>
         <file>cases/Encoding/TestGB18030.php</file>
     </testsuite>

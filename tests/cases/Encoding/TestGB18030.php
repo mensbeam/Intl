@@ -9,7 +9,6 @@ namespace MensBeam\Intl\TestCase\Encoding;
 use MensBeam\Intl\Encoding\GBK;
 use MensBeam\Intl\Encoding\GB18030;
 use MensBeam\Intl\Encoding\EncoderException;
-use MensBeam\Intl\Encoding\DecoderException;
 
 class TestGB18030 extends \MensBeam\Intl\Test\EncodingTest {
     protected $testedClass = GB18030::class;
@@ -26,8 +25,9 @@ class TestGB18030 extends \MensBeam\Intl\Test\EncodingTest {
     protected $seekString = "7A 81 30 84 34 CB AE 94 32 BE 34 84 30 81 30 E3 32 9A 33 84 31 A4 38";
     protected $seekCodes = [0x007A, 0x00A2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE];
     protected $seekOffsets = [0, 1, 5, 7, 11, 15, 19, 23];
-    /* This string contains a single invalid character sequence */
-    protected $brokenChar = "FF";
+    /* This string contains an invalid character sequence sandwiched between two null characters */
+    protected $brokenChar = "00 FF 00";
+    protected $lowerA = "a";
 
     public function tearDown() {
         $this->testedClass = GB18030::class;

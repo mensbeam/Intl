@@ -8,7 +8,6 @@ namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\UTF8;
 use MensBeam\Intl\Encoding\EncoderException;
-use MensBeam\Intl\Encoding\DecoderException;
 
 class TestUTF8 extends \MensBeam\Intl\Test\EncodingTest {
     protected $testedClass = UTF8::class;
@@ -22,11 +21,12 @@ class TestUTF8 extends \MensBeam\Intl\Test\EncodingTest {
         Char 6  U+FFFE   (3 bytes) Offset 17
         End of string at char 7, offset 20
     */
-    protected $seekString = "7A C2 A2 E6 B0 B4 F0 9D 84 9E EF A3 BF F4 8F BF BD EF BF BE";
+    protected $seekString = "7A C2A2 E6B0B4 F09D849E EFA3BF F48FBFBD EFBFBE";
     protected $seekCodes = [0x007A, 0x00A2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE];
     protected $seekOffsets = [0, 1, 3, 6, 10, 13, 17, 20];
-    /* This string contains a single invalid charactersequence */
-    protected $brokenChar = "FF";
+    /* This string contains an invalid character sequence sandwiched between two null characters */
+    protected $brokenChar = "00 FF 00";
+    protected $lowerA = "a";
 
     /**
      * @dataProvider provideCodePoints

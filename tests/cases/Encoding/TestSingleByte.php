@@ -8,7 +8,6 @@ namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\SingleByteEncoding;
 use MensBeam\Intl\Encoding\EncoderException;
-use MensBeam\Intl\Encoding\DecoderException;
 
 class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
     // maps taken from https://github.com/web-platform-tests/wpt/blob/d6c29bef8d4bcdfe4f689defca73360b07647d71/encoding/single-byte-decoder.html
@@ -79,8 +78,9 @@ class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
     protected $seekString = "30 31 32 33 34 35 36";
     protected $seekCodes = [0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36];
     protected $seekOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
-    /* This string is supposed to contain a single invalid character sequence; this is different for each single-byte encoding (and many do not have invalid characters) */
+    /* This string is supposed to contain an invalid character sequence sandwiched between two null characters; this is different for each single-byte encoding (and many do not have invalid characters) */
     protected $brokenChar = "";
+    protected $lowerA = "a";
 
     /**
      * @dataProvider provideCodePoints
@@ -182,17 +182,17 @@ class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
     }
 
     /**
-     * @dataProvider provideStrings
+     * @dataProvider provideBrokenStrings
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::err
     */
-    public function testReplacementModes(string $input = "", array $points = [], string $class = SingleByteEncoding::class) {
-        if (($bump = array_search(0xFFFD, $points, true)) === false) {
+    public function testReplacementModes(string $input = "", string $class = SingleByteEncoding::class) {
+        if (!$input) {
             // if the encoding uses all 128 high byte values, this test is non-operative
             $this->assertTrue(true);
             return;
         }
         $this->testedClass = $class;
-        $this->brokenChar = bin2hex(chr($bump));
+        $this->brokenChar = $input;
         return parent::testReplacementModes();
     }
 
@@ -259,6 +259,20 @@ class TestSingleByte extends \MensBeam\Intl\Test\EncodingTest {
                 return $v ?? 0xFFFD;
             }, self::$maps[$name]));
             yield $name => [$bytes, $codes, $class];
+        }
+    }
+
+    public function provideBrokenStrings() {
+        foreach ($this->provideStrings() as $name => $test) {
+            $codes = $test[1];
+            $class = $test[2];
+            if (($bump = array_search(0xFFFD, $codes, true)) === false) {
+                // if the encoding uses all 128 high byte values, this test is non-operative
+                yield $name => ["", $class];
+            } else {
+                $byte = strtoupper(bin2hex(chr($bump)));
+                yield $name => ["00 $byte 00", $class];
+            }
         }
     }
 
