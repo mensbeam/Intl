@@ -57,7 +57,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\EncodingTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\UTF8::sync
+     * @covers MensBeam\Intl\Encoding\UTF8::seekBack
     */
     public function testSTepBackThroughAString(string $input, array $exp) {
         return parent::testSTepBackThroughAString($input, $exp);
