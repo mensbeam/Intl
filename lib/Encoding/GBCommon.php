@@ -148,14 +148,15 @@ abstract class GBCommon implements StatelessEncoding {
 
     /** Implements backward seeking $distance characters */
     protected function seekBack(int $distance): int {
+        if ($this->posByte >= $this->lenByte && $this->dirtyEOF > 0) {
+            // if we are at the end of the string and it did not terminate cleanly, go back the correct number of dirty bytes to seek through the last character
+            $this->posByte -= $this->dirtyEOF;
+            $distance--;
+            $this->posChar--;
+        }
         while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
-            if ($this->posByte == $this->lenByte && $this->dirtyEOF > 0) {
-                // if we are at the end of the string and it did not terminate cleanly, go back the correct number of dirty bytes to seek through the last character
-                $this->posByte -= $this->dirtyEOF;
-                continue;
-            }
             // go back one byte
             $b1 = ord(@$this->string[--$this->posByte]);
             if ($b1 < 0x30 || $b1 == 0x7F || $this->posByte == 0) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
