@@ -9,6 +9,9 @@ namespace MensBeam\Intl\Encoding;
 class XUserDefined implements Encoding {
     use GenericEncoding;
 
+    const NAME = "x-user-defined";
+    const LABELS = ["x-user-defined"];
+
     /** Retrieve the next character in the string, in UTF-8 encoding
      *
      * The returned character may be a replacement character, or the empty string if the end of the string has been reached
