@@ -1,6 +1,6 @@
 <?php
 /** @license MIT
- * Copyright 2017 J. King, Dustin Wilson et al.
+ * Copyright 2018 J. King et al.
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
@@ -10,19 +10,31 @@ use MensBeam\Intl\Encoding\UTF8;
 use MensBeam\Intl\Encoding\EncoderException;
 use MensBeam\Intl\Encoding\DecoderException;
 
-class TestUTF8 extends \PHPUnit\Framework\TestCase {
+class TestUTF8 extends \MensBeam\Intl\Test\EncodingTest {
+    protected $testedClass = UTF8::class;
+    /*
+        Char 0  U+007A   (1 byte)  Offset 0
+        Char 1  U+00A2   (2 bytes) Offset 1
+        Char 2  U+6C34   (3 bytes) Offset 3
+        Char 3  U+1D11E  (4 bytes) Offset 6
+        Char 4  U+F8FF   (3 bytes) Offset 10
+        Char 5  U+10FFFD (4 bytes) Offset 13
+        Char 6  U+FFFE   (3 bytes) Offset 17
+        End of string at char 7, offset 20
+    */
+    protected $seekString = "7A C2 A2 E6 B0 B4 F0 9D 84 9E EF A3 BF F4 8F BF BD EF BF BE";
+    protected $seekCodes = [0x007A, 0x00A2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE];
+    protected $seekOffsets = [0, 1, 3, 6, 10, 13, 17, 20];
+    /* This string contains a single invalid charactersequence */
+    protected $brokenChar = "FF";
 
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\UTF8::encode
+     * @covers MensBeam\Intl\Encoding\UTF8::err
     */
-    public function testEncodeCodePoints(int $input, $exp) {
-        if ($exp instanceof \Throwable) {
-            $this->expectException(get_class($exp));
-            $this->expectExceptionCode($exp->getCode());
-        }
-        $out = UTF8::encode($input);
-        $this->assertSame(bin2hex($exp), bin2hex($out));
+    public function testEncodeCodePoints(bool $fatal, $input, $exp) {
+        return parent::testEncodeCodePoints($fatal, $input, $exp);
     }
 
     /**
@@ -31,12 +43,7 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\UTF8::nextCode
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
-        $s = new UTF8($input);
-        $out = [];
-        while (($p = $s->nextCode()) !== false) {
-            $out[] = $p;
-        }
-        $this->assertEquals($exp, $out);
+        return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
     }
 
     /**
@@ -45,133 +52,25 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\UTF8::nextChar
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
-        $out = [];
-        $exp = array_map(function($v) {
-            return \IntlChar::chr($v);
-        }, $exp);
-        $s = new UTF8($input);
-        while (($c = $s->nextChar()) !== "") {
-            $out[] = $c;
-        }
-        $this->assertEquals($exp, $out);
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\UTF8::rewind
-     * @covers MensBeam\Intl\Encoding\UTF8::chars
-     * @covers MensBeam\Intl\Encoding\UTF8::codes
-    */
-    public function testIterateThroughAString(string $input, array $exp) {
-        $out = [];
-        $s = new UTF8($input);
-        $a = 0;
-        $this->assertTrue(true); // prevent risky test of empty string
-        foreach ($s->codes() as $index => $p) {
-            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
-            $this->assertSame($exp[$a], $p, "Character at index $a decoded incorrectly");
-            $a++;
-        }
-        $a = 0;
-        foreach ($s->codes() as $p) {
-            $a++;
-        }
-        $this->assertSame(0, $a);
-        $s->rewind();
-        foreach ($s->codes() as $p) {
-            $a++;
-        }
-        $this->assertSame(sizeof($exp), $a);
-
-        $exp = array_map(function($v) {
-            return \IntlChar::chr($v);
-        }, $exp);
-
-        foreach ($s->chars() as $index => $p) {
-            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
-            $this->assertSame(bin2hex($exp[$a]), bin2hex($p), "Character at index $a decoded incorrectly");
-            $a++;
-        }
-        $a = 0;
-        foreach ($s->chars() as $p) {
-            $a++;
-        }
-        $this->assertSame(0, $a);
-        $s->rewind();
-        foreach ($s->chars() as $p) {
-            $a++;
-        }
-        $this->assertSame(sizeof($exp), $a);
+        return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
     }
 
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::sync
     */
-    public function testSTepBackThroughAString(string $input, array $points) {
-        $s = new UTF8($input);
-        $a = 0;
-        $this->assertTrue(true); // prevent risky test of empty string
-        while (($p1 = $s->nextCode()) !== false) {
-            $this->assertSame(0, $s->seek(-1));
-            $p2 = $s->nextCode();
-            $this->assertSame($p1, $p2, "Mismatch at character position $a");
-            $this->assertSame(++$a, $s->posChar(), "Character position should be $a");
-        }
+    public function testSTepBackThroughAString(string $input, array $exp) {
+        return parent::testSTepBackThroughAString($input, $exp);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::seek
      * @covers MensBeam\Intl\Encoding\UTF8::posChar
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
+     * @covers MensBeam\Intl\Encoding\UTF8::rewind
     */
     public function testSeekThroughAString() {
-        /*
-            Char 0  U+007A   (1 byte)  Offset 0
-            Char 1  U+00A2   (2 bytes) Offset 1
-            Char 2  U+6C34   (3 bytes) Offset 3
-            Char 3  U+1D11E  (4 bytes) Offset 6
-            Char 4  U+F8FF   (3 bytes) Offset 10
-            Char 5  U+10FFFD (4 bytes) Offset 13
-            Char 6  U+FFFE   (3 bytes) Offset 17
-            End of string at char 7, offset 20
-        */
-        $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
-        $s = new UTF8($input);
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(0, $s->seek(0));
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(1, $s->seek(-1));
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(0, $s->seek(1));
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $this->assertSame(0, $s->seek(2));
-        $this->assertSame(3, $s->posChar());
-        $this->assertSame(6, $s->posByte());
-
-        $this->assertSame(0, $s->seek(4));
-        $this->assertSame(7, $s->posChar());
-        $this->assertSame(20, $s->posByte());
-
-        $this->assertSame(1, $s->seek(1));
-        $this->assertSame(7, $s->posChar());
-        $this->assertSame(20, $s->posByte());
-
-        $this->assertSame(0, $s->seek(-3));
-        $this->assertSame(4, $s->posChar());
-        $this->assertSame(10, $s->posByte());
-
-        $this->assertSame(6, $s->seek(-10));
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
+        return parent::testSeekThroughAString();
     }
 
     /**
@@ -179,111 +78,25 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
     */
     public function testTraversePastTheEndOfAString() {
-        $s = new UTF8("a");
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame("a", $s->nextChar());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $this->assertSame("", $s->nextChar());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $s = new UTF8("a");
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(ord("a"), $s->nextCode());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $this->assertSame(false, $s->nextCode());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
+        return parent::testTraversePastTheEndOfAString();
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::peekChar
+     * @covers MensBeam\Intl\Encoding\UTF8::stateSave
+     * @covers MensBeam\Intl\Encoding\UTF8::stateApply
     */
     public function testPeekAtCharacters() {
-        /*
-            Char 0  U+007A   (1 byte)  Offset 0
-            Char 1  U+00A2   (2 bytes) Offset 1
-            Char 2  U+6C34   (3 bytes) Offset 3
-            Char 3  U+1D11E  (4 bytes) Offset 6
-            Char 4  U+F8FF   (3 bytes) Offset 10
-            Char 5  U+10FFFD (4 bytes) Offset 13
-            Char 6  U+FFFE   (3 bytes) Offset 17
-            End of string at char 7, offset 20
-        */
-        $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
-        $s = new UTF8($input);
-        $s->seek(2);
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(3, $s->posByte());
-
-        $this->assertSame(bin2hex("\u{6C34}"), bin2hex($s->peekChar()));
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(3, $s->posByte());
-
-        $this->assertSame(bin2hex("\u{6C34}\u{1D11E}"), bin2hex($s->peekChar(2)));
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(3, $s->posByte());
-
-        $s->seek(3);
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame(13, $s->posByte());
-
-        $this->assertSame(bin2hex("\u{10FFFD}\u{FFFE}"), bin2hex($s->peekChar(3)));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame(13, $s->posByte());
-
-        $this->assertSame("", $s->peekChar(-5));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame(13, $s->posByte());
+        return parent::testPeekAtCharacters();
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::peekCode
+     * @covers MensBeam\Intl\Encoding\UTF8::stateSave
+     * @covers MensBeam\Intl\Encoding\UTF8::stateApply
     */
     public function testPeekAtCodePoints() {
-        /*
-            Char 0  U+007A   (1 byte)  Offset 0
-            Char 1  U+00A2   (2 bytes) Offset 1
-            Char 2  U+6C34   (3 bytes) Offset 3
-            Char 3  U+1D11E  (4 bytes) Offset 6
-            Char 4  U+F8FF   (3 bytes) Offset 10
-            Char 5  U+10FFFD (4 bytes) Offset 13
-            Char 6  U+FFFE   (3 bytes) Offset 17
-            End of string at char 7, offset 20
-        */
-        $input = "\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE";
-        $s = new UTF8($input);
-        $s->seek(2);
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(3, $s->posByte());
-
-        $this->assertSame([0x6C34], $s->peekCode());
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(3, $s->posByte());
-
-        $this->assertSame([0x6C34, 0x1D11E], $s->peekCode(2));
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(3, $s->posByte());
-
-        $s->seek(3);
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame(13, $s->posByte());
-
-        $this->assertSame([0x10FFFD, 0xFFFE], $s->peekCode(3));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame(13, $s->posByte());
-
-        $this->assertSame([], $s->peekCode(-5));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame(13, $s->posByte());
+        return parent::testPeekAtCodePoints();
     }
 
     /**
@@ -293,117 +106,89 @@ class TestUTF8 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\UTF8::stateApply
     */
     public function testGetStringLength(string $input, array $points) {
-        $s = new UTF8($input);
-        $s->seek(1);
-        $posChar = $s->posChar();
-        $posByte = $s->posByte();
-
-        $this->assertSame(sizeof($points), $s->len());
-        $this->assertSame($posChar, $s->posChar());
-        $this->assertSame($posByte, $s->posByte());
+        return parent::testGetStringLength($input, $points);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::err
     */
     public function testReplacementModes() {
-        $input = "\x30\xFF\x30";
-        // officially test replacement characters and null replacement (already effectively tested by other tests)
-        $s = new UTF8($input, false);
-        $s->seek(1);
-        $this->assertSame(0xFFFD, $s->nextCode());
-        $s->seek(-2);
-        // test fatal mode
-        $s = new UTF8($input, true);
-        $s->seek(1);
-        try {
-            $p = $s->nextCode();
-        } catch (DecoderException $e) {
-            $p = $e;
-        } finally {
-            $this->assertInstanceOf(DecoderException::class, $p);
-        }
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(0x30, $s->nextCode());
-        $s->seek(-2);
-        $this->assertSame(1, $s->posChar());
-        try {
-            $p = $s->peekCode();
-        } catch (DecoderException $e) {
-            $p = $e;
-        } finally {
-            $this->assertInstanceOf(DecoderException::class, $p);
-        }
-        $this->assertSame(1, $s->posChar());
-        try {
-            $p = $s->peekChar();
-        } catch (DecoderException $e) {
-            $p = $e;
-        } finally {
-            $this->assertInstanceOf(DecoderException::class, $p);
-        }
-        $this->assertSame(1, $s->posChar());
+        return parent::testReplacementModes();
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\UTF8::rewind
+     * @covers MensBeam\Intl\Encoding\UTF8::chars
+     * @covers MensBeam\Intl\Encoding\UTF8::codes
+    */
+    public function testIterateThroughAString(string $input, array $exp) {
+        return parent::testIterateThroughAString($input, $exp);
     }
 
     public function provideCodePoints() {
-        return [
-            "122"     => [122, "\x7A"],
-            "162"     => [162, "\xC2\xA2"],
-            "27700"   => [27700, "\xE6\xB0\xB4"],
-            "119070"  => [119070, "\xF0\x9D\x84\x9E"],
-            "63743"   => [63743, "\xEF\xA3\xBF"],
-            "1114109" => [1114109, "\xF4\x8F\xBF\xBD"],
-            "65534"   => [65534, "\xEF\xBF\xBE"],
-            "-1"      => [-1, new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
+        $series = [
+            "122"     => [122,     "7A"],
+            "162"     => [162,     "C2 A2"],
+            "27700"   => [27700,   "E6 B0 B4"],
+            "119070"  => [119070,  "F0 9D 84 9E"],
+            "63743"   => [63743,   "EF A3 BF"],
+            "1114109" => [1114109, "F4 8F BF BD"],
+            "65534"   => [65534,   "EF BF BE"],
+            "-1"      => [-1,      new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
             "1114112" => [1114112, new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
         ];
+        foreach ($series as $name => $test) {
+            yield "$name (fatal)" => array_merge([true], $test);
+            yield "$name (HTML)"  => array_merge([false], $test);
+        }
     }
 
     public function provideStrings() {
         return [
             // control samples
             'empty string' => ["", []],
-            'sanity check' => ["\x61\x62\x63\x31\x32\x33", [97, 98, 99, 49, 50, 51]],
-            'multibyte control' => ["\xE5\x8F\xA4\xE6\xB1\xA0\xE3\x82\x84\xE8\x9B\x99\xE9\xA3\x9B\xE3\x81\xB3\xE8\xBE\xBC\xE3\x82\x80\xE6\xB0\xB4\xE3\x81\xAE\xE9\x9F\xB3", [21476, 27744, 12420, 34521, 39131, 12403, 36796, 12416, 27700, 12398, 38899]],
-            'mixed sample' => ["\x7A\xC2\xA2\xE6\xB0\xB4\xF0\x9D\x84\x9E\xEF\xA3\xBF\xF4\x8F\xBF\xBD\xEF\xBF\xBE", [122, 162, 27700, 119070, 63743, 1114109, 65534]],
+            'sanity check' => ["61 62 63 31 32 33", [97, 98, 99, 49, 50, 51]],
+            'multibyte control' => ["E5 8F A4 E6 B1 A0 E3 82 84 E8 9B 99 E9 A3 9B E3 81 B3 E8 BE BC E3 82 80 E6 B0 B4 E3 81 AE E9 9F B3", [21476, 27744, 12420, 34521, 39131, 12403, 36796, 12416, 27700, 12398, 38899]],
+            'mixed sample' => ["7A C2 A2 E6 B0 B4 F0 9D 84 9E EF A3 BF F4 8F BF BD EF BF BE", [122, 162, 27700, 119070, 63743, 1114109, 65534]],
             // various invalid sequences
-            'invalid code' => ["\xFF", [65533]],
-            'ends early' => ["\xC0", [65533]],
-            'ends early 2' => ["\xE0", [65533]],
-            'invalid trail' => ["\xC0\x00", [65533, 0]],
-            'invalid trail 2' => ["\xC0\xC0", [65533, 65533]],
-            'invalid trail 3' => ["\xE0\x00", [65533, 0]],
-            'invalid trail 4' => ["\xE0\xC0", [65533, 65533]],
-            'invalid trail 5' => ["\xE0\x80\x00", [65533, 65533, 0]],
-            'invalid trail 6' => ["\xE0\x80\xC0", [65533, 65533, 65533]],
-            '> 0x10FFFF' => ["\xFC\x80\x80\x80\x80\x80", [65533, 65533, 65533, 65533, 65533, 65533]],
-            'obsolete lead byte' => ["\xFE\x80\x80\x80\x80\x80", [65533, 65533, 65533, 65533, 65533, 65533]],
-            'overlong U+0000 - 2 bytes' => ["\xC0\x80", [65533, 65533]],
-            'overlong U+0000 - 3 bytes' => ["\xE0\x80\x80", [65533, 65533, 65533]],
-            'overlong U+0000 - 4 bytes' => ["\xF0\x80\x80\x80", [65533, 65533, 65533, 65533]],
-            'overlong U+0000 - 5 bytes' => ["\xF8\x80\x80\x80\x80", [65533, 65533, 65533, 65533, 65533]],
-            'overlong U+0000 - 6 bytes' => ["\xFC\x80\x80\x80\x80\x80", [65533, 65533, 65533, 65533, 65533, 65533]],
-            'overlong U+007F - 2 bytes' => ["\xC1\xBF", [65533, 65533]],
-            'overlong U+007F - 3 bytes' => ["\xE0\x81\xBF", [65533, 65533, 65533]],
-            'overlong U+007F - 4 bytes' => ["\xF0\x80\x81\xBF", [65533, 65533, 65533, 65533]],
-            'overlong U+007F - 5 bytes' => ["\xF8\x80\x80\x81\xBF", [65533, 65533, 65533, 65533, 65533]],
-            'overlong U+007F - 6 bytes' => ["\xFC\x80\x80\x80\x81\xBF", [65533, 65533, 65533, 65533, 65533, 65533]],
-            'overlong U+07FF - 3 bytes' => ["\xE0\x9F\xBF", [65533, 65533, 65533]],
-            'overlong U+07FF - 4 bytes' => ["\xF0\x80\x9F\xBF", [65533, 65533, 65533, 65533]],
-            'overlong U+07FF - 5 bytes' => ["\xF8\x80\x80\x9F\xBF", [65533, 65533, 65533, 65533, 65533]],
-            'overlong U+07FF - 6 bytes' => ["\xFC\x80\x80\x80\x9F\xBF", [65533, 65533, 65533, 65533, 65533, 65533]],
-            'overlong U+FFFF - 4 bytes' => ["\xF0\x8F\xBF\xBF", [65533, 65533, 65533, 65533]],
-            'overlong U+FFFF - 5 bytes' => ["\xF8\x80\x8F\xBF\xBF", [65533, 65533, 65533, 65533, 65533]],
-            'overlong U+FFFF - 6 bytes' => ["\xFC\x80\x80\x8F\xBF\xBF", [65533, 65533, 65533, 65533, 65533, 65533]],
-            'overlong U+10FFFF - 5 bytes' => ["\xF8\x84\x8F\xBF\xBF", [65533, 65533, 65533, 65533, 65533]],
-            'overlong U+10FFFF - 6 bytes' => ["\xFC\x80\x84\x8F\xBF\xBF", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'invalid code' => ["FF", [65533]],
+            'ends early' => ["C0", [65533]],
+            'ends early 2' => ["E0", [65533]],
+            'invalid trail' => ["C0 00", [65533, 0]],
+            'invalid trail 2' => ["C0 C0", [65533, 65533]],
+            'invalid trail 3' => ["E0 00", [65533, 0]],
+            'invalid trail 4' => ["E0 C0", [65533, 65533]],
+            'invalid trail 5' => ["E0 80 00", [65533, 65533, 0]],
+            'invalid trail 6' => ["E0 80 C0", [65533, 65533, 65533]],
+            '> 0x10FFFF' => ["FC 80 80 80 80 80", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'obsolete lead byte' => ["FE 80 80 80 80 80", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'overlong U+0000 - 2 bytes' => ["C0 80", [65533, 65533]],
+            'overlong U+0000 - 3 bytes' => ["E0 80 80", [65533, 65533, 65533]],
+            'overlong U+0000 - 4 bytes' => ["F0 80 80 80", [65533, 65533, 65533, 65533]],
+            'overlong U+0000 - 5 bytes' => ["F8 80 80 80 80", [65533, 65533, 65533, 65533, 65533]],
+            'overlong U+0000 - 6 bytes' => ["FC 80 80 80 80 80", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'overlong U+007F - 2 bytes' => ["C1 BF", [65533, 65533]],
+            'overlong U+007F - 3 bytes' => ["E0 81 BF", [65533, 65533, 65533]],
+            'overlong U+007F - 4 bytes' => ["F0 80 81 BF", [65533, 65533, 65533, 65533]],
+            'overlong U+007F - 5 bytes' => ["F8 80 80 81 BF", [65533, 65533, 65533, 65533, 65533]],
+            'overlong U+007F - 6 bytes' => ["FC 80 80 80 81 BF", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'overlong U+07FF - 3 bytes' => ["E0 9F BF", [65533, 65533, 65533]],
+            'overlong U+07FF - 4 bytes' => ["F0 80 9F BF", [65533, 65533, 65533, 65533]],
+            'overlong U+07FF - 5 bytes' => ["F8 80 80 9F BF", [65533, 65533, 65533, 65533, 65533]],
+            'overlong U+07FF - 6 bytes' => ["FC 80 80 80 9F BF", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'overlong U+FFFF - 4 bytes' => ["F0 8F BF BF", [65533, 65533, 65533, 65533]],
+            'overlong U+FFFF - 5 bytes' => ["F8 80 8F BF BF", [65533, 65533, 65533, 65533, 65533]],
+            'overlong U+FFFF - 6 bytes' => ["FC 80 80 8F BF BF", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'overlong U+10FFFF - 5 bytes' => ["F8 84 8F BF BF", [65533, 65533, 65533, 65533, 65533]],
+            'overlong U+10FFFF - 6 bytes' => ["FC 80 84 8F BF BF", [65533, 65533, 65533, 65533, 65533, 65533]],
             // UTF-16 surrogates
-            'lead surrogate' => ["\xED\xA0\x80", [65533, 65533, 65533]],
-            'trail surrogate' => ["\xED\xB0\x80", [65533, 65533, 65533]],
-            'surrogate pair' => ["\xED\xA0\x80\xED\xB0\x80", [65533, 65533, 65533, 65533, 65533, 65533]],
+            'lead surrogate' => ["ED A0 80", [65533, 65533, 65533]],
+            'trail surrogate' => ["ED B0 80", [65533, 65533, 65533]],
+            'surrogate pair' => ["ED A0 80 ED B0 80", [65533, 65533, 65533, 65533, 65533, 65533]],
             // self-sync edge cases
-            'trailing continuation' => ["\x0A\x80\x80", [10, 65533, 65533]],
-            'trailing continuation 2' => ["\xE5\x8F\xA4\x80", [21476, 65533]],
+            'trailing continuation' => ["0A 80 80", [10, 65533, 65533]],
+            'trailing continuation 2' => ["E5 8F A4 80", [21476, 65533]],
         ];
     }
 }

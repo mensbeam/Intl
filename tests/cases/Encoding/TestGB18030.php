@@ -1,6 +1,6 @@
 <?php
 /** @license MIT
- * Copyright 2017 J. King, Dustin Wilson et al.
+ * Copyright 2018 J. King et al.
  * See LICENSE and AUTHORS files for details */
 
 declare(strict_types=1);
@@ -11,7 +11,8 @@ use MensBeam\Intl\Encoding\GB18030;
 use MensBeam\Intl\Encoding\EncoderException;
 use MensBeam\Intl\Encoding\DecoderException;
 
-class TestGB18030 extends \PHPUnit\Framework\TestCase {
+class TestGB18030 extends \MensBeam\Intl\Test\EncodingTest {
+    protected $testedClass = GB18030::class;
     /*
         Char 0  U+007A   (1 byte)  Offset 0
         Char 1  U+00A2   (4 bytes) Offset 1
@@ -23,9 +24,14 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
         End of string at char 7, offset 23
     */
     protected $seekString = "7A 81 30 84 34 CB AE 94 32 BE 34 84 30 81 30 E3 32 9A 33 84 31 A4 38";
+    protected $seekCodes = [0x007A, 0x00A2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE];
     protected $seekOffsets = [0, 1, 5, 7, 11, 15, 19, 23];
-    /* This string contains one invalid character sandwiched between two valid characters */
-    protected $brokenString = "30 FF 30";
+    /* This string contains a single invalid character sequence */
+    protected $brokenChar = "FF";
+
+    public function tearDown() {
+        $this->testedClass = GB18030::class;
+    }
 
     /**
      * @dataProvider provideCodePoints
@@ -34,13 +40,9 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GBK::encode
      * @covers MensBeam\Intl\Encoding\GBK::err
     */
-    public function testEncodeCodePoints(string $class, bool $fatal, int $input, $exp) {
-        if ($exp instanceof \Throwable) {
-            $this->expectException(get_class($exp));
-            $this->expectExceptionCode($exp->getCode());
-        }
-        $out = $class::encode($input, $fatal);
-        $this->assertSame(strtolower($exp), bin2hex($out));
+    public function testEncodeCodePoints(bool $fatal, $input, $exp, $class = self::class) {
+        $this->testedClass = $class;
+        return parent::testEncodeCodePoints($fatal, $input, $exp);
     }
 
     /**
@@ -49,17 +51,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::nextCode
     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
-        $input = $this->prepString($input);
-        $s = new GB18030($input);
-        $out = [];
-        $a = 0;
-        $this->assertSame($a, $s->posChar());
-        while (($p = $s->nextCode()) !== false) {
-            $this->assertSame(++$a, $s->posChar());
-            $out[] = $p;
-        }
-        $this->assertSame($exp, $out);
-        $this->assertSame($s->posByte(), strlen($input));
+        return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
     }
 
     /**
@@ -68,17 +60,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::nextChar
     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
-        $exp = array_map(function($v) {
-            return \IntlChar::chr($v);
-        }, $exp);
-        $input = $this->prepString($input);
-        $s = new GB18030($input);
-        $out = [];
-        while (($p = $s->nextChar()) !== "") {
-            $out[] = $p;
-        }
-        $this->assertSame($exp, $out);
-        $this->assertSame($s->posByte(), strlen($input));
+        return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
     }
 
     /**
@@ -86,17 +68,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::seekBack
     */
     public function testSTepBackThroughAString(string $input, array $exp) {
-        $input = $this->prepString($input);
-        $s = new GB18030($input);
-        $exp = array_reverse($exp);
-        $act = [];
-        while ($s->nextCode() !== false);
-        while($s->posByte()) {
-            $s->seek(-1);
-            $act[] = $s->nextCode();
-            $s->seek(-1);
-        }
-        $this->assertEquals($exp, $act);
+        return parent::testSTepBackThroughAString($input, $exp);
     }
 
     /**
@@ -106,51 +78,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::rewind
     */
     public function testSeekThroughAString() {
-        $input = $this->prepString($this->seekString);
-        $off = $this->seekOffsets;
-        $s = new GB18030($input);
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(0, $s->seek(0));
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(1, $s->seek(-1));
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(0, $s->seek(1));
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame($off[1], $s->posByte());
-
-        $this->assertSame(0, $s->seek(2));
-        $this->assertSame(3, $s->posChar());
-        $this->assertSame($off[3], $s->posByte());
-
-        $this->assertSame(0, $s->seek(4));
-        $this->assertSame(7, $s->posChar());
-        $this->assertSame($off[7], $s->posByte());
-
-        $this->assertSame(1, $s->seek(1));
-        $this->assertSame(7, $s->posChar());
-        $this->assertSame($off[7], $s->posByte());
-
-        $this->assertSame(0, $s->seek(-3));
-        $this->assertSame(4, $s->posChar());
-        $this->assertSame($off[4], $s->posByte());
-
-        $this->assertSame(6, $s->seek(-10));
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(0, $s->seek(5));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
-
-        $s->rewind(0);
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
+        return parent::testSeekThroughAString();
     }
 
     /**
@@ -158,29 +86,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::posByte
     */
     public function testTraversePastTheEndOfAString() {
-        $s = new GB18030("a");
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame("a", $s->nextChar());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $this->assertSame("", $s->nextChar());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $s = new GB18030("a");
-        $this->assertSame(0, $s->posChar());
-        $this->assertSame(0, $s->posByte());
-
-        $this->assertSame(ord("a"), $s->nextCode());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
-
-        $this->assertSame(false, $s->nextCode());
-        $this->assertSame(1, $s->posChar());
-        $this->assertSame(1, $s->posByte());
+        return parent::testTraversePastTheEndOfAString();
     }
 
     /**
@@ -189,32 +95,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::stateApply
     */
     public function testPeekAtCharacters() {
-        $input = $this->prepString($this->seekString);
-        $off = $this->seekOffsets;
-        $s = new GB18030($input);
-        $s->seek(2);
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame($off[2], $s->posByte());
-
-        $this->assertSame(bin2hex("\u{6C34}"), bin2hex($s->peekChar()));
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame($off[2], $s->posByte());
-
-        $this->assertSame(bin2hex("\u{6C34}\u{1D11E}"), bin2hex($s->peekChar(2)));
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame($off[2], $s->posByte());
-
-        $s->seek(3);
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
-
-        $this->assertSame(bin2hex("\u{10FFFD}\u{FFFE}"), bin2hex($s->peekChar(3)));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
-
-        $this->assertSame("", $s->peekChar(-5));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
+        return parent::testPeekAtCharacters();
     }
 
     /**
@@ -223,32 +104,7 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::stateApply
     */
     public function testPeekAtCodePoints() {
-        $input = $this->prepString($this->seekString);
-        $off = $this->seekOffsets;
-        $s = new GB18030($input);
-        $s->seek(2);
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame($off[2], $s->posByte());
-
-        $this->assertSame([0x6C34], $s->peekCode());
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame($off[2], $s->posByte());
-
-        $this->assertSame([0x6C34, 0x1D11E], $s->peekCode(2));
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame($off[2], $s->posByte());
-
-        $s->seek(3);
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
-
-        $this->assertSame([0x10FFFD, 0xFFFE], $s->peekCode(3));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
-
-        $this->assertSame([], $s->peekCode(-5));
-        $this->assertSame(5, $s->posChar());
-        $this->assertSame($off[5], $s->posByte());
+        return parent::testPeekAtCodePoints();
     }
 
     /**
@@ -258,57 +114,14 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::stateApply
     */
     public function testGetStringLength(string $input, array $points) {
-        $input = $this->prepString($input);
-        $s = new GB18030($input);
-        $s->seek(1);
-        $posChar = $s->posChar();
-        $posByte = $s->posByte();
-
-        $this->assertSame(sizeof($points), $s->len());
-        $this->assertSame($posChar, $s->posChar());
-        $this->assertSame($posByte, $s->posByte());
+        return parent::testGetStringLength($input, $points);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\GB18030::err
     */
     public function testReplacementModes() {
-        $input = $this->prepString($this->brokenString);
-        // officially test replacement characters (already effectively tested by other tests)
-        $s = new GB18030($input, false);
-        $s->seek(1);
-        $this->assertSame(0xFFFD, $s->nextCode());
-        $s->seek(-2);
-        // test fatal mode
-        $s = new GB18030($input, true);
-        $s->seek(1);
-        try {
-            $p = $s->nextCode();
-        } catch (DecoderException $e) {
-            $p = $e;
-        } finally {
-            $this->assertInstanceOf(DecoderException::class, $p);
-        }
-        $this->assertSame(2, $s->posChar());
-        $this->assertSame(0x30, $s->nextCode());
-        $s->seek(-2);
-        $this->assertSame(1, $s->posChar());
-        try {
-            $p = $s->peekCode();
-        } catch (DecoderException $e) {
-            $p = $e;
-        } finally {
-            $this->assertInstanceOf(DecoderException::class, $p);
-        }
-        $this->assertSame(1, $s->posChar());
-        try {
-            $p = $s->peekChar();
-        } catch (DecoderException $e) {
-            $p = $e;
-        } finally {
-            $this->assertInstanceOf(DecoderException::class, $p);
-        }
-        $this->assertSame(1, $s->posChar());
+        return parent::testReplacementModes();
     }
 
     /**
@@ -318,54 +131,15 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
      * @covers MensBeam\Intl\Encoding\GB18030::codes
     */
     public function testIterateThroughAString(string $input, array $exp) {
-        $input = $this->prepString($input);
-        $s = new GB18030($input);
-        $out = [];
-        $a = 0;
-        $this->assertTrue(true); // prevent risky test of empty string
-        foreach ($s->codes() as $index => $p) {
-            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
-            $this->assertSame($exp[$a], $p, "Character at index $a decoded incorrectly");
-            $a++;
-        }
-        $a = 0;
-        foreach ($s->codes() as $p) {
-            $a++;
-        }
-        $this->assertSame(0, $a);
-        $s->rewind();
-        foreach ($s->codes() as $p) {
-            $a++;
-        }
-        $this->assertSame(sizeof($exp), $a);
-
-        $exp = array_map(function($v) {
-            return \IntlChar::chr($v);
-        }, $exp);
-
-        foreach ($s->chars() as $index => $p) {
-            $this->assertSame($a, $index, "Character key at index $a reported incorrectly");
-            $this->assertSame(bin2hex($exp[$a]), bin2hex($p), "Character at index $a decoded incorrectly");
-            $a++;
-        }
-        $a = 0;
-        foreach ($s->chars() as $p) {
-            $a++;
-        }
-        $this->assertSame(0, $a);
-        $s->rewind();
-        foreach ($s->chars() as $p) {
-            $a++;
-        }
-        $this->assertSame(sizeof($exp), $a);
+        return parent::testIterateThroughAString($input, $exp);
     }
 
     public function provideCodePoints() {
         // bytes confirmed using Firefox
-        return [
+       $series = [
             "GBK ASCII (fatal)"        => [GBK::class,     true,  0x64,     "64"],
             "GBK 0x20AC (fatal)"       => [GBK::class,     true,  0x20AC,   "80"],
-            "GBK 0x2164 (fatal)"       => [GBK::class,     true,  0x2164,   "A2F5"],
+            "GBK 0x2164 (fatal)"       => [GBK::class,     true,  0x2164,   "A2 F5"],
             "GBK 0x3A74 (fatal)"       => [GBK::class,     true,  0x3A74,   new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
             "GBK 0xE7C7 (fatal)"       => [GBK::class,     true,  0xE7C7,   new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
             "GBK 0x1D11E (fatal)"      => [GBK::class,     true,  0x1D11E,  new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
@@ -373,17 +147,17 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
             "GBK -1 (fatal)"           => [GBK::class,     true,  -1,       new EncoderException("", GBK::E_INVALID_CODE_POINT)],
             "GBK 0x110000 (fatal)"     => [GBK::class,     true,  0x110000, new EncoderException("", GBK::E_INVALID_CODE_POINT)],
             "GB18030 ASCII (fatal)"    => [GB18030::class, true,  0x64,     "64"],
-            "GB18030 0x20AC (fatal)"   => [GB18030::class, true,  0x20AC,   "A2E3"],
-            "GB18030 0x2164 (fatal)"   => [GB18030::class, true,  0x2164,   "A2F5"],
-            "GB18030 0x3A74 (fatal)"   => [GB18030::class, true,  0x3A74,   "82319730"],
-            "GB18030 0xE7C7 (fatal)"   => [GB18030::class, true,  0xE7C7,   "8135F437"],
-            "GB18030 0x1D11E (fatal)"  => [GB18030::class, true,  0x1D11E,  "9432BE34"],
+            "GB18030 0x20AC (fatal)"   => [GB18030::class, true,  0x20AC,   "A2 E3"],
+            "GB18030 0x2164 (fatal)"   => [GB18030::class, true,  0x2164,   "A2 F5"],
+            "GB18030 0x3A74 (fatal)"   => [GB18030::class, true,  0x3A74,   "82 31 97 30"],
+            "GB18030 0xE7C7 (fatal)"   => [GB18030::class, true,  0xE7C7,   "81 35 F4 37"],
+            "GB18030 0x1D11E (fatal)"  => [GB18030::class, true,  0x1D11E,  "94 32 BE 34"],
             "GB18030 0xE5E5 (fatal)"   => [GB18030::class, true,  0xE5E5,   new EncoderException("", GB18030::E_UNAVAILABLE_CODE_POINT)],
             "GB18030 -1 (fatal)"       => [GB18030::class, true,  -1,       new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
             "GB18030 0x110000 (fatal)" => [GB18030::class, true,  0x110000, new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
             "GBK ASCII (HTML)"         => [GBK::class,     false, 0x64,     "64"],
             "GBK 0x20AC (HTML)"        => [GBK::class,     false, 0x20AC,   "80"],
-            "GBK 0x2164 (HTML)"        => [GBK::class,     false, 0x2164,   "A2F5"],
+            "GBK 0x2164 (HTML)"        => [GBK::class,     false, 0x2164,   "A2 F5"],
             "GBK 0x3A74 (HTML)"        => [GBK::class,     false, 0x3A74,   bin2hex("&#".(0x3A74).";")],
             "GBK 0xE7C7 (HTML)"        => [GBK::class,     false, 0xE7C7,   bin2hex("&#".(0xE7C7).";")],
             "GBK 0x1D11E (HTML)"       => [GBK::class,     false, 0x1D11E,  bin2hex("&#".(0x1D11E).";")],
@@ -391,15 +165,20 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
             "GBK -1 (HTML)"            => [GBK::class,     false, -1,       new EncoderException("", GBK::E_INVALID_CODE_POINT)],
             "GBK 0x110000 (HTML)"      => [GBK::class,     false, 0x110000, new EncoderException("", GBK::E_INVALID_CODE_POINT)],
             "GB18030 ASCII (HTML)"     => [GB18030::class, false, 0x64,     "64"],
-            "GB18030 0x20AC (HTML)"    => [GB18030::class, false, 0x20AC,   "A2E3"],
-            "GB18030 0x2164 (HTML)"    => [GB18030::class, false, 0x2164,   "A2F5"],
-            "GB18030 0x3A74 (HTML)"    => [GB18030::class, false, 0x3A74,   "82319730"],
-            "GB18030 0xE7C7 (HTML)"    => [GB18030::class, false, 0xE7C7,   "8135F437"],
-            "GB18030 0x1D11E (HTML)"   => [GB18030::class, false, 0x1D11E,  "9432BE34"],
+            "GB18030 0x20AC (HTML)"    => [GB18030::class, false, 0x20AC,   "A2 E3"],
+            "GB18030 0x2164 (HTML)"    => [GB18030::class, false, 0x2164,   "A2 F5"],
+            "GB18030 0x3A74 (HTML)"    => [GB18030::class, false, 0x3A74,   "82 31 97 30"],
+            "GB18030 0xE7C7 (HTML)"    => [GB18030::class, false, 0xE7C7,   "81 35 F4 37"],
+            "GB18030 0x1D11E (HTML)"   => [GB18030::class, false, 0x1D11E,  "94 32 BE 34"],
             "GB18030 0xE5E5 (HTML)"    => [GB18030::class, false, 0xE5E5,   bin2hex("&#".(0xE5E5).";")],
             "GB18030 -1 (HTML)"        => [GB18030::class, false, -1,       new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
             "GB18030 0x110000 (HTML)"  => [GB18030::class, false, 0x110000, new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
         ];
+        foreach ($series as $name => $test) {
+            $class = array_shift($test);
+            array_push($test, $class);
+            yield $name => $test;
+        }
     }
 
     public function provideStrings() {
@@ -477,9 +256,5 @@ class TestGB18030 extends \PHPUnit\Framework\TestCase {
                 $this->assertFalse($s->nextCode());
             }
         }
-    }
-
-    protected function prepString(string $str): string {
-        return hex2bin(str_replace(" ", "", $str));
     }
 }

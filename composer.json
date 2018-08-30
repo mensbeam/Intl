@@ -2,7 +2,7 @@
     "name": "mensbeam/intl",
     "type": "library",
     "description": "A set of dependency-free basic internationalization tools",
-    "keywords": ["internationalization", "intl", "encoding", "unicode", "charset", "utf-8", "utf8"],
+    "keywords": ["whatwg", "internationalization", "intl", "encoding", "unicode", "charset", "utf-8", "utf8"],
     "license": "MIT",
     "authors": [
         {
@@ -26,6 +26,11 @@
     "autoload": {
         "psr-4": {
             "MensBeam\\Intl\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MensBeam\\Intl\\Test\\": "tests/lib/"
         }
     }
 }

@@ -7,7 +7,7 @@ Included here is a partial suite of WHATWG-compatible seekable string decoders w
 * UTF-8
 * gb18030
 * GBK 
-* and all single-byte encodings
+* all single-byte encodings
 
 Where applicable, code point encoders are also included. In time it will be extended to cover the entire suite of WHATWG character encodings, and may also provide other character-centric internationalization functionality.
 
