@@ -1,10 +1,10 @@
 <?php
-// this script generates a test series from the Web Platform test suite which exercises the index tables multi-byte encodings with single characters
+// this script generates a test series from the Web Platform test suite which exercises the index tables of multi-byte encodings with single characters
 // they are pedantic sets of tests, and so the test suite itself only uses this series in optional tests
 
 $tests = [
     'gb18030' => [
-        // the Web Platform test suite does not have tests for gb18030, but a pull request was made in 2016 with a partial set of tests
+        // the Web Platform test suite does not have tests for gb18030, but a pull request was made in 2016 with a set of tests
         'two-byte GBK'            => "https://raw.githubusercontent.com/web-platform-tests/wpt/5847108cb16dc0047331da3f746652f35b3e9c90/encoding/legacy-mb-schinese/gb18030/gb18030_chars.html",
         'four-byte Han'           => "https://raw.githubusercontent.com/web-platform-tests/wpt/5847108cb16dc0047331da3f746652f35b3e9c90/encoding/legacy-mb-schinese/gb18030/gb18030_extra_han_chars.html",
         'four-byte Hangul'        => "https://raw.githubusercontent.com/web-platform-tests/wpt/5847108cb16dc0047331da3f746652f35b3e9c90/encoding/legacy-mb-schinese/gb18030/gb18030_extra_hangul_chars.html",
@@ -14,6 +14,15 @@ $tests = [
     'big5' => [
         'standard characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-tchinese/big5/big5_chars.html",
         'extended characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-tchinese/big5/big5_chars_extra.html",
+    ],
+    'euc-jp' => [
+        'characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-japanese/euc-jp/eucjp_chars.html",
+    ],
+    'iso-2022-jp' => [
+        'characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-japanese/iso-2022-jp/iso2022jp_chars.html",
+    ],
+    'shiftjis' => [
+        'characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-japanese/shift_jis/sjis_chars.html",
     ],
 ];
 
