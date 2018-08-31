@@ -57,6 +57,10 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
 
     public function testSeekThroughAString() {
         $class = $this->testedClass;
+        if (!$this->seekString) {
+            $this->markTestSkipped();
+            return;
+        }
         $input = $this->prepString($this->seekString);
         $off = $this->seekOffsets;
         $s = new $class($input);
@@ -134,6 +138,10 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
 
     public function testPeekAtCharacters() {
         $class = $this->testedClass;
+        if (!$this->seekString) {
+            $this->markTestSkipped();
+            return;
+        }
         $input = $this->prepString($this->seekString);
         $off = $this->seekOffsets;
         $codes = $this->seekCodes;
@@ -165,6 +173,10 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
 
     public function testPeekAtCodePoints() {
         $class = $this->testedClass;
+        if (!$this->seekString) {
+            $this->markTestSkipped();
+            return;
+        }
         $input = $this->prepString($this->seekString);
         $off = $this->seekOffsets;
         $codes = $this->seekCodes;
@@ -208,6 +220,11 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function testReplacementModes() {
+        if (!$this->brokenChar) {
+            // decoder for this encoding never produces errors
+            $this->assertTrue(true);
+            return;
+        }
         $class = $this->testedClass;
         $input = $this->prepString($this->brokenChar);
         // officially test replacement characters (already effectively tested by other tests)

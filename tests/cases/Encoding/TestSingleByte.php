@@ -188,11 +188,6 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::err
     */
     public function testReplacementModes(string $input = "", string $class = SingleByteEncoding::class) {
-        if (!$input) {
-            // if the encoding uses all 128 high byte values, this test is non-operative
-            $this->assertTrue(true);
-            return;
-        }
         $this->testedClass = $class;
         $this->brokenChar = $input;
         return parent::testReplacementModes();

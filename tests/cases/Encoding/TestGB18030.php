@@ -249,9 +249,10 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         ];
         foreach ($series as $test) {
             foreach ($test[0] as $a => $input) {
+                $class = $this->testedClass;
                 $char = hex2bin($input);
                 $exp = $test[1][$a];
-                $s = new GB18030($char);
+                $s = new $class($char);
                 $this->assertSame($exp, $s->nextCode(), "Sequence $input did not decode to $exp.");
                 $this->assertFalse($s->nextCode());
             }

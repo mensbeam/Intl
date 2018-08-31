@@ -24,6 +24,7 @@
         <file>cases/Encoding/TestSingleByte.php</file>
         <file>cases/Encoding/TestXUserDefined.php</file>
         <file>cases/Encoding/TestGB18030.php</file>
+        <file>cases/Encoding/TestBig5.php</file>
     </testsuite>
 </testsuites>
 </phpunit>

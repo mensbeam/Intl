@@ -92,10 +92,10 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
     }
 
     /**
-     * @coversNothing
+     * @covers MensBeam\Intl\Encoding\XUserDefined::err
     */
     public function testReplacementModes() {
-        $this->assertTrue(true);
+        return parent::testReplacementModes();
     }
 
     /**
