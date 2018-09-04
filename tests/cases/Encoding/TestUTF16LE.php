@@ -124,9 +124,9 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
             'sanity check' => ["6100 6200 6300 3100 3200 3300", [97, 98, 99, 49, 50, 51]],
             'mixed sample' => ["7A00 A200 346C 34D8 1EDD FFF8 FFDB FDDF FEFF", [122, 162, 27700, 119070, 63743, 1114109, 65534]],
             // unexpected EOF
-            'EOF in BMP character' => ["FF", [65533]],
-            'EOF after lead surrogate' => ["34D8", [65533]],
-            'EOF in trail surrogate' => ["34D8 1E", [65533]],
+            'EOF in BMP character' => ["0000 FF", [0, 65533]],
+            'EOF after lead surrogate' => ["0000 34D8", [0, 65533]],
+            'EOF in trail surrogate' => ["0000 34D8 1E", [0, 65533]],
             // invalid UTF-16 surrogates
             'lead surrogate without trail' => ["34D8 0000", [65533, 0]],
             'trail surrogate without lead' => ["1EDD 0000", [65533, 0]],
