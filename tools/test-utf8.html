@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<script>
+var sampleStrings = {
+    // control samples
+    'empty string': "",
+    'sanity check': "61 62 63 31 32 33",
+    'multibyte control': "E5 8F A4 E6 B1 A0 E3 82 84 E8 9B 99 E9 A3 9B E3 81 B3 E8 BE BC E3 82 80 E6 B0 B4 E3 81 AE E9 9F B3",
+    'mixed sample': "7A C2 A2 E6 B0 B4 F0 9D 84 9E EF A3 BF F4 8F BF BD EF BF BE",
+    // various invalid sequences
+    'invalid code': "FF",
+    'ends early': "C0",
+    'ends early 2': "E0",
+    'invalid trail': "C0 00",
+    'invalid trail 2': "C0 C0",
+    'invalid trail 3': "E0 00",
+    'invalid trail 4': "E0 C0",
+    'invalid trail 5': "E0 80 00",
+    'invalid trail 6': "E0 80 C0",
+    '> 0x10FFFF': "FC 80 80 80 80 80",
+    'obsolete lead byte': "FE 80 80 80 80 80",
+    'overlong U+0000 - 2 bytes': "C0 80",
+    'overlong U+0000 - 3 bytes': "E0 80 80",
+    'overlong U+0000 - 4 bytes': "F0 80 80 80",
+    'overlong U+0000 - 5 bytes': "F8 80 80 80 80",
+    'overlong U+0000 - 6 bytes': "FC 80 80 80 80 80",
+    'overlong U+007F - 2 bytes': "C1 BF",
+    'overlong U+007F - 3 bytes': "E0 81 BF",
+    'overlong U+007F - 4 bytes': "F0 80 81 BF",
+    'overlong U+007F - 5 bytes': "F8 80 80 81 BF",
+    'overlong U+007F - 6 bytes': "FC 80 80 80 81 BF",
+    'overlong U+07FF - 3 bytes': "E0 9F BF",
+    'overlong U+07FF - 4 bytes': "F0 80 9F BF",
+    'overlong U+07FF - 5 bytes': "F8 80 80 9F BF",
+    'overlong U+07FF - 6 bytes': "FC 80 80 80 9F BF",
+    'overlong U+FFFF - 4 bytes': "F0 8F BF BF",
+    'overlong U+FFFF - 5 bytes': "F8 80 8F BF BF",
+    'overlong U+FFFF - 6 bytes': "FC 80 80 8F BF BF",
+    'overlong U+10FFFF - 5 bytes': "F8 84 8F BF BF",
+    'overlong U+10FFFF - 6 bytes': "FC 80 84 8F BF BF",
+    // UTF-16 surrogates
+    'lead surrogate': "ED A0 80",
+    'trail surrogate': "ED B0 80",
+    'surrogate pair': "ED A0 80 ED B0 80",
+    // self-sync edge cases
+    'trailing continuation': "0A 80 80",
+    'trailing continuation 2': "E5 8F A4 80",
+};
+var sampleCharacters = {
+    'U+007A':   0x007A,
+    'U+00A2':   0x00A2,
+    'U+6C34':   0x6C34,
+    'U+1D11E':  0x1D11E,
+    'U+F8FF':   0xF8FF,
+    'U+10FFFD': 0x10FFFD,
+    'U+FFFE':   0xFFFE,
+    '-1':       -1,
+    '0x110000': 0x110000,
+};
+var seekCodePoints = [
+    0x007A,
+    0x00A2,
+    0x6C34,
+    0x1D11E,
+    0xF8FF,
+    0x10FFFD,
+    0xFFFE,
+];
+</script>
+<script src="test.js"></script>

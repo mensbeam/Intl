@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<meta charset=utf-16>
+<script>
+var sampleStrings = {
+    // control samples
+    'empty string': "",
+    'sanity check': "6100 6200 6300 3100 3200 3300",
+    'mixed sample': "7A00 A200 346C 34D8 1EDD FFF8 FFDB FDDF FEFF",
+    // unexpected EOF
+    'EOF in BMP character': "0000 FF",
+    'EOF after lead surrogate': "0000 34D8",
+    'EOF in trail surrogate': "0000 34D8 1E",
+    // invalid UTF-16 surrogates
+    'lead surrogate without trail': "34D8 0000",
+    'trail surrogate without lead': "1EDD 0000",
+    'double lead surrogate': "34D8 34D8 1EDD",
+    'double trail surrogate': "34D8 1EDD 1EDD",
+};
+</script>
+<script src="test.js"></script>

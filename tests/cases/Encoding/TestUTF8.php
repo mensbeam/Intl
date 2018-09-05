@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\UTF8;
+use MensBeam\Intl\Encoding\Encoding;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -127,21 +128,26 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     public function provideCodePoints() {
-        $series = [
-            "122"     => [122,     "7A"],
-            "162"     => [162,     "C2 A2"],
-            "27700"   => [27700,   "E6 B0 B4"],
-            "119070"  => [119070,  "F0 9D 84 9E"],
-            "63743"   => [63743,   "EF A3 BF"],
-            "1114109" => [1114109, "F4 8F BF BD"],
-            "65534"   => [65534,   "EF BF BE"],
-            "-1"      => [-1,      new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
-            "1114112" => [1114112, new EncoderException("", UTF8::E_INVALID_CODE_POINT)],
+        return [
+            'U+007A (HTML)'  => [false, 0x7A, "7A"],
+            'U+007A (fatal)' => [true,  0x7A, "7A"],
+            'U+00A2 (HTML)'  => [false, 0xA2, "C2 A2"],
+            'U+00A2 (fatal)' => [true,  0xA2, "C2 A2"],
+            'U+6C34 (HTML)'  => [false, 0x6C34, "E6 B0 B4"],
+            'U+6C34 (fatal)' => [true,  0x6C34, "E6 B0 B4"],
+            'U+1D11E (HTML)'  => [false, 0x1D11E, "F0 9D 84 9E"],
+            'U+1D11E (fatal)' => [true,  0x1D11E, "F0 9D 84 9E"],
+            'U+F8FF (HTML)'  => [false, 0xF8FF, "EF A3 BF"],
+            'U+F8FF (fatal)' => [true,  0xF8FF, "EF A3 BF"],
+            'U+10FFFD (HTML)'  => [false, 0x10FFFD, "F4 8F BF BD"],
+            'U+10FFFD (fatal)' => [true,  0x10FFFD, "F4 8F BF BD"],
+            'U+FFFE (HTML)'  => [false, 0xFFFE, "EF BF BE"],
+            'U+FFFE (fatal)' => [true,  0xFFFE, "EF BF BE"],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
         ];
-        foreach ($series as $name => $test) {
-            yield "$name (fatal)" => array_merge([true], $test);
-            yield "$name (HTML)"  => array_merge([false], $test);
-        }
     }
 
     public function provideStrings() {

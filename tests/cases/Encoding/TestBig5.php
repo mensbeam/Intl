@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\Big5;
+use MensBeam\Intl\Encoding\Encoding;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {

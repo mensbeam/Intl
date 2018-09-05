@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<meta charset=gb18030>
+<script>
+var sampleStrings = {
+    'empty string': "",
+    // valid single characters
+    'sanity check': "40",
+    'special case for 0x80': "80",
+    'four-byte special case': "81 35 F4 37",
+    'two-byte character': "A8 4E",
+    'four-byte character': "82 31 A2 37",
+    // cut sequences
+    'EOF after first byte': "82",
+    'EOF after second byte': "82 30",
+    'EOF after third byte': "82 30 81",
+    // invalid sequences
+    'bad first byte': "FF 35 F4 37",
+    'bad second byte': "81 FF F4 37",
+    'bad third byte': "81 35 FF 37",
+    'bad fourth byte': "81 35 F4 FF",
+    'control first byte': "00 35 F4 37",
+    'control second byte': "81 00 F4 37",
+    'control third byte': "81 35 00 37",
+    'control fourth byte': "81 35 F4 00",
+    // invalid sequences with clean EOF
+    'bad first byte (padded)': "FF 35 F4 37 00 00 00 00",
+    'bad second byte (padded)': "81 FF F4 37 00 00 00 00",
+    'bad third byte (padded)': "81 35 FF 37 00 00 00 00",
+    'bad fourth byte (padded)': "81 35 F4 FF 00 00 00 00",
+    'control first byte (padded)': "00 35 F4 37 00 00 00 00",
+    'control second byte (padded)': "81 00 F4 37 00 00 00 00",
+    'control third byte (padded)': "81 35 00 37 00 00 00 00",
+    'control fourth byte (padded)': "81 35 F4 00 00 00 00 00",
+    // out-of-range sequences
+    'void sequence': "84 32 A4 39",
+    'void sequence 2': "FE 39 FE 39",
+    // backward seeking tests
+    'seek test 1': "81 81 81 30",
+    'seek test 2': "81 81 80",
+    'seek test 3': "81 81 00",
+    'seek test 4': "81 81 81 00",
+    'seek test 5': "81 30 30 30",
+    'seek test 6': "81 30 81 81",
+    'seek test 7': "30 30 81 81",
+    'seek test 8': "F8 83 FE 80",
+    'seek test 1 (padded)': "00 00 00 00 81 81 81 30 00 00 00 00",
+    'seek test 2 (padded)': "00 00 00 00 81 81 80 00 00 00 00",
+    'seek test 3 (padded)': "00 00 00 00 81 81 00 00 00 00 00",
+    'seek test 4 (padded)': "00 00 00 00 81 81 81 00 00 00 00 00",
+    'seek test 5 (padded)': "00 00 00 00 81 30 30 30 00 00 00 00",
+    'seek test 6 (padded)': "00 00 00 00 81 30 81 81 00 00 00 00",
+    'seek test 7 (padded)': "00 00 00 00 30 30 81 81 00 00 00 00",
+    'seek test 8 (padded)': "00 00 00 00 F8 83 FE 80 00 00 00 00",
+};
+var sampleCharacters = {
+    'U+0064':   0x64,
+    'U+20AC':   0x20AC,
+    'U+2164':   0x2164,
+    'U+3A74':   0x3A74,
+    'U+E7C7':   0xE7C7,
+    'U+1D11E':  0x1D11E,
+    'U+E5E5':   0xE5E5,
+    '-1':       -1,
+    '0x110000': 0x110000,
+};
+var seekCodePoints = [
+    0x007A,
+    0x00A2,
+    0x6C34,
+    0x1D11E,
+    0xF8FF,
+    0x10FFFD,
+    0xFFFE,
+];
+</script>
+<script src="test.js"></script>

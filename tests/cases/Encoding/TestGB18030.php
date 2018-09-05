@@ -8,6 +8,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\GBK;
 use MensBeam\Intl\Encoding\GB18030;
+use MensBeam\Intl\Encoding\Encoding;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -136,48 +137,53 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     public function provideCodePoints() {
         // bytes confirmed using Firefox
-        $series = [
-            "GBK ASCII (fatal)"        => [GBK::class,     true,  0x64,     "64"],
-            "GBK 0x20AC (fatal)"       => [GBK::class,     true,  0x20AC,   "80"],
-            "GBK 0x2164 (fatal)"       => [GBK::class,     true,  0x2164,   "A2 F5"],
-            "GBK 0x3A74 (fatal)"       => [GBK::class,     true,  0x3A74,   new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
-            "GBK 0xE7C7 (fatal)"       => [GBK::class,     true,  0xE7C7,   new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
-            "GBK 0x1D11E (fatal)"      => [GBK::class,     true,  0x1D11E,  new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
-            "GBK 0xE5E5 (fatal)"       => [GBK::class,     true,  0xE5E5,   new EncoderException("", GBK::E_UNAVAILABLE_CODE_POINT)],
-            "GBK -1 (fatal)"           => [GBK::class,     true,  -1,       new EncoderException("", GBK::E_INVALID_CODE_POINT)],
-            "GBK 0x110000 (fatal)"     => [GBK::class,     true,  0x110000, new EncoderException("", GBK::E_INVALID_CODE_POINT)],
-            "GB18030 ASCII (fatal)"    => [GB18030::class, true,  0x64,     "64"],
-            "GB18030 0x20AC (fatal)"   => [GB18030::class, true,  0x20AC,   "A2 E3"],
-            "GB18030 0x2164 (fatal)"   => [GB18030::class, true,  0x2164,   "A2 F5"],
-            "GB18030 0x3A74 (fatal)"   => [GB18030::class, true,  0x3A74,   "82 31 97 30"],
-            "GB18030 0xE7C7 (fatal)"   => [GB18030::class, true,  0xE7C7,   "81 35 F4 37"],
-            "GB18030 0x1D11E (fatal)"  => [GB18030::class, true,  0x1D11E,  "94 32 BE 34"],
-            "GB18030 0xE5E5 (fatal)"   => [GB18030::class, true,  0xE5E5,   new EncoderException("", GB18030::E_UNAVAILABLE_CODE_POINT)],
-            "GB18030 -1 (fatal)"       => [GB18030::class, true,  -1,       new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
-            "GB18030 0x110000 (fatal)" => [GB18030::class, true,  0x110000, new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
-            "GBK ASCII (HTML)"         => [GBK::class,     false, 0x64,     "64"],
-            "GBK 0x20AC (HTML)"        => [GBK::class,     false, 0x20AC,   "80"],
-            "GBK 0x2164 (HTML)"        => [GBK::class,     false, 0x2164,   "A2 F5"],
-            "GBK 0x3A74 (HTML)"        => [GBK::class,     false, 0x3A74,   bin2hex("&#".(0x3A74).";")],
-            "GBK 0xE7C7 (HTML)"        => [GBK::class,     false, 0xE7C7,   bin2hex("&#".(0xE7C7).";")],
-            "GBK 0x1D11E (HTML)"       => [GBK::class,     false, 0x1D11E,  bin2hex("&#".(0x1D11E).";")],
-            "GBK 0xE5E5 (HTML)"        => [GBK::class,     false, 0xE5E5,   bin2hex("&#".(0xE5E5).";")],
-            "GBK -1 (HTML)"            => [GBK::class,     false, -1,       new EncoderException("", GBK::E_INVALID_CODE_POINT)],
-            "GBK 0x110000 (HTML)"      => [GBK::class,     false, 0x110000, new EncoderException("", GBK::E_INVALID_CODE_POINT)],
-            "GB18030 ASCII (HTML)"     => [GB18030::class, false, 0x64,     "64"],
-            "GB18030 0x20AC (HTML)"    => [GB18030::class, false, 0x20AC,   "A2 E3"],
-            "GB18030 0x2164 (HTML)"    => [GB18030::class, false, 0x2164,   "A2 F5"],
-            "GB18030 0x3A74 (HTML)"    => [GB18030::class, false, 0x3A74,   "82 31 97 30"],
-            "GB18030 0xE7C7 (HTML)"    => [GB18030::class, false, 0xE7C7,   "81 35 F4 37"],
-            "GB18030 0x1D11E (HTML)"   => [GB18030::class, false, 0x1D11E,  "94 32 BE 34"],
-            "GB18030 0xE5E5 (HTML)"    => [GB18030::class, false, 0xE5E5,   bin2hex("&#".(0xE5E5).";")],
-            "GB18030 -1 (HTML)"        => [GB18030::class, false, -1,       new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
-            "GB18030 0x110000 (HTML)"  => [GB18030::class, false, 0x110000, new EncoderException("", GB18030::E_INVALID_CODE_POINT)],
+        $series_gb18030 = [
+            'U+0064 (HTML)'  => [false, 0x64, "64"],
+            'U+0064 (fatal)' => [true,  0x64, "64"],
+            'U+20AC (HTML)'  => [false, 0x20AC, "A2 E3"],
+            'U+20AC (fatal)' => [true,  0x20AC, "A2 E3"],
+            'U+2164 (HTML)'  => [false, 0x2164, "A2 F5"],
+            'U+2164 (fatal)' => [true,  0x2164, "A2 F5"],
+            'U+3A74 (HTML)'  => [false, 0x3A74, "82 31 97 30"],
+            'U+3A74 (fatal)' => [true,  0x3A74, "82 31 97 30"],
+            'U+E7C7 (HTML)'  => [false, 0xE7C7, "81 35 F4 37"],
+            'U+E7C7 (fatal)' => [true,  0xE7C7, "81 35 F4 37"],
+            'U+1D11E (HTML)'  => [false, 0x1D11E, "94 32 BE 34"],
+            'U+1D11E (fatal)' => [true,  0x1D11E, "94 32 BE 34"],
+            'U+E5E5 (HTML)'  => [false, 0xE5E5, bin2hex("&#58853;")],
+            'U+E5E5 (fatal)' => [true,  0xE5E5, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            'U+110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            'U+110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
         ];
-        foreach ($series as $name => $test) {
-            $class = array_shift($test);
-            array_push($test, $class);
-            yield $name => $test;
+        $series_gbk = [
+            'U+0064 (HTML)'  => [false, 0x64, "64"],
+            'U+0064 (fatal)' => [true,  0x64, "64"],
+            'U+20AC (HTML)'  => [false, 0x20AC, "80"],
+            'U+20AC (fatal)' => [true,  0x20AC, "80"],
+            'U+2164 (HTML)'  => [false, 0x2164, "A2 F5"],
+            'U+2164 (fatal)' => [true,  0x2164, "A2 F5"],
+            'U+3A74 (HTML)'  => [false, 0x3A74, bin2hex("&#14964;")],
+            'U+3A74 (fatal)' => [true,  0x3A74, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+E7C7 (HTML)'  => [false, 0xE7C7, bin2hex("&#59335;")],
+            'U+E7C7 (fatal)' => [true,  0xE7C7, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+1D11E (HTML)'  => [false, 0x1D11E, bin2hex("&#119070;")],
+            'U+1D11E (fatal)' => [true,  0x1D11E, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+E5E5 (HTML)'  => [false, 0xE5E5, bin2hex("&#58853;")],
+            'U+E5E5 (fatal)' => [true,  0xE5E5, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            'U+110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            'U+110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+        ];
+        foreach ($series_gb18030 as $name => $test) {
+            array_push($test, GB18030::class);
+            yield "gb18030 $name" => $test;
+        }
+        foreach ($series_gbk as $name => $test) {
+            array_push($test, GBK::class);
+            yield "GBK $name" => $test;
         }
     }
 
@@ -232,7 +238,6 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'seek test 6 (padded)' => ["00 00 00 00 81 30 81 81 00 00 00 00", [0, 0, 0, 0, 65533, 48, 20118, 0, 0, 0, 0]],
             'seek test 7 (padded)' => ["00 00 00 00 30 30 81 81 00 00 00 00", [0, 0, 0, 0, 48, 48, 20118, 0, 0, 0, 0]],
             'seek test 8 (padded)' => ["00 00 00 00 F8 83 FE 80 00 00 00 00", [0, 0, 0, 0, 40229, 18211, 0, 0, 0, 0]],
-
         ];
     }
 
