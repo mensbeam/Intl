@@ -28,7 +28,6 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 5, 7, 11, 15, 19, 23];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
-    protected $lowerA = "a";
 
     public function tearDown() {
         $this->testedClass = GB18030::class;

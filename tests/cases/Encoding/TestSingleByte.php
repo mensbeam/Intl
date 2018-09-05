@@ -80,7 +80,6 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
     /* This string is supposed to contain an invalid character sequence sandwiched between two null characters; this is different for each single-byte encoding (and many do not have invalid characters) */
     protected $brokenChar = "";
-    protected $lowerA = "a";
 
     /**
      * @dataProvider provideCodePoints

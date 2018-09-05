@@ -27,7 +27,6 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 3, 6, 10, 13, 17, 20];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
-    protected $lowerA = "a";
 
     /**
      * @dataProvider provideCodePoints

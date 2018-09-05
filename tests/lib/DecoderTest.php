@@ -9,6 +9,7 @@ namespace MensBeam\Intl\Test;
 use MensBeam\Intl\Encoding\DecoderException;
 
 abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
+    protected $lowerA = "a";
 
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         $class = $this->testedClass;

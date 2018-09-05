@@ -3,7 +3,7 @@
 window.out = document.createElement("pre");
 document.documentElement.appendChild(out);
 
-var encoding = document.getElementsByTagName("meta").charset;
+var encoding = document.getElementsByTagName("meta")[0].getAttribute("charset");
 
 function encodeCodePoint(code, fatal) {
     if (code < 0 || code > 0x10FFFF) {
@@ -132,6 +132,7 @@ if(typeof seekCodePoints != 'undefined') {
     for (let char of stats) {
         offs.push(char.offset);
     }
+    offs.push(end[1]);
     offs = 'protected $seekOffsets = [' + offs.join(", ") + "];\n";
     // output the results
     out.appendChild(document.createTextNode(comment));

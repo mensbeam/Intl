@@ -16,7 +16,6 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
     protected $seekOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
     /* This string is supposed to contain an invalid character sequence sandwiched between two null characters, but x-user-defined has no invalid characters */
     protected $brokenChar = "";
-    protected $lowerA = "a";
 
     /**
      * @dataProvider provideStrings
