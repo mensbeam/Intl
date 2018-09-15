@@ -15,6 +15,9 @@ $tests = [
         'standard characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-tchinese/big5/big5_chars.html",
         'extended characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-tchinese/big5/big5_chars_extra.html",
     ],
+    'euc-kr' => [
+        'characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-korean/euc-kr/euckr_chars.html",
+    ],
     'euc-jp' => [
         'characters' => "https://raw.githubusercontent.com/web-platform-tests/wpt/master/encoding/legacy-mb-japanese/euc-jp/eucjp_chars.html",
     ],

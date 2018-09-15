@@ -25,6 +25,7 @@
         <file>cases/Encoding/TestXUserDefined.php</file>
         <file>cases/Encoding/TestGB18030.php</file>
         <file>cases/Encoding/TestBig5.php</file>
+        <file>cases/Encoding/TestEUCKR.php</file>
     </testsuite>
 </testsuites>
 </phpunit>

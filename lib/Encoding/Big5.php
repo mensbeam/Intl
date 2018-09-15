@@ -144,7 +144,6 @@ class Big5 implements StatelessEncoding {
             } else { // the second byte is part of a two-byte sequence, but it's unclear if it's the lead or trail byte
                 $start = $this->posByte + 2;
                 $pos = $this->posByte;
-                $b = $b2;
                 // go back bytes until a definite trail byte or start of string
                 while ($pos > 0) {
                     $b = ord(@$this->string[--$pos]);
