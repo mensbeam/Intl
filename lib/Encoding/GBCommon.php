@@ -177,11 +177,11 @@ abstract class GBCommon implements StatelessEncoding {
                 $start = $this->posByte + 2;
                 // go back bytes until a definite trail byte or start of string
                 while ($this->posByte > 0) {
+                    $b2 = ord(@$this->string[--$this->posByte]);
                     if ($b2 < 0x81 || $b2 == 0xFF) {
                         $this->posByte++;
                         break;
                     }
-                    $b2 = ord(@$this->string[--$this->posByte]);
                 }
                 // if the number of ambiguous bytes is odd, the character is a single-byte character, otherwise it is double-byte
                 $this->posByte = $start - (($start - $this->posByte) % 2 ? 1 : 2);
