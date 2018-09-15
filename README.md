@@ -9,6 +9,7 @@ Included here is a partial suite of WHATWG-compatible seekable string decoders w
 * gb18030
 * GBK
 * Big5
+* EUC-KR
 * all single-byte encodings
 * x-user-defined
 

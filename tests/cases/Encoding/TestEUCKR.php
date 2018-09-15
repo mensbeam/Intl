@@ -12,11 +12,21 @@ use MensBeam\Intl\Encoding\EncoderException;
 
 class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = EUCKR::class;
-    protected $seekString = "";
-    protected $seekCodes = [];
-    protected $seekOffsets = [];
+    /*
+        Char 0 U+007A   (1 byte)  Offset 0
+        Char 1 U+ACF2   (2 bytes) Offset 1
+        Char 2 U+0020   (1 byte)  Offset 3
+        Char 3 U+6C34   (2 bytes) Offset 4
+        Char 4 U+0391   (2 bytes) Offset 6
+        Char 5 U+03C9   (2 bytes) Offset 8
+        Char 6 U+002A   (1 byte)  Offset 10
+        End of string at char 7, offset 11
+    */
+    protected $seekString = "7A 81E9 20 E2A9 A5C1 A5F8 2A";
+    protected $seekCodes = [0x7A, 0xACF2, 0x20, 0x6C34, 0x391, 0x3C9, 0x2A];
+    protected $seekOffsets = [0, 1, 3, 4, 6, 8, 10, 11];
     /* This string contains an invalid character sequence sandwiched between two null characters */
-    protected $brokenChar = "";
+    protected $brokenChar = "00 FF 00";
 
     /**
      * @dataProvider provideCodePoints
@@ -118,11 +128,33 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     public function provideCodePoints() {
         return [
+            'U+0064 (HTML)'    => [false, 0x64, "64"],
+            'U+0064 (fatal)'   => [true,  0x64, "64"],
+            'U+00CA (HTML)'    => [false, 0xCA, bin2hex("&#202;")],
+            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+ACF2 (HTML)'    => [false, 0xACF2, "81 E9"],
+            'U+ACF2 (fatal)'   => [true,  0xACF2, "81 E9"],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
         ];
     }
 
     public function provideStrings() {
         return [
+            'empty string' => ["", []],
+            'sanity check' => ["40", [64]],
+            'two-byte character' => ["D7 D7", [21033]],
+            'EOF after first byte' => ["D7", [65533]],
+            'low byte after first byte' => ["D7 39", [65533, 57]],
+            '0x80 as first byte' => ["80 D7 00", [65533, 65533, 0]],
+            '0xFF as first byte' => ["FF D7 00", [65533, 65533, 0]],
+            '0x7F after first byte' => ["D7 7F", [65533, 127]],
+            '0xFF after first byte' => ["D7 FF", [65533]],
+            'non-character' => ["A5 DC", [65533]],
+            'mixed string' => ["7A D7 AA A4 F4 88 62 88 A5", [122, 30267, 12676, 45714, 45802]],
+            'mixed string 2' => ["62 D7 D7 D7 D7 62", [98, 21033, 21033, 98]],
         ];
     }
 

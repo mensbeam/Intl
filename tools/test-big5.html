@@ -9,9 +9,9 @@ var sampleStrings = {
     // invalid sequences
     'EOF after first byte': "D7",
     'low byte after first byte': "D7 39",
-    '0x80 as first byte': "80 D7",
-    '0xFF as first byte': "FF D7",
-    'invalid high byte as first byte': "81 D7",
+    '0x80 as first byte': "80 D7 00",
+    '0xFF as first byte': "FF D7 00",
+    'invalid high byte as first byte': "81 D7 00",
     '0x7F after first byte': "D7 7F",
     '0xFF after first byte': "D7 FF",
     'invalid high byte after first byte': "D7 81",

@@ -107,7 +107,7 @@ class EUCKR implements StatelessEncoding {
             $distance--;
             $this->posChar--;
         }
-        while ($distance > 0 && ($this->posByte > 0 || $this->bufferedCode > 0)) {
+        while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
             // go back one byte

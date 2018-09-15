@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<meta charset=euc-kr>
+<script>
+var sampleStrings = {
+    'empty string': "",
+    // valid single characters
+    'sanity check': "40",
+    'two-byte character': "D7 D7",
+    // invalid sequences
+    'EOF after first byte': "D7",
+    'low byte after first byte': "D7 39",
+    '0x80 as first byte': "80 D7 00",
+    '0xFF as first byte': "FF D7 00",
+    '0x7F after first byte': "D7 7F",
+    '0xFF after first byte': "D7 FF",
+    'non-character': "A5 DC",
+    // mixed string
+    'mixed string': "7A D7 AA A4 F4 88 62 88 A5",
+    'mixed string 2': "62 D7 D7 D7 D7 62",
+};
+var sampleCharacters = {
+    'U+0064':   0x64,
+    'U+00CA':   0x00CA,
+    'U+ACF2':   0xACF2,
+    '-1':       -1,
+    '0x110000': 0x110000,
+};
+var seekCodePoints = [
+    0x007A,
+    0xACF2,
+    0x0020,
+    0x6C34,
+    0x0391,
+    0x03C9,
+    0x002A,
+];
+</script>
+<script src="test.js"></script>
