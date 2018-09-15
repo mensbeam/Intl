@@ -32,12 +32,12 @@ class TestUTF16BE extends TestUTF16LE {
         foreach (parent::provideStrings() as $name => $test) {
             list($string, $codes) = $test;
             $words = explode(" ", $string);
-            foreach($words as $a => $word) {
+            foreach ($words as $a => $word) {
                 if (strlen($word) == 4) {
                     $words[$a] = $word[2].$word[3].$word[0].$word[1];
                 }
             }
-            $string = implode(" ",$words);
+            $string = implode(" ", $words);
             yield $name => [$string, $codes];
         }
     }

@@ -181,5 +181,4 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
             }
         }
     }
-
 }
