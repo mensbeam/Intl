@@ -10,9 +10,9 @@ function encodeCodePoint(code, fatal) {
         return 'new EncoderException("", Encoding::E_INVALID_CODE_POINT)';
     } else {
         var l = document.createElement("a");
-        l.href = "http://example.com/?" + String.fromCodePoint(code);
+        l.href = "http://example.com/?" + String.fromCodePoint(code) + "a";
         var bytes = [];
-        let url = l.search.substr(1);
+        let url = l.search.substr(1, l.search.length - 2);
         for (let a = 0; a < url.length; a++) {
             if ((url.charAt(a) == "%" && url.substr(a, 6) == "%26%23") || url.charAt(a) == "&") {
                 // character cannot be encoded
