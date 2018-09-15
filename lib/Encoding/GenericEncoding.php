@@ -81,7 +81,7 @@ trait GenericEncoding {
             return $distance;
         } elseif ($distance < 0) {
             $distance = abs($distance);
-            if (!$this->posByte) {
+            if (!$this->posChar) {
                 return $distance;
             }
             $mode = $this->errMode;

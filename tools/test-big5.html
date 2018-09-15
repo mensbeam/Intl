@@ -5,10 +5,50 @@ var sampleStrings = {
     'empty string': "",
     // valid single characters
     'sanity check': "40",
+    'two-byte character': "D7 D7",
+    // invalid sequences
+    'EOF after first byte': "D7",
+    'low byte after first byte': "D7 39",
+    '0x80 as first byte': "80 D7",
+    '0xFF as first byte': "FF D7",
+    'invalid high byte as first byte': "81 D7",
+    '0x7F after first byte': "D7 7F",
+    '0xFF after first byte': "D7 FF",
+    'invalid high byte after first byte': "D7 81",
+    'non-character': "88 66",
+    // double sequences
+    'double-characters low': "88 62 88 64",
+    'double-characters high': "88 A3 88 A5",
+    // mixed string
+    'mixed string': "7A D7 AA A4 F4 88 62 88 A5",
+    'mixed string 2': "62 D7 D7 D7 D7 62",
 };
 var sampleCharacters = {
+    'U+0064':   0x64,
+    'U+00CA':   0xCA,
+    'U+3007':   0x3007,
+    '-1':       -1,
+    '0x110000': 0x110000,
 };
 var seekCodePoints = [
+/*
+    Char 0 U+007A   (1 byte)  Offset 0
+    Char 1 U+86CC   (2 bytes) Offset 1
+    Char 2 U+6C34   (2 bytes) Offset 3
+    Char 3 U+00CA   (0 bytes) Offset 5
+    Char 4 U+0304   (2 bytes) Offset 5
+    Char 5 U+00EA   (0 bytes) Offset 7
+    Char 6 U+030C   (2 bytes) Offset 7
+    End of string at char 7, offset 9
+*/
+    0x007A,
+    0x86CC,
+    0x6C34,
+    // these four should be replaced with bytes 8862 88A5, which together produce four characters
+    0x00CA,
+    0x0304,
+    0x00EA,
+    0x030C,
 ];
 </script>
 <script src="test.js"></script>

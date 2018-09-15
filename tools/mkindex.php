@@ -88,8 +88,41 @@ function big5(string $label) {
     1166 => [0x00EA, 0x030C],
 ]
 ARRAY_LITERAL;
+    // compile an encoder table
+    // see https://encoding.spec.whatwg.org/#index-big5-pointer for particulars
+    // first get the decoder table as an array
+    $table = eval("return $codes;");
+    // filter out the low end of the table containing Hong Kong Supplement characters, which are not used during encoding
+    $table = array_filter($table, function($key) {
+        return (!($key < ((0xA1 - 0x81) * 157)));
+    }, \ARRAY_FILTER_USE_KEY);
+    // search for each unique code point's pointer in the table, the first for some, the last for a specific set
+    $enc = [];
+    $a = 0;
+    $points = array_unique($table);
+    sort($points);
+    foreach ($points as $point) {
+        // find the correct pointer
+        if (in_array($point, [0x2550, 0x255E, 0x256A, 0x5341, 0x5345])) {
+            $pointer = array_search($point, array_reverse($table, true));
+        } else {
+            $pointer = array_search($point, $table);
+        }
+        // step the output array's key
+        if ($a == $point) {
+            $key = "";
+        } else {
+            $a = $point;
+            $key = "$point=>";
+        }
+        $a++;
+        $enc[] = "$key$pointer";
+    }
+    // compose the encoder table literal
+    $enc = "[".implode(",", $enc)."]";
     echo "const TABLE_CODES = $codes;\n";
     echo "const TABLE_DOUBLES = $specials;\n";
+    echo "const TABLE_ENC = $enc;\n";
 }
 
 function euckr(string $label) {
@@ -143,7 +176,7 @@ function make_decoder_char_array(array $entries): string {
     return "[".implode(",", $out)."]";
 }
 
-// this is only used for single-byte encoders; other encoders instead flip their decoder arrays
+// this is only used for single-byte encoders; other encoders instead flip their decoder arrays or use custom tables
 function make_encoder_array(array $entries): string {
     $out = [];
     foreach ($entries as $match) {

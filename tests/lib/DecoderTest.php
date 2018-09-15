@@ -47,9 +47,14 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         $s = new $class($input);
         $exp = array_reverse($exp);
         $act = [];
-        while ($s->nextCode() !== false);
-        while ($s->posByte()) {
-            $s->seek(-1);
+        $pos = 0;
+        while ($s->nextCode() !== false) {
+            $this->assertSame(++$pos, $s->posChar());
+        }
+        $this->assertSame(sizeof($exp), $pos);
+        while ($s->posChar()) {
+            $this->assertSame(0, $s->seek(-1));
+            $this->assertSame(--$pos, $s->posChar());
             $act[] = $s->nextCode();
             $s->seek(-1);
         }
@@ -245,7 +250,8 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         }
         $this->assertSame(2, $s->posChar());
         $this->assertSame(0x00, $s->nextCode());
-        $s->seek(-2);
+        $this->assertSame(3, $s->posChar());
+        $this->assertSame(0, $s->seek(-2));
         $this->assertSame(1, $s->posChar());
         try {
             $p = $s->peekCode();

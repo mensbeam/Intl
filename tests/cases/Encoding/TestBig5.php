@@ -12,12 +12,21 @@ use MensBeam\Intl\Encoding\EncoderException;
 
 class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = Big5::class;
-    protected $seekString = "";
-    protected $seekCodes = [];
-    protected $seekOffsets = [];
+    /*
+        Char 0 U+007A   (1 byte)  Offset 0
+        Char 1 U+86CC   (2 bytes) Offset 1
+        Char 2 U+6C34   (2 bytes) Offset 3
+        Char 3 U+00CA   (0 bytes) Offset 5
+        Char 4 U+0304   (2 bytes) Offset 5
+        Char 5 U+00EA   (0 bytes) Offset 7
+        Char 6 U+030C   (2 bytes) Offset 7
+        End of string at char 7, offset 9
+    */
+    protected $seekString = "7A D7AA A4F4 8862 88A5";
+    protected $seekCodes = [0x7A, 0x86CC, 0x6C34, 0xCA, 0x304, 0xEA, 0x30C];
+    protected $seekOffsets = [0, 1, 3, 5, 5, 7, 7, 9];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
-    protected $lowerA = "a";
 
     /**
      * @dataProvider provideCodePoints
@@ -118,21 +127,38 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     public function provideCodePoints() {
-        return [];
-        $series = [
+        return [
+            'U+0064 (HTML)'    => [false, 0x64, "64"],
+            'U+0064 (fatal)'   => [true,  0x64, "64"],
+            'U+00CA (HTML)'    => [false, 0xCA, bin2hex("&#202;")],
+            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+3007 (HTML)'    => [false, 0x3007, "C6 E2"],
+            'U+3007 (fatal)'   => [true,  0x3007, "C6 E2"],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
         ];
-        foreach ($series as $name => $test) {
-            yield "$name (fatal)" => array_merge([true], $test);
-            yield "$name (HTML)"  => array_merge([false], $test);
-        }
     }
 
     public function provideStrings() {
-        return [];
         return [
-            // control samples
             'empty string' => ["", []],
-            'sanity check' => ["61 62 63 31 32 33", [97, 98, 99, 49, 50, 51]],
+            'sanity check' => ["40", [64]],
+            'two-byte character' => ["D7 D7", [36290]],
+            'EOF after first byte' => ["D7", [65533]],
+            'low byte after first byte' => ["D7 39", [65533, 57]],
+            '0x80 as first byte' => ["80 D7", [65533, 65533]],
+            '0xFF as first byte' => ["FF D7", [65533, 65533]],
+            'invalid high byte as first byte' => ["81 D7", [65533]],
+            '0x7F after first byte' => ["D7 7F", [65533, 127]],
+            '0xFF after first byte' => ["D7 FF", [65533]],
+            'invalid high byte after first byte' => ["D7 81", [65533]],
+            'double-characters low' => ["88 62 88 64", [202, 772, 202, 780]],
+            'double-characters high' => ["88 A3 88 A5", [234, 772, 234, 780]],
+            'mixed string' => ["7A D7 AA A4 F4 88 62 88 A5", [122, 34508, 27700, 202, 772, 234, 780]],
+            'mixed string 2' => ["62 D7 D7 D7 D7 62", [98, 36290, 36290, 98]],
+            'broken string' => ["00 FF 00", [0, 65533, 0]],
         ];
     }
 
