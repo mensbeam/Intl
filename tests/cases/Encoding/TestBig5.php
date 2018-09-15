@@ -154,11 +154,11 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
             '0x7F after first byte' => ["D7 7F", [65533, 127]],
             '0xFF after first byte' => ["D7 FF", [65533]],
             'invalid high byte after first byte' => ["D7 81", [65533]],
+            'broken string' => ["00 FF 00", [0, 65533, 0]],
             'double-characters low' => ["88 62 88 64", [202, 772, 202, 780]],
             'double-characters high' => ["88 A3 88 A5", [234, 772, 234, 780]],
             'mixed string' => ["7A D7 AA A4 F4 88 62 88 A5", [122, 34508, 27700, 202, 772, 234, 780]],
             'mixed string 2' => ["62 D7 D7 D7 D7 62", [98, 36290, 36290, 98]],
-            'broken string' => ["00 FF 00", [0, 65533, 0]],
         ];
     }
 
