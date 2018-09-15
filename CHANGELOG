@@ -1,3 +1,12 @@
+Version 0.4.0 (2018-09-15)
+==========================
+
+New features:
+- Implemention of UTF-16 encoding
+- Implemention of Big5 encoding
+- Implemention of EUC-KR encoding
+- Implemention of x-user-defined encoding
+
 Version 0.3.0 (2018-08-29)
 ==========================
 
