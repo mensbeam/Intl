@@ -5,9 +5,12 @@ While PHP's [internationalization extension][PHP_INTL] offers excellent and exte
 Included here is a partial suite of WHATWG-compatible seekable string decoders which are reasonably performant while requiring no external dependencies or PHP extensions. At present it includes the following encodings:
 
 * UTF-8
+* UTF-16
 * gb18030
-* GBK 
+* GBK
+* Big5
 * all single-byte encodings
+* x-user-defined
 
 Where applicable, code point encoders are also included. In time it will be extended to cover the entire suite of WHATWG character encodings, and may also provide other character-centric internationalization functionality.
 
