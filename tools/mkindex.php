@@ -1,7 +1,7 @@
 <?php
 $labels = [
     'big5'                => "big5",
-    //'euc-jp'              => "eucjp",
+    'euc-jp'              => "eucjp",
     'euc-kr'              => "euckr",
     'gb18030'             => "gb18030",
     'ibm866'              => "single_byte",
@@ -128,6 +128,13 @@ ARRAY_LITERAL;
 function euckr(string $label) {
     $codes = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt"));
     echo "const TABLE_CODES = $codes;\n";
+}
+
+function eucjp(string $label) {
+    $jis0208 = make_decoder_point_array(read_index("jis0208", "https://encoding.spec.whatwg.org/index-jis0208.txt"));
+    $jis0212 = make_decoder_point_array(read_index("jis0212", "https://encoding.spec.whatwg.org/index-jis0212.txt"));
+    echo "const TABLE_JIS0208 = $jis0208;\n";
+    echo "const TABLE_JIS0212 = $jis0212;\n";
 }
 
 // generic helper functions

@@ -23,6 +23,7 @@
         <file>cases/Encoding/TestUTF16BE.php</file>
         <file>cases/Encoding/TestSingleByte.php</file>
         <file>cases/Encoding/TestXUserDefined.php</file>
+        <file>cases/Encoding/TestEUCJP.php</file>
         <file>cases/Encoding/TestGB18030.php</file>
         <file>cases/Encoding/TestBig5.php</file>
         <file>cases/Encoding/TestEUCKR.php</file>
