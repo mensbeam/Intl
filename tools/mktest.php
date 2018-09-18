@@ -55,12 +55,8 @@ function make_test(string $label, string $url): array {
         $code = hexdec($match[1]);
         if ($label=="gb18030" && $bytes=="A8BC") { // this test is incorrect or out of date; both Vivaldi and Firefox yield code point 7743
             $code = 7743;
-        } elseif ($label=="euc-jp") { // these tests are out of date
-            if ($bytes == "5C") {
-                $code = 92;
-            } elseif ($bytes == "7E") {
-                $code = 126;
-            }
+        } elseif ($label=="euc-jp") { // three tests are out of date
+            $code = ["5C" => 92, "7E" => 126, "A1DD" => 65293][$bytes] ?? $code;
         }
         // convert the code point to decimal
         $out[] = $code;
