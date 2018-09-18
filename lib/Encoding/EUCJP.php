@@ -45,7 +45,7 @@ class EUCJP implements StatelessEncoding {
                     $jis0212 = true;
                     $lead = $b;
                     continue;
-                }                    
+                }
                 $pointer = null;
                 if (($lead >= 0xA1 && $lead <= 0xFE) && ($b >= 0xA1 && $b <= 0xFE)) {
                     $pointer = ($lead - 0xA1) * 94 + $b - 0xA1;
@@ -143,7 +143,7 @@ class EUCJP implements StatelessEncoding {
                 $pos[] = $this->posByte;
                 $this->nextCode();
             } while ($this->posByte < $start);
-            // finally pop off character offsets until either the definite trail byte or the requested final position is reached 
+            // finally pop off character offsets until either the definite trail byte or the requested final position is reached
             $this->posChar = $char;
             while ($distance > 0 && sizeof($pos) > 0) {
                 $this->posChar--;

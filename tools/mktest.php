@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 // this script generates a test series from the Web Platform test suite which exercises the index tables of multi-byte encodings with single characters
 // they are pedantic sets of tests, and so the test suite itself only uses this series in optional tests
 
@@ -35,7 +36,7 @@ if (!isset($tests[$label])) {
     die("Invalid label specified. Must be one of: ".json_encode(array_keys($tests)));
 }
 
-foreach($tests[$label] as $name => $url) {
+foreach ($tests[$label] as $name => $url) {
     $data = make_test($label, $url);
     $in = $data[0];
     $out = $data[1];

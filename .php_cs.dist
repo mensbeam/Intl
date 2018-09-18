@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** @license MIT
  * Copyright 2018 J. King et al.
  * See LICENSE and AUTHORS files for details */
@@ -15,9 +16,11 @@ $paths = [
     BASE."lib",
     BASE."perf",
     BASE."tests",
+    BASE."tools",
 ];
 $rules = [
     '@PSR2' => true,
+    'declare_strict_types' => true,
     'braces' => ['position_after_functions_and_oop_constructs' => "same"],
     'function_declaration' => ['closure_function_spacing' => "none"],
 ];

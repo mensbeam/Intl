@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 $labels = [
     'big5'                => "big5",
     'euc-jp'              => "eucjp",
@@ -46,7 +47,7 @@ if (!isset($labels[$label])) {
 function single_byte(string $label) {
     $entries = read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt");
     $dec_char = make_decoder_char_array($entries);
-    $dec_code = make_decoder_point_array($entires);
+    $dec_code = make_decoder_point_array($entries);
     $enc = make_encoder_array($entries);
     echo "const TABLE_DEC_CHAR = $dec_char;\n";
     echo "const TABLE_DEC_CODE = $dec_code;\n";
@@ -167,6 +168,7 @@ function make_decoder_point_array(array $entries): string {
 
 function make_decoder_char_array(array $entries): string {
     $out = [];
+    $i = 0;
     foreach ($entries as $match) {
         $index = (int) $match[1];
         $code = $match[2];
