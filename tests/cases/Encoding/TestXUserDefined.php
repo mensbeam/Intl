@@ -57,6 +57,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\XUserDefined::posChar
      * @covers MensBeam\Intl\Encoding\XUserDefined::posByte
+     * @covers MensBeam\Intl\Encoding\XUserDefined::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -82,7 +83,8 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\XUserDefined::len
+     * @covers MensBeam\Intl\Encoding\XUserDefined::lenChar
+     * @covers MensBeam\Intl\Encoding\XUserDefined::lenByte
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateSave
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateApply
     */

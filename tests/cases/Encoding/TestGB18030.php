@@ -84,6 +84,7 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\GB18030::posChar
      * @covers MensBeam\Intl\Encoding\GB18030::posByte
+     * @covers MensBeam\Intl\Encoding\GB18030::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -109,7 +110,8 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::len
+     * @covers MensBeam\Intl\Encoding\GB18030::lenChar
+     * @covers MensBeam\Intl\Encoding\GB18030::lenByte
      * @covers MensBeam\Intl\Encoding\GB18030::stateSave
      * @covers MensBeam\Intl\Encoding\GB18030::stateApply
     */

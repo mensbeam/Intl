@@ -101,7 +101,12 @@ abstract class SingleByteEncoding implements StatelessEncoding {
      *
      * Note that this may involve processing to the end of the string
     */
-    public function len(): int {
+    public function lenChar(): int {
         return $this->lenByte;
+    }
+
+    /** Returns whether the character pointer is at the end of the string */
+    public function eof(): bool {
+        return $this->posChar >= $this->lenByte;
     }
 }

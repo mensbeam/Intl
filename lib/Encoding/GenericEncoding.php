@@ -122,11 +122,16 @@ trait GenericEncoding {
         return $out;
     }
 
+    /** Calculates the length of the string in bytes */
+    public function lenByte(): int {
+        return $this->lenByte;
+    }
+
     /** Calculates the length of the string in code points
      *
      * Note that this may involve processing to the end of the string
     */
-    public function len(): int {
+    public function lenChar(): int {
         return $this->lenChar ?? (function() {
             $state = $this->stateSave();
             while ($this->nextCode() !== false);
@@ -134,6 +139,11 @@ trait GenericEncoding {
             $this->stateApply($state);
             return $this->lenChar;
         })();
+    }
+
+    /** Returns whether the character pointer is at the end of the string */
+    public function eof(): bool {
+        return $this->posByte >= $this->lenByte;
     }
 
     /** Generates an iterator which steps through each character in the string */

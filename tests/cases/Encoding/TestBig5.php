@@ -76,6 +76,7 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\Big5::posChar
      * @covers MensBeam\Intl\Encoding\Big5::posByte
+     * @covers MensBeam\Intl\Encoding\Big5::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -101,7 +102,8 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\Big5::len
+     * @covers MensBeam\Intl\Encoding\Big5::lenChar
+     * @covers MensBeam\Intl\Encoding\Big5::lenByte
      * @covers MensBeam\Intl\Encoding\Big5::stateSave
      * @covers MensBeam\Intl\Encoding\Big5::stateApply
     */

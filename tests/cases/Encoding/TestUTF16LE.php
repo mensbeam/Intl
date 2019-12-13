@@ -67,6 +67,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\UTF16::posChar
      * @covers MensBeam\Intl\Encoding\UTF16::posByte
+     * @covers MensBeam\Intl\Encoding\UTF16::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -92,7 +93,8 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\UTF16::len
+     * @covers MensBeam\Intl\Encoding\UTF16::lenChar
+     * @covers MensBeam\Intl\Encoding\UTF16::lenByte
      * @covers MensBeam\Intl\Encoding\UTF16::stateSave
      * @covers MensBeam\Intl\Encoding\UTF16::stateApply
     */

@@ -1,3 +1,13 @@
+Version 0.5.0 (2019-12-13)
+==========================
+
+Breaking changes:
+- Rename Encoding::len() to Encoding::lenChar()
+
+New features:
+- Add Encoding::lenByte() method
+- Add Encoding::eof() method
+
 Version 0.4.0 (2018-09-15)
 ==========================
 

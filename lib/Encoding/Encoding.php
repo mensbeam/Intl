@@ -64,11 +64,17 @@ interface Encoding {
     /** Retrieves the next $num code points from the string, without advancing the character pointer */
     public function peekCode(int $num = 1): array;
 
+    /** Calculates the length of the string in bytes */
+    public function lenByte(): int;
+
     /** Calculates the length of the string in code points
      *
      * Note that this may involve processing to the end of the string
     */
-    public function len(): int;
+    public function lenChar(): int;
+
+    /** Returns whether the character pointer is at the end of the string */
+    public function eof(): bool;
 
     /** Generates an iterator which steps through each character in the string */
     public function chars(): \Generator;
