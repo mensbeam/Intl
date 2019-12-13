@@ -29,7 +29,7 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
 
-    public function tearDown() {
+    public function tearDown(): void {
         $this->testedClass = GB18030::class;
     }
 
