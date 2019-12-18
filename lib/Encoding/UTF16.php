@@ -11,12 +11,6 @@ abstract class UTF16 implements Encoding {
     
     protected $dirtyEOF = 0;
 
-    /** Decodes the next character from the string and returns its code point number
-     *
-     * If the end of the string has been reached, false is returned
-     *
-     * @return int|bool
-     */
     public function nextCode() {
         $lead_b = null;
         $lead_s = null;
@@ -36,6 +30,9 @@ abstract class UTF16 implements Encoding {
                 if (!is_null($lead_s)) {
                     if ($code >= 0xDC00 && $code <= 0xDFFF) {
                         return 0x10000 + (($lead_s - 0xD800) << 10) + ($code - 0xDC00);
+                    } elseif ($this->allowSurrogates) {
+                        $this->posByte -= 2;
+                        return $lead_s;
                     } else {
                         $this->posByte -= 2;
                         return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 2]);
@@ -45,7 +42,11 @@ abstract class UTF16 implements Encoding {
                         $lead_s = $code;
                         continue;
                     } elseif ($code >= 0xDC00 && $code <= 0xDFFF) {
-                        return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 2]);
+                        if ($this->allowSurrogates) {
+                            return $code;
+                        } else {
+                            return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 2]);
+                        }
                     } else {
                         return $code;
                     }
@@ -65,10 +66,6 @@ abstract class UTF16 implements Encoding {
         }
     }
 
-    /** Retrieve the next character in the string, in UTF-8 encoding
-     *
-     * The returned character may be a replacement character, or the empty string if the end of the string has been reached
-     */
     public function nextChar(): string {
         // get the byte at the current position
         $b = @$this->string[$this->posByte];

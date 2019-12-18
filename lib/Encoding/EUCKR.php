@@ -27,12 +27,6 @@ class EUCKR implements StatelessEncoding {
     protected $dirtyEOF = 0;
 
 
-    /** Decodes the next character from the string and returns its code point number
-     *
-     * If the end of the string has been reached, false is returned
-     *
-     * @return int|bool
-     */
     public function nextCode() {
         $this->posChar++;
         $lead = 0x00;
@@ -42,6 +36,7 @@ class EUCKR implements StatelessEncoding {
                 if ($b < 0x80) {
                     return $b;
                 } elseif ($b == 0x80 || $b == 0xFF) {
+                    $this->posErr = $this->posChar;
                     return self::err($this->errMode, [$this->posChar -1, $this->posByte - 1]);
                 } else {
                     $lead = $b;
@@ -57,8 +52,10 @@ class EUCKR implements StatelessEncoding {
                     return $code;
                 } else {
                     if ($b < 0x80) {
+                        $this->posErr = $this->posChar;
                         return self::err($this->errMode, [$this->posChar -1, --$this->posByte - 1]);
                     } else {
+                        $this->posErr = $this->posChar;
                         return self::err($this->errMode, [$this->posChar -1, $this->posByte - 2]);
                     }
                 }
@@ -72,16 +69,11 @@ class EUCKR implements StatelessEncoding {
         } else {
             // dirty EOF
             $this->dirtyEOF = 1;
+            $this->posErr = $this->posChar;
             return self::err($this->errMode, [$this->posChar - 1, $this->posByte - $this->dirtyEOF]);
         }
     }
 
-    /** Returns the encoding of $codePoint as a byte string
-     *
-     * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
-     *
-     * If $fatal is true, an exception will be thrown if the code point cannot be encoded into a character; otherwise HTML character references will be substituted
-     */
     public static function encode(int $codePoint, bool $fatal = true): string {
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {
             throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);

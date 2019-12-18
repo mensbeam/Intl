@@ -281,10 +281,18 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function testIterateThroughAString(string $input, array $exp) {
+        $this->iterateThroughAString($input, $exp, false);
+    }
+
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        $exp = $relaxedExp ?? $strictExp;
+        $this->iterateThroughAString($input, $exp, true);
+    }
+
+    protected function iterateThroughAString(string $input, array $exp, bool $allowSurrogates) {
         $class = $this->testedClass;
         $input = $this->prepString($input);
-        $s = new $class($input);
-        $out = [];
+        $s = new $class($input, false, $allowSurrogates);
         $a = 0;
         $this->assertTrue(true); // prevent risky test of empty string
         foreach ($s->codes() as $index => $p) {

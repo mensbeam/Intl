@@ -15,12 +15,6 @@ abstract class GBCommon implements StatelessEncoding {
 
     protected $dirtyEOF = 0;
 
-    /** Decodes the next character from the string and returns its code point number
-     *
-     * If the end of the string has been reached, false is returned
-     *
-     * @return int|bool
-     */
     public function nextCode() {
         $first = 0;
         $second = 0;
@@ -37,6 +31,7 @@ abstract class GBCommon implements StatelessEncoding {
                     $first = $b;
                     continue;
                 } else {
+                    $this->posErr = $this->posChar;
                     return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                 }
             } elseif ($second === 0) {
@@ -49,8 +44,10 @@ abstract class GBCommon implements StatelessEncoding {
                         $pointer = ($first - 0x81) * 190 + ($b - $offset);
                         return self::TABLE_GBK[$pointer];
                     } elseif ($b < 0x80) {
+                        $this->posErr = $this->posChar;
                         return self::err($this->errMode, [$this->posChar - 1, --$this->posByte]);
                     } else {
+                        $this->posErr = $this->posChar;
                         return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                     }
                 }
@@ -60,6 +57,7 @@ abstract class GBCommon implements StatelessEncoding {
                     continue;
                 } else {
                     $this->posByte -= 2;
+                    $this->posErr = $this->posChar;
                     return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                 }
             } else {
@@ -79,10 +77,12 @@ abstract class GBCommon implements StatelessEncoding {
                     if (isset($codePointOffset)) {
                         return $codePointOffset + $pointer - $offset;
                     } else {
+                        $this->posErr = $this->posChar;
                         return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                     }
                 } else {
                     $this->posByte -= 3;
+                    $this->posErr = $this->posChar;
                     return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 1]);
                 }
             }
@@ -95,16 +95,11 @@ abstract class GBCommon implements StatelessEncoding {
         } else {
             // dirty EOF; note how many bytes the last character had
             $this->dirtyEOF = ($third ? 3 : ($second ? 2 : 1));
+            $this->posErr = $this->posChar;
             return self::err($this->errMode, [$this->posChar - 1, $this->posByte - $this->dirtyEOF]);
         }
     }
 
-    /** Returns the encoding of $codePoint as a byte string
-     *
-     * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
-     *
-     * If $fatal is true, an exception will be thrown if the code point cannot be encoded into a character; otherwise HTML character references will be substituted
-     */
     public static function encode(int $codePoint, bool $fatal = true): string {
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {
             throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);

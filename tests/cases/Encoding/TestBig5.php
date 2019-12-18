@@ -128,6 +128,14 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAString($input, $exp);
     }
 
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
+    }
+
     public function provideCodePoints() {
         return [
             'U+0064 (HTML)'    => [false, 0x64, "64"],

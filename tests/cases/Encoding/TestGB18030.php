@@ -136,6 +136,14 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAString($input, $exp);
     }
 
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
+    }
+
     public function provideCodePoints() {
         // bytes confirmed using Firefox
         $series_gb18030 = [

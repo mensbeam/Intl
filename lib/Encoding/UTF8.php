@@ -12,12 +12,6 @@ class UTF8 implements StatelessEncoding {
     const NAME = "UTF-8";
     const LABELS = ["unicode-1-1-utf-8", "utf-8", "utf8"];
 
-    /** Decodes the next character from the string and returns its code point number
-     *
-     * If the end of the string has been reached, false is returned
-     *
-     * @return int|bool
-     */
     public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // optimization for ASCII characters
@@ -46,7 +40,7 @@ class UTF8 implements StatelessEncoding {
                     if ($b==0xE0) {
                         $lower = 0xA0;
                     } elseif ($b==0xED) {
-                        $upper = 0x9F;
+                        $upper = ($this->allowSurrogates) ? 0xBF : 0x9F;
                     }
                     $point = $b & 0xF;
                 } elseif ($b >= 0xF0 && $b <= 0xF4) { // four-byte character
@@ -58,9 +52,11 @@ class UTF8 implements StatelessEncoding {
                     }
                     $point = $b & 0x7;
                 } else { // invalid byte
+                    $this->posErr = $this->posChar;
                     return self::err($this->errMode, [$this->posChar, $this->posByte]);
                 }
             } elseif ($b < $lower || $b > $upper) {
+                $this->posErr = $this->posChar;
                 return self::err($this->errMode, [$this->posChar, $this->posByte--]);
             } else {
                 $lower = 0x80;
@@ -72,12 +68,6 @@ class UTF8 implements StatelessEncoding {
         return $point;
     }
 
-    /** Returns the encoding of $codePoint as a byte string
-     *
-     * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
-     *
-     * If $fatal is true, an exception will be thrown if the code point cannot be encoded into a character; otherwise HTML character references will be substituted. When encoding to UTF-8, all Unicode characters can be encoded, so the argument is ignored
-     */
     public static function encode(int $codePoint, bool $fatal = true): string {
         // this function implements https://encoding.spec.whatwg.org/#utf-8-encoder
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {

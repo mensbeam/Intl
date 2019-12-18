@@ -128,6 +128,14 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAString($input, $exp);
     }
 
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\UTF8::nextCode
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
+    }
+
     public function provideCodePoints() {
         return [
             'U+007A (HTML)'    => [false, 0x7A, "7A"],
@@ -190,9 +198,10 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'overlong U+10FFFF - 5 bytes' => ["F8 84 8F BF BF", [65533, 65533, 65533, 65533, 65533]],
             'overlong U+10FFFF - 6 bytes' => ["FC 80 84 8F BF BF", [65533, 65533, 65533, 65533, 65533, 65533]],
             // UTF-16 surrogates
-            'lead surrogate' => ["ED A0 80", [65533, 65533, 65533]],
-            'trail surrogate' => ["ED B0 80", [65533, 65533, 65533]],
-            'surrogate pair' => ["ED A0 80 ED B0 80", [65533, 65533, 65533, 65533, 65533, 65533]],
+            // surrogates have alternate outputs for when surrogates are being allowed
+            'lead surrogate' => ["ED A0 80", [65533, 65533, 65533], [0xD800]],
+            'trail surrogate' => ["ED B0 80", [65533, 65533, 65533], [0xDC00]],
+            'surrogate pair' => ["ED A0 80 ED B0 80", [65533, 65533, 65533, 65533, 65533, 65533], [0xD800, 0xDC00]],
             // self-sync edge cases
             'trailing continuation' => ["0A 80 80", [10, 65533, 65533]],
             'trailing continuation 2' => ["E5 8F A4 80", [21476, 65533]],

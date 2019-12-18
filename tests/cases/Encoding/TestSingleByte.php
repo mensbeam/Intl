@@ -205,6 +205,15 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAString($input, $exp);
     }
 
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $exp, $class = null) {
+        $this->testedClass = $class;
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $exp, $exp);
+    }
+
     public function provideClasses() {
         foreach (self::$classes as $name => $class) {
             yield $name => [$class];
