@@ -1,4 +1,7 @@
 <?php
+// This script produces the index lookup tables
+//  for a given encoding from the source data at WHATWG
+
 $labels = [
     'big5'                => "big5",
     //'euc-jp'              => "eucjp",
@@ -160,6 +163,7 @@ function make_decoder_point_array(array $entries): string {
 
 function make_decoder_char_array(array $entries): string {
     $out = [];
+    $i = 0;
     foreach ($entries as $match) {
         $index = (int) $match[1];
         $code = $match[2];

@@ -1,9 +1,9 @@
-Version 0.6.0 (2019-12-18)
+Version 0.7.0 (2019-12-20)
 ==========================
 
 New features:
-- Added $allowSurrogates parameter to Encoding constructor
-- Added posErr public instance property to Encoding
+- Added \MensBeam\Intl\Encoding abstract class with createDecoder() and
+  matchLabel() static methods
 
 Version 0.5.0 (2019-12-13)
 ==========================
