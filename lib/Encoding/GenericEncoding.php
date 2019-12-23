@@ -12,6 +12,7 @@ trait GenericEncoding {
     protected $posChar = 0;
     protected $lenByte = null;
     protected $lenChar = null;
+    protected $dirtyEOF = 0;
     protected $errMode = self::MODE_REPLACE;
     protected $allowSurrogates = false;
 
@@ -67,6 +68,13 @@ trait GenericEncoding {
             $distance = abs($distance);
             if (!$this->posChar) {
                 return $distance;
+            }
+            if ($this->dirtyEOF > 0) {
+                // if we are at the end of the string and it did not terminate cleanly, go back the correct number of dirty bytes to seek through the last character
+                $this->posByte -= $this->dirtyEOF;
+                $this->dirtyEOF = 0;
+                $distance--;
+                $this->posChar--;
             }
             $mode = $this->errMode;
             $this->errMode = self::MODE_NULL;

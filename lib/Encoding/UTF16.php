@@ -8,8 +8,6 @@ namespace MensBeam\Intl\Encoding;
 
 abstract class UTF16 implements Encoding {
     use GenericEncoding;
-    
-    protected $dirtyEOF = 0;
 
     public function nextCode() {
         $lead_b = null;
@@ -80,12 +78,6 @@ abstract class UTF16 implements Encoding {
 
     /** Implements backward seeking $distance characters */
     protected function seekBack(int $distance): int {
-        if ($this->posByte >= $this->lenByte && $this->dirtyEOF > 0) {
-            // if we are at the end of the string and it did not terminate cleanly, go back the correct number of dirty bytes to seek through the last character
-            $this->posByte -= $this->dirtyEOF;
-            $distance--;
-            $this->posChar--;
-        }
         while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
