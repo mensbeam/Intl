@@ -6,7 +6,6 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
-use MensBeam\Intl\Encoding\UTF16LE;
 use MensBeam\Intl\Encoding\UTF16BE;
 
 class TestUTF16BE extends TestUTF16LE {
@@ -30,7 +29,10 @@ class TestUTF16BE extends TestUTF16LE {
 
     public function provideStrings() {
         foreach (parent::provideStrings() as $name => $test) {
-            list($string, $codes) = $test;
+            if (sizeof($test) == 2) {
+                $test[] = null;
+            }
+            list($string, $codes, $altCodes) = $test;
             $words = explode(" ", $string);
             foreach ($words as $a => $word) {
                 if (strlen($word) == 4) {
@@ -38,7 +40,7 @@ class TestUTF16BE extends TestUTF16LE {
                 }
             }
             $string = implode(" ", $words);
-            yield $name => [$string, $codes];
+            yield $name => [$string, $codes, $altCodes];
         }
     }
 }

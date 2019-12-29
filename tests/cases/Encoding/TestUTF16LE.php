@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\UTF16LE;
-use MensBeam\Intl\Encoding\UTF16BE;
 
 class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     protected $testedClass = UTF16LE::class;
@@ -67,6 +66,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\UTF16::posChar
      * @covers MensBeam\Intl\Encoding\UTF16::posByte
+     * @covers MensBeam\Intl\Encoding\UTF16::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -92,7 +92,8 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\UTF16::len
+     * @covers MensBeam\Intl\Encoding\UTF16::lenChar
+     * @covers MensBeam\Intl\Encoding\UTF16::lenByte
      * @covers MensBeam\Intl\Encoding\UTF16::stateSave
      * @covers MensBeam\Intl\Encoding\UTF16::stateApply
     */
@@ -117,6 +118,14 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
         return parent::testIterateThroughAString($input, $exp);
     }
 
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\UTF16::nextCode
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
+    }
+
     public function provideStrings() {
         return [
             // control samples
@@ -128,10 +137,10 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
             'EOF after lead surrogate' => ["0000 34D8", [0, 65533]],
             'EOF in trail surrogate' => ["0000 34D8 1E", [0, 65533]],
             // invalid UTF-16 surrogates
-            'lead surrogate without trail' => ["34D8 0000", [65533, 0]],
-            'trail surrogate without lead' => ["1EDD 0000", [65533, 0]],
-            'double lead surrogate' => ["34D8 34D8 1EDD", [65533, 119070]],
-            'double trail surrogate' => ["34D8 1EDD 1EDD", [119070, 65533]],
+            'lead surrogate without trail' => ["34D8 0000", [65533, 0], [0xD834, 0]],
+            'trail surrogate without lead' => ["1EDD 0000", [65533, 0], [0xDD1E, 0]],
+            'double lead surrogate' => ["34D8 34D8 1EDD", [65533, 119070], [0xD834, 119070]],
+            'double trail surrogate' => ["34D8 1EDD 1EDD", [119070, 65533], [119070, 0xDD1E]],
         ];
     }
 }

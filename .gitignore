@@ -1,5 +1,6 @@
 vendor/
 tests/coverage/
+/tests/.phpunit.result.cache
 perf/docs/
 .php_cs.cache
 

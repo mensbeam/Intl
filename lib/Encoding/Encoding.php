@@ -19,10 +19,10 @@ interface Encoding {
     const E_UNAVAILABLE_CODE_POINT = 4;
 
     /** Constructs a new decoder
-     *
-     * If $fatal is true, an exception will be thrown whenever an invalid code sequence is encountered; otherwise replacement characters will be substituted
+     * @param bool $fatal If true, throw enceptions when encountering invalid input. If false, substitute U+FFFD REPLACEMENT CHARACTER instead
+     * @param bool $allowSurrogates If true, treats surrogate characters as valid input; this only affects UTF-8 and UTF-16 encodings
      */
-    public function __construct(string $string, bool $fatal = false);
+    public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false);
 
     /** Returns the current byte position of the decoder */
     public function posByte(): int;
@@ -40,15 +40,15 @@ interface Encoding {
      *
      * If the end of the string has been reached, false is returned
      *
-     * @return int|bool
+     * @return int|false
      */
     public function nextCode();
 
     /** Advance $distance characters through the string
      *
-     * If $distance is negative, the operation will be performed in reverse
-     *
      * If the end (or beginning) of the string was reached before the end of the operation, the remaining number of requested characters is returned
+     * 
+     * @param int $distance The number of characters to advance. If negative, the operation will seek back toward the beginning of the string
      */
     public function seek(int $distance): int;
 
@@ -58,17 +58,29 @@ interface Encoding {
     */
     public function rewind();
 
-    /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer */
+    /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer
+     * 
+     * @param int $num The number of characters to retrieve
+     */
     public function peekChar(int $num = 1): string;
 
-    /** Retrieves the next $num code points from the string, without advancing the character pointer */
+    /** Retrieves the next $num code points from the string, without advancing the character pointer
+     * 
+     * @param int $num The number of code points to retrieve
+     */
     public function peekCode(int $num = 1): array;
+
+    /** Calculates the length of the string in bytes */
+    public function lenByte(): int;
 
     /** Calculates the length of the string in code points
      *
      * Note that this may involve processing to the end of the string
     */
-    public function len(): int;
+    public function lenChar(): int;
+
+    /** Returns whether the character pointer is at the end of the string */
+    public function eof(): bool;
 
     /** Generates an iterator which steps through each character in the string */
     public function chars(): \Generator;

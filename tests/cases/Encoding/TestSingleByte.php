@@ -139,6 +139,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideClasses
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posChar
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posByte
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::eof
     */
     public function testTraversePastTheEndOfAString(string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
@@ -173,7 +174,8 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::len
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::lenChar
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::lenByte
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateSave
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateApply
     */
@@ -201,6 +203,15 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     public function testIterateThroughAString(string $input, array $exp, string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testIterateThroughAString($input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $exp, $class = null) {
+        $this->testedClass = $class;
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $exp, $exp);
     }
 
     public function provideClasses() {

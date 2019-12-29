@@ -29,7 +29,7 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
 
-    public function tearDown() {
+    public function tearDown(): void {
         $this->testedClass = GB18030::class;
     }
 
@@ -84,6 +84,7 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\GB18030::posChar
      * @covers MensBeam\Intl\Encoding\GB18030::posByte
+     * @covers MensBeam\Intl\Encoding\GB18030::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -109,7 +110,8 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::len
+     * @covers MensBeam\Intl\Encoding\GB18030::lenChar
+     * @covers MensBeam\Intl\Encoding\GB18030::lenByte
      * @covers MensBeam\Intl\Encoding\GB18030::stateSave
      * @covers MensBeam\Intl\Encoding\GB18030::stateApply
     */
@@ -132,6 +134,14 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
     public function provideCodePoints() {

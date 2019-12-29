@@ -76,6 +76,7 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @covers MensBeam\Intl\Encoding\EUCKR::posChar
      * @covers MensBeam\Intl\Encoding\EUCKR::posByte
+     * @covers MensBeam\Intl\Encoding\EUCKR::eof
     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
@@ -101,7 +102,8 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\EUCKR::len
+     * @covers MensBeam\Intl\Encoding\EUCKR::lenChar
+     * @covers MensBeam\Intl\Encoding\EUCKR::lenByte
      * @covers MensBeam\Intl\Encoding\EUCKR::stateSave
      * @covers MensBeam\Intl\Encoding\EUCKR::stateApply
     */
@@ -124,6 +126,14 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+    */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
     public function provideCodePoints() {

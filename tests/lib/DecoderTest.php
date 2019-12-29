@@ -120,26 +120,32 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         $l = strlen($this->lowerA);
         $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
+        $this->assertFalse($s->eof());
 
         $this->assertSame("a", $s->nextChar());
         $this->assertSame(1, $s->posChar());
         $this->assertSame($l, $s->posByte());
+        $this->assertTrue($s->eof());
 
         $this->assertSame("", $s->nextChar());
         $this->assertSame(1, $s->posChar());
         $this->assertSame($l, $s->posByte());
+        $this->assertTrue($s->eof());
 
         $s = new $class($this->lowerA);
         $this->assertSame(0, $s->posChar());
         $this->assertSame(0, $s->posByte());
+        $this->assertFalse($s->eof());
 
         $this->assertSame(ord("a"), $s->nextCode());
         $this->assertSame(1, $s->posChar());
         $this->assertSame($l, $s->posByte());
+        $this->assertTrue($s->eof());
 
         $this->assertSame(false, $s->nextCode());
         $this->assertSame(1, $s->posChar());
         $this->assertSame($l, $s->posByte());
+        $this->assertTrue($s->eof());
     }
 
     public function testPeekAtCharacters() {
@@ -220,7 +226,10 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         $posChar = $s->posChar();
         $posByte = $s->posByte();
 
-        $this->assertSame(sizeof($points), $s->len());
+        $this->assertSame(sizeof($points), $s->lenChar());
+        $this->assertSame($posChar, $s->posChar());
+        $this->assertSame($posByte, $s->posByte());
+        $this->assertSame(strlen($input), $s->lenByte());
         $this->assertSame($posChar, $s->posChar());
         $this->assertSame($posByte, $s->posByte());
     }
@@ -272,10 +281,18 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
     }
 
     public function testIterateThroughAString(string $input, array $exp) {
+        $this->iterateThroughAString($input, $exp, false);
+    }
+
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        $exp = $relaxedExp ?? $strictExp;
+        $this->iterateThroughAString($input, $exp, true);
+    }
+
+    protected function iterateThroughAString(string $input, array $exp, bool $allowSurrogates) {
         $class = $this->testedClass;
         $input = $this->prepString($input);
-        $s = new $class($input);
-        $out = [];
+        $s = new $class($input, false, $allowSurrogates);
         $a = 0;
         $this->assertTrue(true); // prevent risky test of empty string
         foreach ($s->codes() as $index => $p) {

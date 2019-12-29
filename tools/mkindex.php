@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+// This script produces the index lookup tables
+//  for a given encoding from the source data at WHATWG
+
 $labels = [
     'big5'                => "big5",
     'euc-jp'              => "eucjp",

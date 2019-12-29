@@ -3,12 +3,21 @@ declare(strict_types=1);
 
 use Robo\Result;
 
-class RoboFile extends \Robo\Tasks {
-    const BASE = __DIR__.\DIRECTORY_SEPARATOR;
-    const BASE_TEST = self::BASE."tests".\DIRECTORY_SEPARATOR;
+const BASE = __DIR__.\DIRECTORY_SEPARATOR;
+const BASE_TEST = BASE."tests".\DIRECTORY_SEPARATOR;
+define("IS_WIN", defined("PHP_WINDOWS_VERSION_MAJOR"));
+define("IS_MAC", php_uname("s") === "Darwin");
 
-    /**
-     * Runs the typical test suite
+function norm(string $path): string {
+    $out = realpath($path);
+    if (!$out) {
+        $out = str_replace(["/", "\\"], \DIRECTORY_SEPARATOR, $path);
+    }
+    return $out;
+}
+
+class RoboFile extends \Robo\Tasks {
+    /** Runs the typical test suite
      *
      * Arguments passed to the task are passed on to PHPUnit. Thus one may, for
      * example, run the following command and get the expected results:
@@ -18,17 +27,16 @@ class RoboFile extends \Robo\Tasks {
      * Please see the PHPUnit documentation for available options.
     */
     public function test(array $args): Result {
-        return $this->runTests("php", "typical", $args);
+        return $this->runTests(escapeshellarg(\PHP_BINARY), "typical", $args);
     }
 
-    /**
-     * Runs the full test suite
+    /** Runs the full test suite
      *
      * This includes pedantic tests which may help to identify problems.
      * See help for the "test" task for more details.
     */
     public function testFull(array $args): Result {
-        return $this->runTests("php", "full", $args);
+        return $this->runTests(escapeshellarg(\PHP_BINARY), "full", $args);
     }
 
     /**
@@ -37,7 +45,7 @@ class RoboFile extends \Robo\Tasks {
      * See help for the "test" task for more details.
     */
     public function testQuick(array $args): Result {
-        return $this->runTests("php", "quick", $args);
+        return $this->runTests(escapeshellarg(\PHP_BINARY), "quick", $args);
     }
 
     /** Produces a code coverage report
@@ -53,7 +61,32 @@ class RoboFile extends \Robo\Tasks {
     public function coverage(array $args): Result {
         // run tests with code coverage reporting enabled
         $exec = $this->findCoverageEngine();
-        return $this->runTests($exec, "typical", array_merge(["--coverage-html", self::BASE_TEST."coverage"], $args));
+        return $this->runTests($exec, "coverage", array_merge(["--coverage-html", BASE_TEST."coverage"], $args));
+    }
+
+    /** Produces a code coverage report, with redundant tests
+     *
+     * Depending on the environment, some tests that normally provide
+     * coverage may be skipped, while working alternatives are normally
+     * suppressed for reasons of time. This coverage report will try to
+     * run all tests which may cover code.
+     *
+     * See also help for the "coverage" task for more details.
+    */
+    public function coverageFull(array $args): Result {
+        // run tests with code coverage reporting enabled
+        $exec = $this->findCoverageEngine();
+        return $this->runTests($exec, "typical", array_merge(["--coverage-html", BASE_TEST."coverage"], $args));
+    }
+
+    /** Runs the coding standards fixer */
+    public function clean($opts = ['demo|d' => false]): Result {
+        $t = $this->taskExec(norm(BASE."vendor/bin/php-cs-fixer"));
+        $t->arg("fix");
+        if ($opts['demo']) {
+            $t->args("--dry-run", "--diff")->option("--diff-format", "udiff");
+        }
+        return $t->run();
     }
 
     /** Runs a performance evaluation.
@@ -62,28 +95,22 @@ class RoboFile extends \Robo\Tasks {
      * the IntlCodePointBreakIterator class
     */
     public function perf(array $args): Result {
-        $execpath = realpath(self::BASE."perf/perf.php");
+        $execpath = realpath(norm(BASE."perf/perf.php"));
         return $this->taskExec("php")->arg($execpath)->args($args)->run();
     }
 
-    /** Runs the coding standards fixer */
-    public function clean($opts = ['demo|d' => false]): Result {
-        $t = $this->taskExec(realpath(self::BASE."vendor/bin/php-cs-fixer"));
-        $t->arg("fix")->arg("--allow-risky=yes");
-        if ($opts['demo']) {
-            $t->args("--dry-run", "--diff")->option("--diff-format", "udiff");
-        }
-        return $t->run();
-    }
-
     protected function findCoverageEngine(): string {
-        $null = null;
-        $code = 0;
-        exec("phpdbg --version", $null, $code);
-        if (!$code) {
-            return "phpdbg -qrr";
+        if (IS_WIN) {
+            $dbg = dirname(\PHP_BINARY)."\\phpdbg.exe";
+            $dbg = file_exists($dbg) ? $dbg : "";
         } else {
-            return "php";
+            $dbg = trim(`which phpdbg 2>/dev/null`);
+        }
+        if ($dbg) {
+            return escapeshellarg($dbg)." -qrr";
+        } else {
+            $ext = IS_WIN ? "dll" : (IS_MAC ? "dylib" : "so");
+            return escapeshellarg(\PHP_BINARY)." -d zend_extension=xdebug.$ext";
         }
     }
 
@@ -95,14 +122,17 @@ class RoboFile extends \Robo\Tasks {
             case "quick":
                 $set = ["--exclude-group", "optional,slow"];
                 break;
+            case "coverage":
+                $set = ["--exclude-group", "optional,coverageOptional"];
+                break;
             case "full":
                 $set = [];
                 break;
             default:
                 throw new \Exception;
         }
-        $execpath = realpath(self::BASE."vendor-bin/phpunit/vendor/phpunit/phpunit/phpunit");
-        $confpath = realpath(self::BASE_TEST."phpunit.xml");
-        return $this->taskExec($executor)->arg($execpath)->option("-c", $confpath)->args(array_merge($set, $args))->run();
+        $execpath = norm(BASE."vendor-bin/phpunit/vendor/phpunit/phpunit/phpunit");
+        $confpath = realpath(BASE_TEST."phpunit.dist.xml") ?: norm(BASE_TEST."phpunit.xml");
+        return $this->taskExec($executor)->option("-d", "zend.assertions=1")->arg($execpath)->option("-c", $confpath)->args(array_merge($set, $args))->run();
     }
 }
