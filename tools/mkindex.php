@@ -25,7 +25,7 @@ $labels = [
     'koi8-r'              => "single_byte",
     'koi8-u'              => "single_byte",
     'macintosh'           => "single_byte",
-    //'shift-jis'           => "shiftjis",
+    'shift-jis'           => "shiftjis",
     'windows-1250'        => "single_byte",
     'windows-1251'        => "single_byte",
     'windows-1252'        => "single_byte",
@@ -41,7 +41,7 @@ $labels = [
 $label = $argv[1] ?? "";
 $label = trim(strtolower($label));
 if (!isset($labels[$label])) {
-    die("Invalid label specified. Must be one of: ".json_encode(array_keys($labels)));
+    die("Invalid label specified. Must be one of: ".json_encode(array_keys($labels))."\n");
 }
 ($labels[$label])($label);
 
@@ -139,6 +139,11 @@ function eucjp(string $label) {
     $jis0212 = make_decoder_point_array(read_index("jis0212", "https://encoding.spec.whatwg.org/index-jis0212.txt"));
     echo "const TABLE_JIS0208 = $jis0208;\n";
     echo "const TABLE_JIS0212 = $jis0212;\n";
+}
+
+function shiftjis(string $label) {
+    $codes = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-jis0208.txt"));
+    echo "const TABLE_CODES = $codes;\n";
 }
 
 // generic helper functions
