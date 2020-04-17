@@ -21,7 +21,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\XUserDefined::__construct
      * @covers MensBeam\Intl\Encoding\XUserDefined::nextCode
-    */
+     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
     }
@@ -30,7 +30,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\XUserDefined::__construct
      * @covers MensBeam\Intl\Encoding\XUserDefined::nextChar
-    */
+     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
     }
@@ -38,7 +38,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @dataProvider provideStrings
      * @coversNothing
-    */
+     */
     public function testSTepBackThroughAString(string $input, array $exp) {
         // this test has no meaning for x-user-defined
         return parent::testSTepBackThroughAString($input, $exp);
@@ -49,7 +49,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\XUserDefined::posChar
      * @covers MensBeam\Intl\Encoding\XUserDefined::posByte
      * @covers MensBeam\Intl\Encoding\XUserDefined::rewind
-    */
+     */
     public function testSeekThroughAString() {
         return parent::testSeekThroughAString();
     }
@@ -58,7 +58,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\XUserDefined::posChar
      * @covers MensBeam\Intl\Encoding\XUserDefined::posByte
      * @covers MensBeam\Intl\Encoding\XUserDefined::eof
-    */
+     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
     }
@@ -67,7 +67,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\XUserDefined::peekChar
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateSave
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateApply
-    */
+     */
     public function testPeekAtCharacters() {
         return parent::testPeekAtCharacters();
     }
@@ -76,7 +76,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\XUserDefined::peekCode
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateSave
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateApply
-    */
+     */
     public function testPeekAtCodePoints() {
         return parent::testPeekAtCodePoints();
     }
@@ -87,14 +87,14 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\XUserDefined::lenByte
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateSave
      * @covers MensBeam\Intl\Encoding\XUserDefined::stateApply
-    */
+     */
     public function testGetStringLength(string $input, array $points) {
         return parent::testGetStringLength($input, $points);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\XUserDefined::err
-    */
+     */
     public function testReplacementModes() {
         return parent::testReplacementModes();
     }
@@ -104,7 +104,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\XUserDefined::rewind
      * @covers MensBeam\Intl\Encoding\XUserDefined::chars
      * @covers MensBeam\Intl\Encoding\XUserDefined::codes
-    */
+     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
     }
@@ -112,7 +112,7 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @dataProvider provideStrings
      * @coversNothing
-    */
+     */
     public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }

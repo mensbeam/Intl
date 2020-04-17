@@ -25,7 +25,7 @@ class RoboFile extends \Robo\Tasks {
      * ./robo test --testsuite TTRSS --exclude-group slow --testdox
      *
      * Please see the PHPUnit documentation for available options.
-    */
+     */
     public function test(array $args): Result {
         return $this->runTests(escapeshellarg(\PHP_BINARY), "typical", $args);
     }
@@ -34,7 +34,7 @@ class RoboFile extends \Robo\Tasks {
      *
      * This includes pedantic tests which may help to identify problems.
      * See help for the "test" task for more details.
-    */
+     */
     public function testFull(array $args): Result {
         return $this->runTests(escapeshellarg(\PHP_BINARY), "full", $args);
     }
@@ -43,7 +43,7 @@ class RoboFile extends \Robo\Tasks {
      * Runs a quick subset of the test suite
      *
      * See help for the "test" task for more details.
-    */
+     */
     public function testQuick(array $args): Result {
         return $this->runTests(escapeshellarg(\PHP_BINARY), "quick", $args);
     }
@@ -57,7 +57,7 @@ class RoboFile extends \Robo\Tasks {
      * Robo first tries to use phpdbg and will fall back to Xdebug if available.
      * Because Xdebug slows down non-coverage tasks, however, phpdbg is highly
      * recommended if debugging facilities are not otherwise needed.
-    */
+     */
     public function coverage(array $args): Result {
         // run tests with code coverage reporting enabled
         $exec = $this->findCoverageEngine();
@@ -72,7 +72,7 @@ class RoboFile extends \Robo\Tasks {
      * run all tests which may cover code.
      *
      * See also help for the "coverage" task for more details.
-    */
+     */
     public function coverageFull(array $args): Result {
         // run tests with code coverage reporting enabled
         $exec = $this->findCoverageEngine();
@@ -93,7 +93,7 @@ class RoboFile extends \Robo\Tasks {
      *
      * The performance of the library's basic functionality is tested against
      * the IntlCodePointBreakIterator class
-    */
+     */
     public function perf(array $args): Result {
         $execpath = realpath(norm(BASE."perf/perf.php"));
         return $this->taskExec("php")->arg($execpath)->args($args)->run();
@@ -114,7 +114,7 @@ class RoboFile extends \Robo\Tasks {
         }
     }
 
-    protected function runTests(string $executor, string $set, array $args) : Result {
+    protected function runTests(string $executor, string $set, array $args): Result {
         switch ($set) {
             case "typical":
                 $set = ["--exclude-group", "optional"];

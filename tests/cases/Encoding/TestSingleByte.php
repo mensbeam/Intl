@@ -84,7 +84,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::encode
-    */
+     */
     public function testEncodeCodePoints(bool $fatal, $input, $exp, string $class = SingleByteEncoding::class) {
         $out = "";
         foreach ($input as $code) {
@@ -97,7 +97,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::__construct
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::nextCode
-    */
+     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp, string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
@@ -107,7 +107,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::__construct
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::nextChar
-    */
+     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp, string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
@@ -116,7 +116,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideStrings
      * @coversNothing
-    */
+     */
     public function testSTepBackThroughAString(string $input, array $exp, string $class = SingleByteEncoding::class) {
         // this test has no meaning for single-byte encodings
         $this->testedClass = $class;
@@ -129,7 +129,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posChar
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posByte
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::rewind
-    */
+     */
     public function testSeekThroughAString(string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testSeekThroughAString();
@@ -140,7 +140,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posChar
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posByte
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::eof
-    */
+     */
     public function testTraversePastTheEndOfAString(string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testTraversePastTheEndOfAString();
@@ -153,7 +153,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posByte
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateSave
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateApply
-    */
+     */
     public function testPeekAtCharacters(string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testPeekAtCharacters();
@@ -166,7 +166,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::posByte
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateSave
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateApply
-    */
+     */
     public function testPeekAtCodePoints(string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testPeekAtCodePoints();
@@ -178,7 +178,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::lenByte
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateSave
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::stateApply
-    */
+     */
     public function testGetStringLength(string $input, array $points, string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testGetStringLength($input, $points);
@@ -187,7 +187,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideBrokenStrings
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::err
-    */
+     */
     public function testReplacementModes(string $input = "", string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         $this->brokenChar = $input;
@@ -199,7 +199,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::rewind
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::chars
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::codes
-    */
+     */
     public function testIterateThroughAString(string $input, array $exp, string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
         return parent::testIterateThroughAString($input, $exp);
@@ -208,7 +208,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideStrings
      * @coversNothing
-    */
+     */
     public function testIterateThroughAStringAllowingSurrogates(string $input, array $exp, $class = null) {
         $this->testedClass = $class;
         return parent::testIterateThroughAStringAllowingSurrogates($input, $exp, $exp);
@@ -287,7 +287,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideInvalids
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::encode
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::err
-    */
+     */
     public function testEncodeInvalidCodePoints(string $class, bool $mode, int $input, $exp) {
         if ($exp instanceof \Throwable) {
             $this->expectException(get_class($exp));
