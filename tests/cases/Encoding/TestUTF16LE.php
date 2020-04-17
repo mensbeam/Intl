@@ -31,7 +31,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF16::__construct
      * @covers MensBeam\Intl\Encoding\UTF16::nextCode
-    */
+     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
     }
@@ -40,7 +40,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF16::__construct
      * @covers MensBeam\Intl\Encoding\UTF16::nextChar
-    */
+     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
     }
@@ -48,7 +48,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF16::seekBack
-    */
+     */
     public function testSTepBackThroughAString(string $input, array $exp) {
         return parent::testSTepBackThroughAString($input, $exp);
     }
@@ -58,7 +58,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF16::posChar
      * @covers MensBeam\Intl\Encoding\UTF16::posByte
      * @covers MensBeam\Intl\Encoding\UTF16::rewind
-    */
+     */
     public function testSeekThroughAString() {
         return parent::testSeekThroughAString();
     }
@@ -67,7 +67,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF16::posChar
      * @covers MensBeam\Intl\Encoding\UTF16::posByte
      * @covers MensBeam\Intl\Encoding\UTF16::eof
-    */
+     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
     }
@@ -76,7 +76,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF16::peekChar
      * @covers MensBeam\Intl\Encoding\UTF16::stateSave
      * @covers MensBeam\Intl\Encoding\UTF16::stateApply
-    */
+     */
     public function testPeekAtCharacters() {
         return parent::testPeekAtCharacters();
     }
@@ -85,7 +85,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF16::peekCode
      * @covers MensBeam\Intl\Encoding\UTF16::stateSave
      * @covers MensBeam\Intl\Encoding\UTF16::stateApply
-    */
+     */
     public function testPeekAtCodePoints() {
         return parent::testPeekAtCodePoints();
     }
@@ -96,14 +96,14 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF16::lenByte
      * @covers MensBeam\Intl\Encoding\UTF16::stateSave
      * @covers MensBeam\Intl\Encoding\UTF16::stateApply
-    */
+     */
     public function testGetStringLength(string $input, array $points) {
         return parent::testGetStringLength($input, $points);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF16::err
-    */
+     */
     public function testReplacementModes() {
         return parent::testReplacementModes();
     }
@@ -113,7 +113,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF16::rewind
      * @covers MensBeam\Intl\Encoding\UTF16::chars
      * @covers MensBeam\Intl\Encoding\UTF16::codes
-    */
+     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
     }
@@ -121,7 +121,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF16::nextCode
-    */
+     */
     public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }

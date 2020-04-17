@@ -32,7 +32,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\UTF8::encode
      * @covers MensBeam\Intl\Encoding\UTF8::err
-    */
+     */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
     }
@@ -41,7 +41,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::__construct
      * @covers MensBeam\Intl\Encoding\UTF8::nextCode
-    */
+     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
     }
@@ -50,7 +50,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::__construct
      * @covers MensBeam\Intl\Encoding\UTF8::nextChar
-    */
+     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
     }
@@ -58,7 +58,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::seekBack
-    */
+     */
     public function testSTepBackThroughAString(string $input, array $exp) {
         return parent::testSTepBackThroughAString($input, $exp);
     }
@@ -68,7 +68,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF8::posChar
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
      * @covers MensBeam\Intl\Encoding\UTF8::rewind
-    */
+     */
     public function testSeekThroughAString() {
         return parent::testSeekThroughAString();
     }
@@ -77,7 +77,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF8::posChar
      * @covers MensBeam\Intl\Encoding\UTF8::posByte
      * @covers MensBeam\Intl\Encoding\UTF8::eof
-    */
+     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
     }
@@ -86,7 +86,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF8::peekChar
      * @covers MensBeam\Intl\Encoding\UTF8::stateSave
      * @covers MensBeam\Intl\Encoding\UTF8::stateApply
-    */
+     */
     public function testPeekAtCharacters() {
         return parent::testPeekAtCharacters();
     }
@@ -95,7 +95,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF8::peekCode
      * @covers MensBeam\Intl\Encoding\UTF8::stateSave
      * @covers MensBeam\Intl\Encoding\UTF8::stateApply
-    */
+     */
     public function testPeekAtCodePoints() {
         return parent::testPeekAtCodePoints();
     }
@@ -106,14 +106,14 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF8::lenByte
      * @covers MensBeam\Intl\Encoding\UTF8::stateSave
      * @covers MensBeam\Intl\Encoding\UTF8::stateApply
-    */
+     */
     public function testGetStringLength(string $input, array $points) {
         return parent::testGetStringLength($input, $points);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\UTF8::err
-    */
+     */
     public function testReplacementModes() {
         return parent::testReplacementModes();
     }
@@ -123,7 +123,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\UTF8::rewind
      * @covers MensBeam\Intl\Encoding\UTF8::chars
      * @covers MensBeam\Intl\Encoding\UTF8::codes
-    */
+     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
     }
@@ -131,7 +131,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::nextCode
-    */
+     */
     public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }

@@ -47,7 +47,7 @@ interface Encoding {
     /** Advance $distance characters through the string
      *
      * If the end (or beginning) of the string was reached before the end of the operation, the remaining number of requested characters is returned
-     * 
+     *
      * @param int $distance The number of characters to advance. If negative, the operation will seek back toward the beginning of the string
      */
     public function seek(int $distance): int;
@@ -55,17 +55,17 @@ interface Encoding {
     /** Seeks to the start of the string
      *
      * This is usually faster than using the seek method for the same purpose
-    */
+     */
     public function rewind();
 
     /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer
-     * 
+     *
      * @param int $num The number of characters to retrieve
      */
     public function peekChar(int $num = 1): string;
 
     /** Retrieves the next $num code points from the string, without advancing the character pointer
-     * 
+     *
      * @param int $num The number of code points to retrieve
      */
     public function peekCode(int $num = 1): array;
@@ -76,7 +76,7 @@ interface Encoding {
     /** Calculates the length of the string in code points
      *
      * Note that this may involve processing to the end of the string
-    */
+     */
     public function lenChar(): int;
 
     /** Returns whether the character pointer is at the end of the string */

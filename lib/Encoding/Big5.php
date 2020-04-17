@@ -22,7 +22,6 @@ class Big5 implements StatelessEncoding {
 
     protected $bufferedCode = 0;
 
-
     public function nextCode() {
         $this->posChar++;
         if ($this->bufferedCode > 0) {

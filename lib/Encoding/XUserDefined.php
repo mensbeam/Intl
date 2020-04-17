@@ -87,7 +87,7 @@ class XUserDefined implements Encoding {
     /** Calculates the length of the string in code points
      *
      * Note that this may involve processing to the end of the string
-    */
+     */
     public function lenChar(): int {
         return $this->lenByte;
     }

@@ -6,8 +6,6 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Test;
 
-use MensBeam\Intl\Encoding\EncoderException;
-
 abstract class CoderDecoderTest extends DecoderTest {
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         $class = $this->testedClass;
