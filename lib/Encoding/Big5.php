@@ -62,10 +62,8 @@ class Big5 implements StatelessEncoding {
                     return $code;
                 } else {
                     if ($b < 0x80) {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar -1, --$this->posByte - 1);
                     } else {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 2);
                     }
                 }
@@ -79,7 +77,6 @@ class Big5 implements StatelessEncoding {
         } else {
             // dirty EOF
             $this->dirtyEOF = 1;
-            $this->posErr = $this->posChar;
             return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
         }
     }

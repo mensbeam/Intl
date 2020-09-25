@@ -33,7 +33,6 @@ class EUCKR implements StatelessEncoding {
                 if ($b < 0x80) {
                     return $b;
                 } elseif ($b == 0x80 || $b == 0xFF) {
-                    $this->posErr = $this->posChar;
                     return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 1);
                 } else {
                     $lead = $b;
@@ -49,10 +48,8 @@ class EUCKR implements StatelessEncoding {
                     return $code;
                 } else {
                     if ($b < 0x80) {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar -1, --$this->posByte - 1);
                     } else {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 2);
                     }
                 }
@@ -66,7 +63,6 @@ class EUCKR implements StatelessEncoding {
         } else {
             // dirty EOF
             $this->dirtyEOF = 1;
-            $this->posErr = $this->posChar;
             return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
         }
     }

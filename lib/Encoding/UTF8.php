@@ -52,11 +52,9 @@ class UTF8 implements StatelessEncoding {
                     }
                     $point = $b & 0x7;
                 } else { // invalid byte
-                    $this->posErr = $this->posChar;
                     return $this->errDec($this->errMode, $this->posChar, $this->posByte);
                 }
             } elseif ($b < $lower || $b > $upper) {
-                $this->posErr = $this->posChar;
                 return $this->errDec($this->errMode, $this->posChar, $this->posByte--);
             } else {
                 $lower = 0x80;
