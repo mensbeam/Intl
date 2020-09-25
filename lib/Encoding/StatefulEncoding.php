@@ -8,11 +8,11 @@ namespace MensBeam\Intl\Encoding;
 
 interface StatefulEncoding extends Encoding {
 
-    /** Returns the encoding of $codePoint as a byte string
+    /** Returns the encoding of $codePoints as a byte string
      *
-     * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
+     * If any element of $codePoints is less than 0 or greater than 1114111, an exception is thrown
      *
-     * If $fatal is true, an exception will be thrown if the code point cannot be encoded into a character; otherwise HTML character references will be substituted
+     * If $fatal is true, an exception will be thrown if any code point cannot be encoded into a character; otherwise HTML character references will be substituted
      */
     public static function encode(array $codePoints, bool $fatal = true): string;
 }
