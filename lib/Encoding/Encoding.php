@@ -9,14 +9,11 @@ namespace MensBeam\Intl\Encoding;
 interface Encoding {
     const MODE_NULL = 0;
     const MODE_REPLACE = 1;
-    const MODE_HTML = 2;
-    const MODE_FATAL_DEC = 3;
-    const MODE_FATAL_ENC = 4;
+    const MODE_FATAL = 2;
 
     const E_INVALID_CODE_POINT = 1;
     const E_INVALID_BYTE = 2;
-    const E_INVALID_MODE = 3;
-    const E_UNAVAILABLE_CODE_POINT = 4;
+    const E_UNAVAILABLE_CODE_POINT = 3;
 
     /** Constructs a new decoder
      * @param bool $fatal If true, throw enceptions when encountering invalid input. If false, substitute U+FFFD REPLACEMENT CHARACTER instead

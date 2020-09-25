@@ -21,7 +21,7 @@ abstract class SingleByteEncoding implements StatelessEncoding {
             // if the byte is an ASCII character or end of input, simply return it
             return $b;
         } else {
-            return static::TABLE_DEC_CHAR[$p - 128] ?? UTF8::encode(static::err($this->errMode, [$this->posChar, $this->posChar]));
+            return static::TABLE_DEC_CHAR[$p - 128] ?? UTF8::encode($this->errDec($this->errMode, $this->posChar, $this->posChar));
         }
     }
 
@@ -37,7 +37,7 @@ abstract class SingleByteEncoding implements StatelessEncoding {
             // if the byte is an ASCII character or end of input, simply return it
             return $p;
         } else {
-            return static::TABLE_DEC_CODE[$p - 128] ?? static::err($this->errMode, [$this->posChar, $this->posChar]);
+            return static::TABLE_DEC_CODE[$p - 128] ?? $this->errDec($this->errMode, $this->posChar, $this->posChar);
         }
     }
 
@@ -47,7 +47,7 @@ abstract class SingleByteEncoding implements StatelessEncoding {
         } elseif ($codePoint < 128) {
             return chr($codePoint);
         } else {
-            return static::TABLE_ENC[$codePoint] ?? static::err($fatal ? self::MODE_FATAL_ENC : self::MODE_HTML, $codePoint);
+            return static::TABLE_ENC[$codePoint] ?? static::errEnc(!$fatal, $codePoint);
         }
     }
 
