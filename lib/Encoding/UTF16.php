@@ -6,9 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-abstract class UTF16 implements Encoding {
-    use GenericEncoding;
-
+abstract class UTF16 extends AbstractEncoding {
     protected $selfSynchronizing = true;
 
     public function nextCode() {

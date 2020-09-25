@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-trait GenericEncoding {
+abstract class AbstractEncoding implements Encoding {
     protected $string;
     protected $posByte = 0;
     protected $posChar = 0;

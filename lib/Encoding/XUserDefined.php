@@ -6,9 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class XUserDefined implements Encoding {
-    use GenericEncoding;
-
+class XUserDefined extends AbstractEncoding implements Encoding {
     const NAME = "x-user-defined";
     const LABELS = ["x-user-defined"];
 
