@@ -159,9 +159,9 @@ trait GenericEncoding {
     }
 
     /** Handles decoding errors */
-    protected function errDec(int $mode, int $charOffset = -1, int $byteOffset = -1) {
+    protected function errDec(int $mode, int $charOffset, int $byteOffset) {
         assert(in_array($mode, [self::MODE_NULL, self::MODE_REPLACE, self::MODE_FATAL]), "Invalid error mode $mode");
-        assert($mode !== self::MODE_FATAL || ($charOffset > -1 && $byteOffset > -1), "Offsets for error reporting not supplied");
+        $this->posErr = $this->posChar;
         switch ($mode) {
             case self::MODE_NULL:
                 // used internally during backward seeking for some encodings

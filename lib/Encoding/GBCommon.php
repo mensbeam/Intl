@@ -29,7 +29,6 @@ abstract class GBCommon implements StatelessEncoding {
                     $first = $b;
                     continue;
                 } else {
-                    $this->posErr = $this->posChar;
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                 }
             } elseif ($second === 0) {
@@ -42,10 +41,8 @@ abstract class GBCommon implements StatelessEncoding {
                         $pointer = ($first - 0x81) * 190 + ($b - $offset);
                         return self::TABLE_GBK[$pointer];
                     } elseif ($b < 0x80) {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar - 1, --$this->posByte);
                     } else {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                     }
                 }
@@ -55,7 +52,6 @@ abstract class GBCommon implements StatelessEncoding {
                     continue;
                 } else {
                     $this->posByte -= 2;
-                    $this->posErr = $this->posChar;
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                 }
             } else {
@@ -75,12 +71,10 @@ abstract class GBCommon implements StatelessEncoding {
                     if (isset($codePointOffset)) {
                         return $codePointOffset + $pointer - $offset;
                     } else {
-                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                     }
                 } else {
                     $this->posByte -= 3;
-                    $this->posErr = $this->posChar;
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                 }
             }
@@ -93,7 +87,6 @@ abstract class GBCommon implements StatelessEncoding {
         } else {
             // dirty EOF; note how many bytes the last character had
             $this->dirtyEOF = ($third ? 3 : ($second ? 2 : 1));
-            $this->posErr = $this->posChar;
             return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
         }
     }

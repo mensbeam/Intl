@@ -33,6 +33,7 @@ abstract class UTF16 implements Encoding {
                         return $lead_s;
                     } else {
                         $this->posByte -= 2;
+                        $this->posErr = $this->posChar;
                         return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 2);
                     }
                 } else {
@@ -43,6 +44,7 @@ abstract class UTF16 implements Encoding {
                         if ($this->allowSurrogates) {
                             return $code;
                         } else {
+                            $this->posErr = $this->posChar;
                             return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 2);
                         }
                     } else {
