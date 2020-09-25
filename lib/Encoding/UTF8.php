@@ -12,6 +12,8 @@ class UTF8 implements StatelessEncoding {
     const NAME = "UTF-8";
     const LABELS = ["unicode-1-1-utf-8", "utf-8", "utf8"];
 
+    protected $selfSynchronizing = true;
+
     public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // optimization for ASCII characters

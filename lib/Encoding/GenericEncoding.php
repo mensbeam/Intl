@@ -15,6 +15,7 @@ trait GenericEncoding {
     protected $dirtyEOF = 0;
     protected $errMode = self::MODE_REPLACE;
     protected $allowSurrogates = false;
+    protected $selfSynchronizing = false;
 
     public $posErr = 0;
 
