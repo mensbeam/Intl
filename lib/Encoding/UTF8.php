@@ -6,9 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class UTF8 implements StatelessEncoding {
-    use GenericEncoding;
-
+class UTF8 extends AbstractEncoding implements StatelessEncoding {
     const NAME = "UTF-8";
     const LABELS = ["unicode-1-1-utf-8", "utf-8", "utf8"];
 

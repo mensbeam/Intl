@@ -6,9 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-abstract class SingleByteEncoding implements StatelessEncoding {
-    use GenericEncoding;
-
+abstract class SingleByteEncoding extends AbstractEncoding implements StatelessEncoding {
     protected $selfSynchronizing = true;
 
     public function nextChar(): string {
