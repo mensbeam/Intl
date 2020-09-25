@@ -21,7 +21,7 @@ trait GenericEncoding {
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         $this->string = $string;
         $this->lenByte = strlen($string);
-        $this->errMode = $fatal ? self::MODE_FATAL_DEC : self::MODE_REPLACE;
+        $this->errMode = $fatal ? self::MODE_FATAL : self::MODE_REPLACE;
         $this->allowSurrogates = $allowSurrogates;
     }
 
@@ -158,27 +158,28 @@ trait GenericEncoding {
         }
     }
 
-    /** Handles decoding and encoding errors */
-    protected static function err(int $mode, $data = null) {
+    /** Handles decoding errors */
+    protected function errDec(int $mode, int $charOffset = -1, int $byteOffset = -1) {
+        assert(in_array($mode, [self::MODE_NULL, self::MODE_REPLACE, self::MODE_FATAL]), "Invalid error mode $mode");
+        assert($mode !== self::MODE_FATAL || ($charOffset > -1 && $byteOffset > -1), "Offsets for error reporting not supplied");
         switch ($mode) {
             case self::MODE_NULL:
                 // used internally during backward seeking for some encodings
                 return null; // @codeCoverageIgnore
             case self::MODE_REPLACE:
-                // standard "replace" mode
                 return 0xFFFD;
-            case self::MODE_HTML:
-                // the "html" replacement mode; not applicable to Unicode transformation formats
-                return "&#".(string) $data.";";
-            case self::MODE_FATAL_DEC:
-                // fatal replacement mode for decoders
-                throw new DecoderException("Invalid code sequence at character offset {$data[0]} (byte offset {$data[1]})", self::E_INVALID_BYTE);
-            case self::MODE_FATAL_ENC:
-                // fatal replacement mode for encoders; not applicable to Unicode transformation formats
-                throw new EncoderException("Code point $data not available in target encoding", self::E_UNAVAILABLE_CODE_POINT);
-            default:
-                // indicative of internal bug; should never be triggered
-                throw new DecoderException("Invalid replacement mode {$mode}", self::E_INVALID_MODE); // @codeCoverageIgnore
+            case self::MODE_FATAL:
+                throw new DecoderException("Invalid code sequence at character offset $charOffset (byte offset $byteOffset)", self::E_INVALID_BYTE);
+        }
+    }
+
+    /** Handles encoding errors */
+    protected static function errEnc(bool $htmlMode, $data = null) {
+        if ($htmlMode) {
+            return "&#".(string) $data.";";
+        } else {
+            // fatal replacement mode for encoders; not applicable to Unicode transformation formats
+            throw new EncoderException("Code point $data not available in target encoding", self::E_UNAVAILABLE_CODE_POINT);
         }
     }
 }

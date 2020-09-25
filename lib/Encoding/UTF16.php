@@ -33,7 +33,7 @@ abstract class UTF16 implements Encoding {
                         return $lead_s;
                     } else {
                         $this->posByte -= 2;
-                        return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 2]);
+                        return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 2);
                     }
                 } else {
                     if ($code >= 0xD800 && $code <= 0xDBFF) {
@@ -43,7 +43,7 @@ abstract class UTF16 implements Encoding {
                         if ($this->allowSurrogates) {
                             return $code;
                         } else {
-                            return self::err($this->errMode, [$this->posChar - 1, $this->posByte - 2]);
+                            return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 2);
                         }
                     } else {
                         return $code;
@@ -60,7 +60,7 @@ abstract class UTF16 implements Encoding {
             // dirty EOF; note how many bytes the last character had
             // properly synchronizing UTF-16 is possible without retaining this information, but retaining it makes the task easier
             $this->dirtyEOF = ($lead_s && $lead_b ? 3 : ($lead_s ? 2 : 1));
-            return self::err($this->errMode, [$this->posChar - 1, $this->posByte - $this->dirtyEOF]);
+            return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
         }
     }
 

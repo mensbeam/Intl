@@ -39,7 +39,7 @@ class Big5 implements StatelessEncoding {
                 if ($b < 0x80) {
                     return $b;
                 } elseif ($b == 0x80 || $b == 0xFF) {
-                    return self::err($this->errMode, [$this->posChar -1, $this->posByte - 1]);
+                    return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 1);
                 } else {
                     $lead = $b;
                     continue;
@@ -63,10 +63,10 @@ class Big5 implements StatelessEncoding {
                 } else {
                     if ($b < 0x80) {
                         $this->posErr = $this->posChar;
-                        return self::err($this->errMode, [$this->posChar -1, --$this->posByte - 1]);
+                        return $this->errDec($this->errMode, $this->posChar -1, --$this->posByte - 1);
                     } else {
                         $this->posErr = $this->posChar;
-                        return self::err($this->errMode, [$this->posChar -1, $this->posByte - 2]);
+                        return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 2);
                     }
                 }
             }
@@ -80,7 +80,7 @@ class Big5 implements StatelessEncoding {
             // dirty EOF
             $this->dirtyEOF = 1;
             $this->posErr = $this->posChar;
-            return self::err($this->errMode, [$this->posChar - 1, $this->posByte - $this->dirtyEOF]);
+            return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
         }
     }
 
@@ -97,7 +97,7 @@ class Big5 implements StatelessEncoding {
                 $offset = ($trail < 0x3F) ? 0x40 : 0x62;
                 return chr($lead).chr($trail + $offset);
             } else {
-                return self::err($fatal ? self::MODE_FATAL_ENC : self::MODE_HTML, $codePoint);
+                return self::errEnc(!$fatal, $codePoint);
             }
         }
     }

@@ -34,7 +34,7 @@ class EUCKR implements StatelessEncoding {
                     return $b;
                 } elseif ($b == 0x80 || $b == 0xFF) {
                     $this->posErr = $this->posChar;
-                    return self::err($this->errMode, [$this->posChar -1, $this->posByte - 1]);
+                    return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 1);
                 } else {
                     $lead = $b;
                     continue;
@@ -50,10 +50,10 @@ class EUCKR implements StatelessEncoding {
                 } else {
                     if ($b < 0x80) {
                         $this->posErr = $this->posChar;
-                        return self::err($this->errMode, [$this->posChar -1, --$this->posByte - 1]);
+                        return $this->errDec($this->errMode, $this->posChar -1, --$this->posByte - 1);
                     } else {
                         $this->posErr = $this->posChar;
-                        return self::err($this->errMode, [$this->posChar -1, $this->posByte - 2]);
+                        return $this->errDec($this->errMode, $this->posChar -1, $this->posByte - 2);
                     }
                 }
             }
@@ -67,7 +67,7 @@ class EUCKR implements StatelessEncoding {
             // dirty EOF
             $this->dirtyEOF = 1;
             $this->posErr = $this->posChar;
-            return self::err($this->errMode, [$this->posChar - 1, $this->posByte - $this->dirtyEOF]);
+            return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
         }
     }
 
@@ -83,7 +83,7 @@ class EUCKR implements StatelessEncoding {
                 $trail = ($pointer % 190) + 0x41;
                 return chr($lead).chr($trail);
             } else {
-                return self::err($fatal ? self::MODE_FATAL_ENC : self::MODE_HTML, $codePoint);
+                return self::errEnc(!$fatal, $codePoint);
             }
         }
     }
