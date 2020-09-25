@@ -9,6 +9,8 @@ namespace MensBeam\Intl\Encoding;
 abstract class UTF16 implements Encoding {
     use GenericEncoding;
 
+    protected $selfSynchronizing = true;
+
     public function nextCode() {
         $lead_b = null;
         $lead_s = null;

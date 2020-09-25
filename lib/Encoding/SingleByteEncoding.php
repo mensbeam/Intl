@@ -9,6 +9,8 @@ namespace MensBeam\Intl\Encoding;
 abstract class SingleByteEncoding implements StatelessEncoding {
     use GenericEncoding;
 
+    protected $selfSynchronizing = true;
+
     public function nextChar(): string {
         // get the byte at the current position
         $b = @$this->string[$this->posChar];
