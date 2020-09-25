@@ -77,6 +77,11 @@ class XUserDefined extends AbstractEncoding implements Encoding {
         }
     }
 
+    protected function seekBack(int $distance): int {
+        // stub: not used
+        return 0;
+    }
+
     /** Returns the current byte position of the decoder */
     public function posByte(): int {
         return $this->posChar;

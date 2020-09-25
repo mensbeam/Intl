@@ -19,6 +19,8 @@ abstract class AbstractEncoding implements Encoding {
 
     public $posErr = 0;
 
+    abstract protected function seekBack(int $distance): int;
+
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         $this->string = $string;
         $this->lenByte = strlen($string);
