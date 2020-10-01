@@ -7,15 +7,32 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 abstract class AbstractEncoding implements Encoding {
+    /** @var string $string The string being decoded */
     protected $string;
+    /** @var int $posByte The current byte position in the string */
     protected $posByte = 0;
+    /** @var int $posChar The current character (code point) position in the string */
     protected $posChar = 0;
+    /** @var int $lenByte The length of the string, in bytes */
     protected $lenByte = null;
+    /** @var int $lenChar The length of the string in characters, if known */
     protected $lenChar = null;
+    /** To be removed */
     protected $dirtyEOF = 0;
+    /** @var array $errStack A list of error data to aid in backwards seeking; the most recent error is kept off the stack */
+    protected $errStack = [];
+    /** @var int $errMark The byte position marking the most recent error. The one or more bytes previous to this position constitute an invalid character */
+    protected $errMark = -1;
+    /** @var int $errSync The byte position to which to move to skip over the most recent erroneous character */
+    protected $errSync = -2;
+    /** @var int $errMode The selected error mode (fatal or replace) */
     protected $errMode = self::MODE_REPLACE;
+    /** @var bool $allowSurrogates Whether surrogates in encodings other than UTF-16 should be passed through */
     protected $allowSurrogates = false;
+    /** @var bool $selfSynchronizing Whether the concrete class represents a self-synchronizing decoder. Such decoders do not use the error stack */
     protected $selfSynchronizing = false;
+    /** @var string[] $stateProps The list of properties which constitutee state which must be saved when peeking/seeking; some encodings may add to this last for their own purposes */
+    protected $stateProps = ["posChar", "posByte", "posErr", "errStack", "errMark", "errSync"];
 
     public $posErr = 0;
 
@@ -147,11 +164,11 @@ abstract class AbstractEncoding implements Encoding {
 
     /** Returns a copy of the decoder's state to keep in memory */
     protected function stateSave(): array {
-        return [
-            'posChar' => $this->posChar,
-            'posByte' => $this->posByte,
-            'posErr'  => $this->posErr,
-        ];
+        $out = [];
+        foreach ($this->stateProps as $prop) {
+            $out[$prop] = $this->$prop;
+        }
+        return $out;
     }
 
     /** Sets the decoder's state to the values specified */
@@ -164,16 +181,22 @@ abstract class AbstractEncoding implements Encoding {
     /** Handles decoding errors */
     protected function errDec(int $mode, int $charOffset, int $byteOffset) {
         assert(in_array($mode, [self::MODE_NULL, self::MODE_REPLACE, self::MODE_FATAL]), "Invalid error mode $mode");
-        $this->posErr = $this->posChar;
-        switch ($mode) {
-            case self::MODE_NULL:
-                // used internally during backward seeking for some encodings
-                return null; // @codeCoverageIgnore
-            case self::MODE_REPLACE:
-                return 0xFFFD;
-            case self::MODE_FATAL:
+        if ($mode !== self::MODE_NULL) {
+            // expose the error to the user; this disambiguates a literal replacement character
+            $this->posErr = $this->posChar;
+            // unless the decoder is self-synchronizing, mark the error so that it can be skipped when seeking back
+            if (!$this->selfSynchronizing) {
+                $this->errStack[] = [$this->errMark, $this->errSync];
+                $this->errMark = $this->posByte;
+                $this->errSync = $byteOffset;
+            }
+            if ($mode === self::MODE_FATAL) {
                 throw new DecoderException("Invalid code sequence at character offset $charOffset (byte offset $byteOffset)", self::E_INVALID_BYTE);
+            } else {
+                return 0xFFFD;
+            }
         }
+        return null;
     }
 
     /** Handles encoding errors */

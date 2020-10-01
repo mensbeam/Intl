@@ -31,7 +31,7 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\EUCKR::encode
-     * @covers MensBeam\Intl\Encoding\EUCKR::err
+     * @covers MensBeam\Intl\Encoding\EUCKR::errEnc
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
@@ -112,7 +112,7 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\EUCKR::err
+     * @covers MensBeam\Intl\Encoding\EUCKR::errDec
      */
     public function testReplacementModes() {
         return parent::testReplacementModes();
