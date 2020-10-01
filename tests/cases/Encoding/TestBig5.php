@@ -31,7 +31,7 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\Big5::encode
-     * @covers MensBeam\Intl\Encoding\Big5::err
+     * @covers MensBeam\Intl\Encoding\Big5::errEnc
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
@@ -112,7 +112,7 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\Big5::err
+     * @covers MensBeam\Intl\Encoding\Big5::errDec
      */
     public function testReplacementModes() {
         return parent::testReplacementModes();

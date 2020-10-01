@@ -36,9 +36,9 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\GB18030::encode
-     * @covers MensBeam\Intl\Encoding\GB18030::err
+     * @covers MensBeam\Intl\Encoding\GB18030::errEnc
      * @covers MensBeam\Intl\Encoding\GBK::encode
-     * @covers MensBeam\Intl\Encoding\GBK::err
+     * @covers MensBeam\Intl\Encoding\GBK::errEnc
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp, $class = self::class) {
         $this->testedClass = $class;
@@ -120,7 +120,7 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\GB18030::err
+     * @covers MensBeam\Intl\Encoding\GB18030::errDec
      */
     public function testReplacementModes() {
         return parent::testReplacementModes();

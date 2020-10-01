@@ -102,7 +102,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\UTF16::err
+     * @covers MensBeam\Intl\Encoding\UTF16::errDec
      */
     public function testReplacementModes() {
         return parent::testReplacementModes();

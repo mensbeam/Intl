@@ -186,7 +186,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideBrokenStrings
-     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::err
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::errDec
      */
     public function testReplacementModes(string $input = "", string $class = SingleByteEncoding::class) {
         $this->testedClass = $class;
@@ -286,7 +286,7 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideInvalids
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::encode
-     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::err
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::errEnc
      */
     public function testEncodeInvalidCodePoints(string $class, bool $mode, int $input, $exp) {
         if ($exp instanceof \Throwable) {
