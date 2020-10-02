@@ -95,24 +95,22 @@ class UTF8 extends AbstractEncoding implements StatelessEncoding {
         while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
-            $pos = $this->posByte - 1;
-            $b = ord(@$this->string[$pos]);
+            $b = ord(@$this->string[$this->posByte - 1]);
             if ($b < 0x80) {
                 // if the byte is an ASCII byte or the end of input, then this is already a synchronized position
-                $this->posByte = $pos;
+                $this->posByte--;
             } else {
-                $s = $pos;
-                while ($b >= 0x80 && $b <= 0xBF && $pos > 0 && ($s - $pos) < 3) { // go back at most three bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
+                $s = $this->posByte;
+                $pos = $s - 1;
+                while ($b >= 0x80 && $b <= 0xBF && $pos > 0 && ($s - $pos) < 4) { // go back at most four bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
                     $b = ord(@$this->string[--$pos]);
                 }
                 $this->posByte = $pos;
                 // decrement the character position because nextCode() increments it
                 $this->posChar--;
-                if (is_null($this->nextCode())) {
-                    $this->posByte = $s;
-                } else {
-                    $this->posByte = ($this->posByte > $s) ? $pos : $s;
-                }
+                // check for overlong sequences: if the sequence is overlong consuming the character will yield an earlier position than where we started
+                $this->nextCode();
+                $this->posByte = ($this->posByte < $s) ? $s - 1 : $pos;
             }
         }
         return $distance;
