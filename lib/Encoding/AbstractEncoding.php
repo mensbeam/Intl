@@ -32,7 +32,7 @@ abstract class AbstractEncoding implements Encoding {
     /** @var bool $selfSynchronizing Whether the concrete class represents a self-synchronizing decoder. Such decoders do not use the error stack */
     protected $selfSynchronizing = false;
     /** @var string[] $stateProps The list of properties which constitutee state which must be saved when peeking/seeking; some encodings may add to this last for their own purposes */
-    protected $stateProps = ["posChar", "posByte", "posErr", "errStack", "errMark", "errSync"];
+    protected $stateProps = ["posChar", "posByte", "posErr"];
 
     public $posErr = 0;
 
@@ -164,7 +164,7 @@ abstract class AbstractEncoding implements Encoding {
 
     /** Returns a copy of the decoder's state to keep in memory */
     protected function stateSave(): array {
-        $out = [];
+        $out = ['errCount' => sizeof($this->errStack)];
         foreach ($this->stateProps as $prop) {
             $out[$prop] = $this->$prop;
         }
@@ -173,6 +173,10 @@ abstract class AbstractEncoding implements Encoding {
 
     /** Sets the decoder's state to the values specified */
     protected function stateApply(array $state) {
+        while (sizeof($this->errStack) > $state['errCount']) {
+            list($this->errMark, $this->errSync) = array_pop($this->errStack);
+        }
+        unset($state['errCount']);
         foreach ($state as $key => $value) {
             $this->$key = $value;
         }
