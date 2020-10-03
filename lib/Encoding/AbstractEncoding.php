@@ -17,8 +17,6 @@ abstract class AbstractEncoding implements Encoding {
     protected $lenByte = null;
     /** @var int $lenChar The length of the string in characters, if known */
     protected $lenChar = null;
-    /** To be removed */
-    protected $dirtyEOF = 0;
     /** @var array $errStack A list of error data to aid in backwards seeking; the most recent error is kept off the stack */
     protected $errStack = [];
     /** @var int $errMark The byte position marking the most recent error. The one or more bytes previous to this position constitute an invalid character */
@@ -88,13 +86,6 @@ abstract class AbstractEncoding implements Encoding {
             $distance = abs($distance);
             if (!$this->posChar) {
                 return $distance;
-            }
-            if ($this->dirtyEOF > 0) {
-                // if we are at the end of the string and it did not terminate cleanly, go back the correct number of dirty bytes to seek through the last character
-                $this->posByte -= $this->dirtyEOF;
-                $this->dirtyEOF = 0;
-                $distance--;
-                $this->posChar--;
             }
             $mode = $this->errMode;
             $this->errMode = self::MODE_NULL;
