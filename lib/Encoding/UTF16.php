@@ -8,6 +8,7 @@ namespace MensBeam\Intl\Encoding;
 
 abstract class UTF16 extends AbstractEncoding {
     protected $selfSynchronizing = true;
+    protected $dirtyEOF = 0;
 
     public function nextCode() {
         $lead_b = null;
@@ -80,6 +81,12 @@ abstract class UTF16 extends AbstractEncoding {
 
     /** Implements backward seeking $distance characters */
     protected function seekBack(int $distance): int {
+        if ($this->dirtyEOF && $distance) {
+            $distance--;
+            $this->posChar--;
+            $this->posByte -= $this->dirtyEOF;
+            $this->dirtyEOF = 0;
+        }
         while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
