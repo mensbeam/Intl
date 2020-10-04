@@ -136,6 +136,14 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
+
+    /**
+     * @covers MensBeam\Intl\Encoding\EUCKR::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideCodePoints() {
         return [
             'U+0064 (HTML)'    => [false, 0x64, "64"],

@@ -9,6 +9,7 @@ namespace MensBeam\Intl\Test;
 use MensBeam\Intl\Encoding\DecoderException;
 
 abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
+    protected $random = "L51yGwEFuatjbZi7wgNC80qYncvauVm1Lh8vCSK/KJs6QxoynMU8TCamx5TNhbjeh5VpWqQ0Q1j/W6u4O/InxBDxk8g83azJFQHzU+L7Npk0bkdofFv2AHDI2SUlXotYeEOnkKa/c6eQiDk8NapS0LGnb64ypKASacAMp6s2wSUU03l6iVVapHsNBgYs0cD++vnG8ckgbGsV3KkE3Lh601u6jviDyeRwbTxLZcUfSS2uIzrvvGWFfw6D4/FOa3uTR1k2Ya6jT+T/F+OdMgWlUPouuAVgLuvFxj9v9ZBnI+FAFc0kX4aT/JoTuBGMm8YS4xPVvczdrPXCUijML5TZrU201uFqeB9LDDWULp1Ai9d41fcD/8GBFrzlpXPIV+hsSJ4HvWswXdDeVKWgSMrQ78pf+zwvD66TA4FjMiEsLLpf9bb+mPiS2Aa3BP0JpjPwi0gdBu8QipLXNGFUUGW/15jGlj3eNynELRAtvyYZnoYIYShsN1TIU+buw8hHOp9iKsKT+fqPaEuuLLtlJ/cqhcxaZhbaWRB6vCQW9mO7f8whl7cpbBOO+NwDDCJZCsULh7rINF2omkexfOZzQSt/LC3yw+Pzqrf5Pmp5YgpMvoNgHcY1FkpsHc48IHMsJ+gex2zltIG51TQBAhy/fWF0KIqd+IPT+qngVGYIw/WuXj0LaK7XIVp33tc6fzuXNv+GUzYwpv4k9ry8R/DW8EX572FXFA49HHxbytSIJLD/+KpE2CE1WOr3ONwOXm6WduUBmFi4bwlRrCKnHqnFtLztVdLwMOauFa8N822XoAnWvHs+8R1DLHtgUyZas3ktp/qjMp5oVsb2PO+VpPFHIighHySgljrPl+sKaPULh7P/rAHXOuS9p9zTZKHrQ4nccl8SnYZlHKdioWo1NK5LRZB0PXYH8Ytu8aWVBmb4lAlpAFbSTqtOhydUJ/lyM29STG5mTV3rbG6tWMsUXBpaX4PrGCnhj40RVdz0BzsgvzLu4PNI+s3TJ6ZKV4hGS5on040xMDC2423DpKHPNa7mbl7J036dFt0JcYeGu07maGxssJnwLbebg5cm36Ecea7cTBWEGFMqiFjLoBEu0Y2CfF/GEbwqOf55/p1ewaZMrunFKd/Mj89qyYU5bp6mwmXSwj10psAA+qtXYm3XzRrLHKfCuiukyPEtvI+RdjbQDtMP1vF5qkmjlQLHXvEDpviJMaqvIPkjGrZkvAej1JX5yka50z0od9LLz8TIernjLLoVZ+cWtpd3kchO6w+zTpIOups4HdD66zaiPJrXIrJwi5bIgwTOWLhVs3ufZ0loFjlWWUh5FlTW+oWl1AD4h/yPBHWglqfMaTTqH75B4XEriy+Bw9k=";
     protected $lowerA = "a";
 
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
@@ -287,6 +288,22 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
     public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
         $exp = $relaxedExp ?? $strictExp;
         $this->iterateThroughAString($input, $exp, true);
+    }
+
+    public function testSeekBackOverRandomData() {
+        $class = $this->testedClass;
+        $bytes = base64_decode($this->random);
+        $i = new $class($bytes);
+        $fwd = [];
+        do {
+            $fwd[] = [$i->posByte(), $i->nextCode()];
+        } while ($i->posByte() < strlen($bytes));
+        while (sizeof($fwd)) {
+            list($expPos, $expCode) = array_pop($fwd);
+            $this->assertSame(0, $i->seek(-1), "Start of string reached prematureley");
+            $this->assertSame($expPos, $i->posByte(), "Position desynchronized");
+            $this->assertSame($expCode, $i->peekCode(1)[0], "Incorrect character decoded at byte position $expPos");
+        }
     }
 
     protected function iterateThroughAString(string $input, array $exp, bool $allowSurrogates) {
