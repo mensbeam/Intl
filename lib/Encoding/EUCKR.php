@@ -87,25 +87,34 @@ class EUCKR extends AbstractEncoding implements StatelessEncoding {
         while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
+            if ($this->posByte === $this->errMark) { // the previous character was malformed
+                // move to the correct sync position, pop the error stack, and continue
+                $this->posByte = $this->errSync;
+                list($this->errMark, $this->errSync) = array_pop($this->errStack);
+                continue;
+            }
             // go back one byte
             $b1 = ord(@$this->string[--$this->posByte]);
-            if ($b1 < 0x41 || $this->posByte == 0) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
+            if ($b1 < 0x41 || $this->posByte === $this->errMark || $this->posByte == 0) { // these bytes never appear in sequences, a byte coming after an error is necessarily its own character, and the first byte is necessarily the start of a sequence
                 // the byte is a character
                 continue;
             }
             // go back a second byte
             $b2 = ord(@$this->string[--$this->posByte]);
-            if ($b2 < 0x81 || $b2 == 0xFF) { // these bytes never appear in the lead of a sequence
+            if ($b2 < 0x80) { // these bytes never appear in the lead of a sequence
                 // the first byte was a character
                 $this->posByte += 1;
+                continue;
+            } elseif ($b1 > 0x7F && $b2 > 0x7F) { // two non-ASCII bytes in a row with no error necessarily form a sequence
+                // the second byte is a charactrer
                 continue;
             } else { // the second byte is part of a two-byte sequence, but it's unclear if it's the lead or trail byte
                 $start = $this->posByte + 2;
                 $pos = $this->posByte;
-                // go back bytes until a definite trail byte or start of string
-                while ($pos > 0) {
+                // go back bytes until an error mark, an ASCII byte, or start of string
+                while ($pos > 0 && $pos > $this->errMark) {
                     $b = ord(@$this->string[--$pos]);
-                    if ($b < 0x81 || $b == 0xFF) {
+                    if ($b < 0x80) {
                         $pos++;
                         break;
                     }
@@ -115,17 +124,8 @@ class EUCKR extends AbstractEncoding implements StatelessEncoding {
                     $this->posByte += 1;
                     continue;
                 } else { // the number of bytes is even
-                    // we have to consume the sequence to ascertain whether it is one character (valid or high trail) or two (invalid  with ASCII trail)
-                    $this->posChar--;
-                    $this->nextCode();
-                    if ($this->posByte < $start) { // two characters
-                        // nothing more to do; byte position is already correct
-                        continue;
-                    } else { // one character
-                        // go back two bytes
-                        $this->posByte -= 2;
-                        continue;
-                    }
+                    // the second byte was a character
+                    continue;
                 }
             }
         }
