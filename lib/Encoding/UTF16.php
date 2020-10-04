@@ -10,6 +10,11 @@ abstract class UTF16 extends AbstractEncoding {
     protected $selfSynchronizing = true;
     protected $dirtyEOF = 0;
 
+    public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
+        $this->stateProps[] = "dirtyEOF";
+        parent::__construct($string, $fatal, $allowSurrogates);
+    }
+
     public function nextCode() {
         $lead_b = null;
         $lead_s = null;

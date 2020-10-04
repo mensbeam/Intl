@@ -34,14 +34,18 @@ abstract class GBCommon extends AbstractEncoding implements StatelessEncoding {
                     $second = $b;
                     continue;
                 } else {
+                    $codePoint = null;
                     if (($b > 0x3A && $b < 0x7F) || ($b > 0x7F && $b < 0xFF)) {
                         $offset = ($b < 0x7F) ? 0x40 : 0x41;
                         $pointer = ($first - 0x81) * 190 + ($b - $offset);
-                        return self::TABLE_GBK[$pointer];
+                        $codePoint = self::TABLE_GBK[$pointer] ?? null;
+                    }
+                    if (!is_null($codePoint)) {
+                        return $codePoint;
                     } elseif ($b < 0x80) {
-                        return $this->errDec($this->errMode, $this->posChar - 1, --$this->posByte);
+                        return $this->errDec($this->errMode, $this->posChar - 1, --$this->posByte - 1);
                     } else {
-                        return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
+                        return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 2);
                     }
                 }
             } elseif ($third === 0) {
@@ -69,7 +73,7 @@ abstract class GBCommon extends AbstractEncoding implements StatelessEncoding {
                     if (isset($codePointOffset)) {
                         return $codePointOffset + $pointer - $offset;
                     } else {
-                        return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
+                        return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 4);
                     }
                 } else {
                     $this->posByte -= 3;
@@ -83,9 +87,8 @@ abstract class GBCommon extends AbstractEncoding implements StatelessEncoding {
             $this->posChar--;
             return false;
         } else {
-            // dirty EOF; note how many bytes the last character had
-            $this->dirtyEOF = ($third ? 3 : ($second ? 2 : 1));
-            return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - $this->dirtyEOF);
+            // dirty EOF
+            return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - ($third ? 3 : ($second ? 2 : 1)));
         }
     }
 
@@ -135,6 +138,12 @@ abstract class GBCommon extends AbstractEncoding implements StatelessEncoding {
         while ($distance > 0 && $this->posByte > 0) {
             $distance--;
             $this->posChar--;
+            if ($this->posByte === $this->errMark) { // the previous character was malformed
+                // move to the correct sync position, pop the error stack, and continue
+                $this->posByte = $this->errSync;
+                list($this->errMark, $this->errSync) = array_pop($this->errStack);
+                continue;
+            }
             // go back one byte
             $b1 = ord(@$this->string[--$this->posByte]);
             if ($b1 < 0x30 || $b1 == 0x7F || $this->posByte == 0) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
