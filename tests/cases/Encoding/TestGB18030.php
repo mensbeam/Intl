@@ -196,6 +196,14 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         }
     }
 
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideStrings() {
         return [
             'empty string' => ["", []],

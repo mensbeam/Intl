@@ -136,6 +136,14 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
+
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF8::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideCodePoints() {
         return [
             'U+007A (HTML)'    => [false, 0x7A, "7A"],
