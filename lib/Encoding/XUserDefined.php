@@ -77,6 +77,8 @@ class XUserDefined extends AbstractEncoding implements Encoding {
         }
     }
 
+
+    /** @codeCoverageIgnore */
     protected function seekBack(int $distance): int {
         // stub: not used
         return 0;

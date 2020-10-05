@@ -146,49 +146,61 @@ abstract class GBCommon extends AbstractEncoding implements StatelessEncoding {
             }
             // go back one byte
             $b1 = ord(@$this->string[--$this->posByte]);
-            if ($b1 < 0x30 || $b1 == 0x7F || $this->posByte == 0) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
+            if ($b1 > 0x80) { // only GBK characters end in high bytes
+                // the preceeding byte starts the character
+                $this->posByte--;
+                continue;
+            } elseif ($b1 < 0x30 || $this->errMark === $this->posByte || $this->posByte === 0) { // the byte is unambiguously a single-byte character
                 // the byte is a character
                 continue;
-            }
-            // go back a second byte
-            $b2 = ord(@$this->string[--$this->posByte]);
-            if ($b2 < 0x81 || $b2 == 0xFF) { // these bytes never appear second-to-last in a sequence
-                // the first byte was a character
-                $this->posByte += 1;
-                continue;
-            } elseif ($b1 < 0x40 && $this->posByte < 2) { // byte values indicate a four-byte character, but there are insufficient bytes in the string
-                // the first byte was a character
-                $this->posByte += 1;
-                continue;
-            } elseif ($b1 > 0x39) { // the second byte is part of a two-byte sequence, but it's unclear if it's the lead or trail byte
-                $start = $this->posByte + 2;
-                // go back bytes until a definite trail byte or start of string
-                while ($this->posByte > 0) {
-                    $b2 = ord(@$this->string[--$this->posByte]);
-                    if ($b2 < 0x81 || $b2 == 0xFF) {
-                        $this->posByte++;
-                        break;
+            } elseif ($b1 >= 0x30 && $b1 <= 0x39) { // this can either be the last byte of a four-byte gb18030 character or an ASCII character
+                if ($this->posByte < 3) { // there are not enough bytes left for this to be a four-byte sequence
+                    // the byte is a character
+                    continue;
+                } elseif ($this->errMark > ($this->posByte - 3)) { // there was an error in what would otherwise be the four-byte sequence
+                    // the byte is a character
+                    continue;
+                }
+                // go back a second byte
+                $b2 = ord(@$this->string[$this->posByte - 1]);
+                if ($b2 > 0x80) {
+                    // go back a third byte
+                    $b3 = ord(@$this->string[$this->posByte - 2]);
+                    if ($b3 >= 0x30 && $b3 <= 0x39) {
+                        // the next byte starts the character
+                        $this->posByte -= 3;
+                        continue;
                     }
                 }
-                // if the number of ambiguous bytes is odd, the character is a single-byte character, otherwise it is double-byte
-                $this->posByte = $start - (($start - $this->posByte) % 2 ? 1 : 2);
+                // if the byte pattern doesn't match the first byte is a character
                 continue;
-            }
-            // go back a third byte
-            $b3 = ord(@$this->string[--$this->posByte]);
-            if ($b3 > 0x39 || $b3 < 0x30) { // these bytes never appear in the second position of a four-byte sequence
-                // the first byte was a character
-                $this->posByte += 2;
-                continue;
-            }
-            // go back a fourth byte
-            $b4 = ord(@$this->string[--$this->posByte]);
-            if (($b4 < 0x81 || $b4 == 0xFF)) { // these bytes never appear first in a four-byte sequence
-                // the first byte was a character
-                $this->posByte += 3;
-                continue;
-            } else {
-                // this is a four-byte character
+            } else { // this can either be the trail of a two-byte GBK character, or a single-byte character
+                // go back a second byte
+                $b2 = ord(@$this->string[--$this->posByte]);
+                if ($b2 < 0x81) { // these bytes never appear in the lead of a sequence
+                    // the first byte was a character
+                    $this->posByte += 1;
+                    continue;
+                } else { // the second byte is part of a two-byte sequence, but it's unclear if it's the lead or trail byte
+                    $start = $this->posByte + 2;
+                    $pos = $this->posByte;
+                    // go back bytes until an error mark, an ASCII byte, or start of string
+                    while ($pos > 0 && $pos > $this->errMark) {
+                        $b = ord(@$this->string[--$pos]);
+                        if ($b < 0x81) {
+                            $pos++;
+                            break;
+                        }
+                    }
+                    if (($start - $pos) % 2) { // the number of bytes is odd
+                        // the first byte was a character
+                        $this->posByte += 1;
+                        continue;
+                    } else { // the number of bytes is even
+                        // the second byte was a character
+                        continue;
+                    }
+                }
             }
         }
         return $distance;

@@ -117,6 +117,14 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
+
+    /**
+     * @coversNothing
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideStrings() {
         $a_bytes = [];
         $a_codes = [];
