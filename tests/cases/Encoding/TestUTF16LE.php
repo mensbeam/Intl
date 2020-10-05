@@ -126,6 +126,14 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
+
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF16::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideStrings() {
         return [
             // control samples

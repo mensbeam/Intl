@@ -70,6 +70,7 @@ abstract class SingleByteEncoding extends AbstractEncoding implements StatelessE
         }
     }
 
+    /** @codeCoverageIgnore */
     protected function seekBack(int $distance): int {
         // stub: not used
         return 0;
