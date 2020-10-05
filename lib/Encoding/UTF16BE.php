@@ -9,5 +9,8 @@ namespace MensBeam\Intl\Encoding;
 class UTF16BE extends UTF16 {
     const BE = true;
     const NAME = "UTF-16BE";
-    const LABELS = ["utf-16be"];
+    const LABELS = [
+        "unicodefffe", 
+        "utf-16be"
+    ];
 }

@@ -8,7 +8,13 @@ namespace MensBeam\Intl\Encoding;
 
 class Big5 extends AbstractEncoding implements StatelessEncoding {
     const NAME = "Big5";
-    const LABELS = ["big5", "big5-hkscs", "cn-big5", "csbig5", "x-x-big5"];
+    const LABELS = [
+        "big5", 
+        "big5-hkscs", 
+        "cn-big5", 
+        "csbig5", 
+        "x-x-big5"
+    ];
     const TABLE_DOUBLES = [
         1133 => [0x00CA, 0x0304],
         1135 => [0x00CA, 0x030C],
