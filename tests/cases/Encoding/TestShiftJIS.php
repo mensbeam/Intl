@@ -136,6 +136,14 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
+
+    /**
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideCodePoints() {
         return [
         ];

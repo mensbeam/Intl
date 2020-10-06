@@ -165,7 +165,34 @@ function eucjp(string $label) {
 
 function shiftjis(string $label) {
     $codes = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-jis0208.txt"));
-    echo "const TABLE_CODES = $codes;\n";
+    $table = eval("return $codes;");
+    // remove the block of pointers between 8272 and 8835
+    // see https://encoding.spec.whatwg.org#index-shift_jis-pointer
+    foreach (range(8272, 8835) as $pointer) {
+        unset($table[$pointer]);
+    }
+    // now search for each unique code point's first pointer in the table as normal
+    $enc = [];
+    $a = 0;
+    $points = array_unique($table);
+    sort($points);
+    foreach ($points as $point) {
+        // find the correct pointer
+        $pointer = array_search($point, $table);
+        // step the output array's key
+        if ($a == $point) {
+            $key = "";
+        } else {
+            $a = $point;
+            $key = "$point=>";
+        }
+        $a++;
+        $enc[] = "$key$pointer";
+    }
+    // compose the encoder table literal
+    $enc = "[".implode(",", $enc)."]";
+    echo "const TABLE_CODES_DEC = $codes;\n";
+    echo "const TABLE_CODES_ENC = $enc;\n";
 }
 
 // generic helper functions
