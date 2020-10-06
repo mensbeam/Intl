@@ -12,11 +12,21 @@ use MensBeam\Intl\Encoding\EncoderException;
 
 class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = EUCJP::class;
-    protected $seekString = "";
-    protected $seekCodes = [];
-    protected $seekOffsets = [];
+    /*
+        Char 0 U+007A   (1 byte)  Offset 0
+        Char 1 U+FF96   (2 bytes) Offset 1
+        Char 2 U+3088   (2 bytes) Offset 3
+        Char 3 U+FF0D   (2 bytes) Offset 5
+        Char 4 U+005C   (1 byte)  Offset 7
+        Char 5 U+FF9B   (2 bytes) Offset 8
+        Char 6 U+4F58   (3 bytes) Offset 10
+        End of string at char 7, offset 13
+    */
+    protected $seekString = "7A 8ED6 A4E8 A1DD 5C 8EDB 8FB0EF";
+    protected $seekCodes = [0x7A, 0xFF96, 0x3088, 0xFF0D, 0x5C, 0xFF9B, 0x4F58];
+    protected $seekOffsets = [0, 1, 3, 5, 7, 8, 10, 13];
     /* This string contains an invalid character sequence sandwiched between two null characters */
-    protected $brokenChar = "";
+    protected $brokenChar = "00 FF 00";
 
     /**
      * @dataProvider provideCodePoints
@@ -116,16 +126,69 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAString($input, $exp);
     }
 
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\EUCJP::nextCode
+     */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
+    }
+
+
+    /**
+     * @covers MensBeam\Intl\Encoding\EUCJP::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideCodePoints() {
-        return [];
+        return [
+            'U+0064 (HTML)'  => [false, 0x64, "64"],
+            'U+0064 (fatal)' => [true,  0x64, "64"],
+            'U+00A5 (HTML)'  => [false, 0xA5, "5C"],
+            'U+00A5 (fatal)' => [true,  0xA5, "5C"],
+            'U+203E (HTML)'  => [false, 0x203E, "7E"],
+            'U+203E (fatal)' => [true,  0x203E, "7E"],
+            'U+3088 (HTML)'  => [false, 0x3088, "A4 E8"],
+            'U+3088 (fatal)' => [true,  0x3088, "A4 E8"],
+            'U+FF96 (HTML)'  => [false, 0xFF96, "8E D6"],
+            'U+FF96 (fatal)' => [true,  0xFF96, "8E D6"],
+            'U+2212 (HTML)'  => [false, 0x2212, "A1 DD"],
+            'U+2212 (fatal)' => [true,  0x2212, "A1 DD"],
+            'U+00E6 (HTML)'  => [false, 0xE6, bin2hex("&#230;")],
+            'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+        ];
     }
 
     public function provideStrings() {
         return [
-'empty string' => ["", []],
-'sanity check' => ["40", [64]],
-'former ASCII deviations' => ["5C 7E", [92, 126]],
-'problem' => ["A1DD", [65293]],
+            'empty string' => ["", []],
+            'sanity check' => ["40", [64]],
+            'former ASCII deviations' => ["5C 7E", [92, 126]],
+            'changed multibyte index' => ["A1DD", [65293]],
+            'JIS X 0201 range' => ["8EA1 8EDF", [65377, 65439]],
+            'JIS X 0201 bogus range' => ["8EA0 8EE0", [65533, 65533]],
+            'JIS X 0201 truncated character 1' => ["8E", [65533]],
+            'JIS X 0201 truncated character 2' => ["8E 20", [65533, 32]],
+            'JIS X 0201 truncated character 3' => ["8E FF", [65533]],
+            'JIS X 0212 assigned range' => ["8FA2AF 8FEDE3", [728, 40869]],
+            'JIS X 0212 total range' => ["8FA1A1 8FFEFE", [65533, 65533]],
+            'JIS X 0212 bogus range 1' => ["8FA0A1 8FFFFE", [65533, 65533, 65533, 65533]],
+            'JIS X 0212 bogus range 2' => ["8FA1A0 8FFEFF", [65533, 65533]],
+            'JIS X 0212 truncated character 1' => ["8FA2", [65533]],
+            'JIS X 0212 truncated character 2' => ["8FA2 20", [65533, 32]],
+            'JIS X 0212 truncated character 3' => ["8FA2 FF", [65533]],
+            'JIS X 0208 assigned range' => ["A1A1 FCFE", [12288, 65282]],
+            'JIS X 0208 total range' => ["A1A1 FEFE", [12288, 65533]],
+            'JIS X 0208 bogus range' => ["A1A0 A0FE", [65533, 65533, 65533]],
+            'JIS X 0208 truncated character 1' => ["A1", [65533]],
+            'JIS X 0208 truncated character 2' => ["A1 20", [65533, 32]],
+            'JIS X 0208 truncated character 3' => ["A1 FF", [65533]],
         ];
     }
 
