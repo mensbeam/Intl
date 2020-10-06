@@ -71,7 +71,7 @@ class EUCKR extends AbstractEncoding implements StatelessEncoding {
         } elseif ($codePoint < 128) {
             return chr($codePoint);
         } else {
-            $pointer = array_flip(self::TABLE_CODES)[$codePoint] ?? null;
+            $pointer = array_flip(self::TABLE_CODES)[$codePoint] ?? null; // this is safe: the EUC-KR index has no duplicates
             if (isset($pointer)) {
                 $lead = (int) ($pointer / 190) + 0x81;
                 $trail = ($pointer % 190) + 0x41;

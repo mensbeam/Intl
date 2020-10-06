@@ -152,6 +152,8 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
             'U+3007 (HTML)'    => [false, 0x3007, "C6 E2"],
             'U+3007 (fatal)'   => [true,  0x3007, "C6 E2"],
+            'U+5341 (HTML)'    => [false, 0x5341, "A4 51"],
+            'U+5341 (fatal)'   => [true,  0x5341, "A4 51"],
             '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
             '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
             '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],

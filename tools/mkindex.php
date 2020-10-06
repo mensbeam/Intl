@@ -135,9 +135,31 @@ function euckr(string $label) {
 }
 
 function eucjp(string $label) {
-    $jis0208 = make_decoder_point_array(read_index("jis0208", "https://encoding.spec.whatwg.org/index-jis0208.txt"));
     $jis0212 = make_decoder_point_array(read_index("jis0212", "https://encoding.spec.whatwg.org/index-jis0212.txt"));
-    echo "const TABLE_JIS0208 = $jis0208;\n";
+    $jis0208 = make_decoder_point_array(read_index("jis0208", "https://encoding.spec.whatwg.org/index-jis0208.txt"));
+    $table = eval("return $jis0208;");
+    // search for each unique code point's first pointer in the table
+    $enc = [];
+    $a = 0;
+    $points = array_unique($table);
+    sort($points);
+    foreach ($points as $point) {
+        // find the correct pointer
+        $pointer = array_search($point, $table);
+        // step the output array's key
+        if ($a == $point) {
+            $key = "";
+        } else {
+            $a = $point;
+            $key = "$point=>";
+        }
+        $a++;
+        $enc[] = "$key$pointer";
+    }
+    // compose the encoder table literal
+    $enc = "[".implode(",", $enc)."]";
+    echo "const TABLE_JIS0208_DEC = $jis0208;\n";
+    echo "const TABLE_JIS0208_ENC = $enc;\n";
     echo "const TABLE_JIS0212 = $jis0212;\n";
 }
 
