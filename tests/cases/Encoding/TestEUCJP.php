@@ -160,6 +160,8 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
             'U+FFE2 (HTML)'  => [false, 0xFFE2, "A2 CC"],
             'U+FFE2 (fatal)' => [true,  0xFFE2, "A2 CC"],
+            'U=2116 (HTML)'  => [false, 0x2116, "AD E2"],
+            'U=2116 (fatal)' => [true,  0x2116, "AD E2"],
             '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
             '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
             '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],

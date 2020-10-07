@@ -48,25 +48,27 @@ if (!isset($labels[$label])) {
 // encoding-specific output generators
 
 function single_byte(string $label) {
-    $entries = read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt");
-    $dec_char = make_decoder_char_array($entries);
-    $dec_code = make_decoder_point_array($entries);
-    $enc = make_encoder_array($entries);
+    $table = read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt");
+    $dec_char = serialize_char_array($table);
+    $dec_code = serialize_point_array($table);
+    $enc = serialize_single_byte_array($table);
     echo "const TABLE_DEC_CHAR = $dec_char;\n";
     echo "const TABLE_DEC_CODE = $dec_code;\n";
     echo "const TABLE_ENC      = $enc;\n";
 }
 
 function gb18030(string $label) {
-    $dec_gbk = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt"));
+    $gbk = read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt");
+    $dec_gbk = serialize_point_array($gbk);
+    $enc_gbk = serialize_point_array(make_override_array($gbk));
     $ranges = read_index($label, "https://encoding.spec.whatwg.org/index-$label-ranges.txt");
     $dec_max = [];
     $dec_off = [];
-    foreach ($ranges as $match) {
+    foreach ($ranges as $pointer => $code) {
         // gather the range starts in one array; they will actually be used as range ends
-        $dec_max[] = (int) $match[1];
+        $dec_max[] = $pointer;
         // gather the starting code points in another array
-        $dec_off[] = hexdec($match[2]);
+        $dec_off[] = $code;
     }
     // fudge the top of the ranges
     // see https://encoding.spec.whatwg.org/#index-gb18030-ranges-code-point Step 1
@@ -77,13 +79,16 @@ function gb18030(string $label) {
     $dec_off[] = 0x110000;
     $dec_max = "[".implode(",", $dec_max)."]";
     $dec_off = "[".implode(",", $dec_off)."]";
-    echo "const TABLE_GBK = $dec_gbk;\n";
+    echo "const TABLE_CODES = $dec_gbk;\n";
+    echo "const TABLE_POINTERS = $enc_gbk;\n";
     echo "const TABLE_RANGES = $dec_max;\n";
     echo "const TABLE_OFFSETS = $dec_off;\n";
 }
 
 function big5(string $label) {
-    $codes = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt"));
+    // Big5 has unusually complex encoding requirements
+    // see https://encoding.spec.whatwg.org/#index-big5-pointer for particulars
+    $table = read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt");
     $specials = <<<ARRAY_LITERAL
 [
     1133 => [0x00CA, 0x0304],
@@ -92,107 +97,64 @@ function big5(string $label) {
     1166 => [0x00EA, 0x030C],
 ]
 ARRAY_LITERAL;
-    // compile an encoder table
-    // see https://encoding.spec.whatwg.org/#index-big5-pointer for particulars
-    // first get the decoder table as an array
-    $table = eval("return $codes;");
-    // filter out the low end of the table containing Hong Kong Supplement characters, which are not used during encoding
-    $table = array_filter($table, function($key) {
-        return (!($key < ((0xA1 - 0x81) * 157)));
-    }, \ARRAY_FILTER_USE_KEY);
-    // search for each unique code point's pointer in the table, the first for some, the last for a specific set
-    $enc = [];
-    $a = 0;
-    $points = array_unique($table);
-    sort($points);
-    foreach ($points as $point) {
-        // find the correct pointer
-        if (in_array($point, [0x2550, 0x255E, 0x256A, 0x5341, 0x5345])) {
-            $pointer = array_search($point, array_reverse($table, true));
+    // split Hong Kong Supplement code points from the rest of Big5
+    $stop = (0xA1 - 0x81) * 157;
+    $hk = [];
+    $nhk = [];
+    foreach ($table as $pointer => $code) {
+        if ($pointer < $stop) {
+            $hk[$pointer] = $code;
         } else {
-            $pointer = array_search($point, $table);
+            $nhk[$pointer] = $code;
         }
-        // step the output array's key
-        if ($a == $point) {
-            $key = "";
-        } else {
-            $a = $point;
-            $key = "$point=>";
-        }
-        $a++;
-        $enc[] = "$key$pointer";
     }
-    // compose the encoder table literal
-    $enc = "[".implode(",", $enc)."]";
-    echo "const TABLE_CODES = $codes;\n";
+    // search the Big5 rump for duplicates
+    $dupes = make_override_array($nhk);
+    // remove those duplicates which should use the last code point
+    foreach([0x2550, 0x255E, 0x2561, 0x256A, 0x5341, 0x5345] as $code) {
+        unset($dupes[$code]);
+    }
+    // serialize and print; Hong Kong characters are kept separate as they are not used in encoding
+    $codes_tw = serialize_point_array($nhk);
+    $codes_hk = serialize_point_array($hk);
+    $enc = serialize_point_array($dupes);
     echo "const TABLE_DOUBLES = $specials;\n";
-    echo "const TABLE_ENC = $enc;\n";
+    echo "const TABLE_CODES_TW = $codes_tw;\n";
+    echo "const TABLE_CODES_HK = $codes_hk;\n";
+    echo "const TABLE_POINTERS = $enc;\n";
 }
 
 function euckr(string $label) {
-    $codes = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt"));
+    $codes = serialize_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-$label.txt"));
     echo "const TABLE_CODES = $codes;\n";
 }
 
 function eucjp(string $label) {
-    $jis0212 = make_decoder_point_array(read_index("jis0212", "https://encoding.spec.whatwg.org/index-jis0212.txt"));
-    $jis0208 = make_decoder_point_array(read_index("jis0208", "https://encoding.spec.whatwg.org/index-jis0208.txt"));
-    $table = eval("return $jis0208;");
-    // search for each unique code point's first pointer in the table
-    $enc = [];
-    $a = 0;
-    $points = array_unique($table);
-    sort($points);
-    foreach ($points as $point) {
-        // find the correct pointer
-        $pointer = array_search($point, $table);
-        // step the output array's key
-        if ($a == $point) {
-            $key = "";
-        } else {
-            $a = $point;
-            $key = "$point=>";
-        }
-        $a++;
-        $enc[] = "$key$pointer";
-    }
-    // compose the encoder table literal
-    $enc = "[".implode(",", $enc)."]";
-    echo "const TABLE_JIS0208_DEC = $jis0208;\n";
-    echo "const TABLE_JIS0208_ENC = $enc;\n";
+    $jis0212 = serialize_point_array(read_index("jis0212", "https://encoding.spec.whatwg.org/index-jis0212.txt"));
+    $table = read_index("jis0208", "https://encoding.spec.whatwg.org/index-jis0208.txt");
+    $dupes = serialize_point_array(make_override_array($table));
+    $jis0208 = serialize_point_array($table);
+    echo "const TABLE_JIS0208 = $jis0208;\n";
     echo "const TABLE_JIS0212 = $jis0212;\n";
+    echo "const TABLE_POINTERS = $dupes;\n";
 }
 
 function shiftjis(string $label) {
-    $codes = make_decoder_point_array(read_index($label, "https://encoding.spec.whatwg.org/index-jis0208.txt"));
-    $table = eval("return $codes;");
-    // remove the block of pointers between 8272 and 8835
-    // see https://encoding.spec.whatwg.org#index-shift_jis-pointer
-    foreach (range(8272, 8835) as $pointer) {
-        unset($table[$pointer]);
-    }
-    // now search for each unique code point's first pointer in the table as normal
-    $enc = [];
-    $a = 0;
-    $points = array_unique($table);
-    sort($points);
-    foreach ($points as $point) {
-        // find the correct pointer
-        $pointer = array_search($point, $table);
-        // step the output array's key
-        if ($a == $point) {
-            $key = "";
-        } else {
-            $a = $point;
-            $key = "$point=>";
+    $table = read_index($label, "https://encoding.spec.whatwg.org/index-jis0208.txt");
+    // exclude a range of pointers from override consideration
+    $good = [];
+    foreach ($table as $pointer => $code) {
+        if ($pointer < 8272 || $pointer > 8835) {
+            $good[$pointer] = $code;
         }
-        $a++;
-        $enc[] = "$key$pointer";
     }
-    // compose the encoder table literal
-    $enc = "[".implode(",", $enc)."]";
-    echo "const TABLE_CODES_DEC = $codes;\n";
-    echo "const TABLE_CODES_ENC = $enc;\n";
+    // search the rump for duplicates
+    $dupes = make_override_array($good);
+    // serialize and print
+    $codes = serialize_point_array($table);
+    $enc = serialize_point_array($dupes);
+    echo "const TABLE_CODES = $codes;\n";
+    echo "const TABLE_POINTERS = $enc;\n";
 }
 
 // generic helper functions
@@ -201,36 +163,36 @@ function read_index(string $label, string $url): array {
     $data = file_get_contents($url) or die("index file for '$label' could not be retrieved from network.");
     // find lines that contain data
     preg_match_all("/^\s*(\d+)\s+0x([0-9A-Z]+)/m", $data, $matches, \PREG_SET_ORDER);
-    return $matches;
+    $out = [];
+    foreach ($matches as list($match, $index, $code)) {
+        $out[(int) $index] = (int) hexdec($code);
+    }
+    return $out;
 }
 
-function make_decoder_point_array(array $entries): string {
+function serialize_point_array(array $table): string {
     $out = [];
     $i = 0;
-    foreach ($entries as $match) {
-        $index = (int) $match[1];
-        $code = hexdec($match[2]);
-        // missing indexes necessitate specifying keys explicitly
-        if ($index == $i) {
+    foreach ($table as $index => $code) {
+        // non-sequential indices must be printed, but others can be omitted
+        if ($index === $i) {
             $key = "";
         } else {
             $key = "$index=>";
             $i = $index;
         }
-        $out[] = $key."$code";
+        $out[] = $key.$code;
         $i++;
     }
     return "[".implode(",", $out)."]";
 }
 
-function make_decoder_char_array(array $entries): string {
+function serialize_char_array(array $table): string {
     $out = [];
     $i = 0;
-    foreach ($entries as $match) {
-        $index = (int) $match[1];
-        $code = $match[2];
-        // missing indexes necessitate specifying keys explicitly
-        if ($index == $i) {
+    foreach ($table as $index => $code) {
+        // non-sequential indices must be printed, but others can be omitted
+        if ($index === $i) {
             $key = "";
         } else {
             $key = "$index=>";
@@ -242,12 +204,10 @@ function make_decoder_char_array(array $entries): string {
     return "[".implode(",", $out)."]";
 }
 
-// this is only used for single-byte encoders; other encoders instead flip their decoder arrays or use custom tables
-function make_encoder_array(array $entries): string {
+// this is only used for single-byte encoders; other encoders instead flip their decoder arrays with overrides for duplicates or special cases
+function serialize_single_byte_array(array $table): string {
     $out = [];
-    foreach ($entries as $match) {
-        $index = (int) $match[1];
-        $code = $match[2];
+    foreach ($table as $index => $code) {
         $byte = strtoupper(str_pad(dechex($index + 128), 2, "0", \STR_PAD_LEFT));
         $out[$code] = "\"\\x$byte\"";
     }
@@ -264,4 +224,18 @@ function make_encoder_array(array $entries): string {
         $i++;
     }
     return "[".implode(",", $out)."]";
+}
+
+// indexes with duplicate code points by default need to match the lowest pointer when encoding
+// PHP's array_flip() function retains the last duplicate rather than the first, so we have to find duplicates
+function make_override_array(array $table): array {
+    $out = [];
+    $dupes = array_keys(array_filter(array_count_values($table), function($v) {
+        return $v > 1;
+    }));
+    foreach ($dupes as $code_point) {
+        $out[$code_point] = array_search($code_point, $table);
+    }
+    ksort($out);
+    return $out;
 }
