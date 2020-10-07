@@ -141,19 +141,24 @@ function eucjp(string $label) {
 
 function shiftjis(string $label) {
     $table = read_index($label, "https://encoding.spec.whatwg.org/index-jis0208.txt");
-    // exclude a range of pointers from override consideration
-    $good = [];
+    // exclude a range of pointers from encoding consideration
+    $dec = [];
+    $shared = [];
     foreach ($table as $pointer => $code) {
         if ($pointer < 8272 || $pointer > 8835) {
-            $good[$pointer] = $code;
+            $shared[$pointer] = $code;
+        } else {
+            $dec[$pointer] = $code;
         }
     }
-    // search the rump for duplicates
-    $dupes = make_override_array($good);
-    // serialize and print
-    $codes = serialize_point_array($table);
+    // search the encoder set for duplicates
+    $dupes = make_override_array($shared);
+    // serialize and print; the $shared set is used for both encoding and decoding; the $dec set is used only for decoding
+    $codes = serialize_point_array($shared);
+    $codes_extra = serialize_point_array($dec);
     $enc = serialize_point_array($dupes);
     echo "const TABLE_CODES = $codes;\n";
+    echo "const TABLE_CODES_EXTRA = $codes_extra;\n";
     echo "const TABLE_POINTERS = $enc;\n";
 }
 
