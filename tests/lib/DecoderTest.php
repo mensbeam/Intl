@@ -54,7 +54,7 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         }
         $this->assertSame(sizeof($exp), $pos);
         while ($s->posChar()) {
-            $this->assertSame(0, $s->seek(-1));
+            $this->assertSame(0, $s->seek(-1), "Error stepping back to position ".($pos - 1));
             $this->assertSame(--$pos, $s->posChar());
             $act[] = $s->nextCode();
             $s->seek(-1);

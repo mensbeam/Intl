@@ -12,16 +12,6 @@ use MensBeam\Intl\Encoding\EncoderException;
 
 class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = ShiftJIS::class;
-    /*
-        Char 0 U+007A   (1 byte)  Offset 0
-        Char 1 U+86CC   (2 bytes) Offset 1
-        Char 2 U+6C34   (2 bytes) Offset 3
-        Char 3 U+00CA   (0 bytes) Offset 5
-        Char 4 U+0304   (2 bytes) Offset 5
-        Char 5 U+00EA   (0 bytes) Offset 7
-        Char 6 U+030C   (2 bytes) Offset 7
-        End of string at char 7, offset 9
-    */
     protected $seekString = "";
     protected $seekCodes = [];
     protected $seekOffsets = [];
@@ -151,6 +141,12 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     public function provideStrings() {
         return [
+            'empty string' => ["", []],
+            'sanity check' => ["40", [64]],
+            'former ASCII deviations' => ["5C 7E", [92, 126]],
+            'JIS X 0201 range' => ["A1 DF", [65377, 65439]],
+            'EUDC range' => ["F040 F9FC", [57344, 59223]],
+            'JIS X 0208 assigned range' => ["8140 9F7E 8180 9FFC", [12288, 27631, 247, 28364]],
         ];
     }
 

@@ -120,18 +120,18 @@ class ShiftJIS extends AbstractEncoding implements StatelessEncoding {
             }
             // go back one byte
             $b1 = ord(@$this->string[--$this->posByte]);
-            if ($b1 < 0x40 || $b1 > 0xFC || $b1 == 0x7F || $this->posByte === 0 || $this->posByte === $this->errMark) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
+            if ($b1 < 0x40 || $b1 > 0xFC || $b1 === 0x7F || $this->posByte === 0 || $this->posByte === $this->errMark) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
                 // the byte is a character
                 continue;
             }
             // go back a second byte
             $b2 = ord(@$this->string[--$this->posByte]);
-            if ($this->posByte === $this->errMark || $this->posByte === 0) { // position is unambiguously the start of a character
-                // the two bytes form a character
-                continue;
-            } elseif ($b2 < 0x81 || $b2 > 0xFC || ($b2 >= 0xA0 && $b2 <= 0xDF)) { // these bytes never appear in the lead of a sequence
+            if ($b2 < 0x81 || $b2 > 0xFC || ($b2 >= 0xA0 && $b2 <= 0xDF)) { // these bytes never appear in the lead of a sequence
                 // the first byte was a character
                 $this->posByte += 1;
+                continue;
+            } elseif ($this->posByte === $this->errMark || $this->posByte === 0) { // position is unambiguously the start of a character
+                // the two bytes form a character
                 continue;
             } else { // the second byte is part of a two-byte sequence, but it's unclear if it's the lead or trail byte
                 $start = $this->posByte + 2;

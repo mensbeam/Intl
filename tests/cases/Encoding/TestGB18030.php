@@ -144,6 +144,14 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
+    }
+
     public function provideCodePoints() {
         // bytes confirmed using Firefox
         $series_gb18030 = [
@@ -198,14 +206,6 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
             array_push($test, GBK::class);
             yield "GBK $name" => $test;
         }
-    }
-
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
-     */
-    public function testSeekBackOverRandomData() {
-        return parent::testSeekBackOverRandomData();
     }
 
     public function provideStrings() {
