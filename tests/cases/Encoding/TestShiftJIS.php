@@ -12,9 +12,19 @@ use MensBeam\Intl\Encoding\EncoderException;
 
 class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = ShiftJIS::class;
-    protected $seekString = "";
-    protected $seekCodes = [];
-    protected $seekOffsets = [];
+    /*
+        Char 0 U+007A   (1 byte)  Offset 0
+        Char 1 U+FF96   (1 byte)  Offset 1
+        Char 2 U+3088   (2 bytes) Offset 2
+        Char 3 U+FF0D   (2 bytes) Offset 4
+        Char 4 U+005C   (1 byte)  Offset 6
+        Char 5 U+FF9B   (1 byte)  Offset 7
+        Char 6 U+E000   (2 bytes) Offset 8
+        End of string at char 7, offset 10
+    */
+    protected $seekString = "7A D6 82E6 817C 5C DB F040";
+    protected $seekCodes = [0x7A, 0xFF96, 0x3088, 0xFF0D, 0x5C, 0xFF9B, 0xE000];
+    protected $seekOffsets = [0, 1, 2, 4, 6, 7, 8, 10];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
 
@@ -136,6 +146,30 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     public function provideCodePoints() {
         return [
+            'U+0064 (HTML)'  => [false, 0x64, "64"],
+            'U+0064 (fatal)' => [true,  0x64, "64"],
+            'U+00A5 (HTML)'  => [false, 0xA5, "5C"],
+            'U+00A5 (fatal)' => [true,  0xA5, "5C"],
+            'U+203E (HTML)'  => [false, 0x203E, "7E"],
+            'U+203E (fatal)' => [true,  0x203E, "7E"],
+            'U+3088 (HTML)'  => [false, 0x3088, "82 E6"],
+            'U+3088 (fatal)' => [true,  0x3088, "82 E6"],
+            'U+FF96 (HTML)'  => [false, 0xFF96, "D6"],
+            'U+FF96 (fatal)' => [true,  0xFF96, "D6"],
+            'U+2212 (HTML)'  => [false, 0x2212, "81 7C"],
+            'U+2212 (fatal)' => [true,  0x2212, "81 7C"],
+            'U+00E6 (HTML)'  => [false, 0xE6, bin2hex("&#230;")],
+            'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+FFE2 (HTML)'  => [false, 0xFFE2, "81 CA"],
+            'U+FFE2 (fatal)' => [true,  0xFFE2, "81 CA"],
+            'U+2116 (HTML)'  => [false, 0x2116, "87 82"],
+            'U+2116 (fatal)' => [true,  0x2116, "87 82"],
+            'U+E000 (HTML)'  => [false, 0xE000, bin2hex("&#57344;")],
+            'U+E000 (fatal)' => [true,  0xE000, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
         ];
     }
 
@@ -146,7 +180,11 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
             'former ASCII deviations' => ["5C 7E", [92, 126]],
             'JIS X 0201 range' => ["A1 DF", [65377, 65439]],
             'EUDC range' => ["F040 F9FC", [57344, 59223]],
-            'JIS X 0208 assigned range' => ["8140 9F7E 8180 9FFC", [12288, 27631, 247, 28364]],
+            'JIS X 0208 assigned range' => ["8140 FC4B", [12288, 40657]],
+            'JIS X 0208 total range' => ["8140 FCFC", [12288, 65533]],
+            'JIS X 0208 truncated character 1' => ["81", [65533]],
+            'JIS X 0208 truncated character 2' => ["81 20", [65533, 32]],
+            'JIS X 0208 truncated character 3' => ["81 FF", [65533]],
         ];
     }
 

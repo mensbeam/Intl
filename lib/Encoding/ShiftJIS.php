@@ -93,7 +93,7 @@ class ShiftJIS extends AbstractEncoding implements StatelessEncoding {
                     $codePoint = 0xFF0D;
                     // no break;
                 default:
-                    $pointer = self::TABLE_POINTERS[$codePoint] ?? self::TABLE_CODES[$codePoint] ?? null;
+                    $pointer = self::TABLE_POINTERS[$codePoint] ?? array_flip(self::TABLE_CODES)[$codePoint] ?? null;
                     if (isset($pointer)) {
                         $lead = (int) ($pointer / 188);
                         $leadOffset = ($lead < 0x1F) ? 0x81 : 0xC1;

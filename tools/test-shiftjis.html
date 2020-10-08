@@ -4,17 +4,39 @@
 <script>
 var sampleStrings = {
     'empty string': "",
-    // sanity checks
     'sanity check': "40",
     'former ASCII deviations': "5C 7E",
     'JIS X 0201 range': "A1 DF",
     'EUDC range': "F040 F9FC",
-    // JIS X 0208
-    'JIS X 0208 assigned range': "8140 9F7E 8180 9FFC",
+    'JIS X 0208 assigned range': "8140 FC4B",
+    'JIS X 0208 total range': "8140 FCFC",
+    'JIS X 0208 truncated character 1': "81",
+    'JIS X 0208 truncated character 2': "81 20",
+    'JIS X 0208 truncated character 3': "81 FF",
 };
 var sampleCharacters = {
+    'U+0064':   0x64,
+    'U+00A5':   0xA5,
+    'U+203E':   0x203E,
+    'U+3088':   0x3088,
+    'U+FF96':   0xFF96,
+    'U+2212':   0x2212,
+    'U+00E6':   0xE6,
+    'U+FFE2':   0xFFE2,
+    'U+2116':   0x2116,
+    'U+E000':   0xE000,
+    '-1':       -1,
+    '0x110000': 0x110000,
 };
 var seekCodePoints = [
+    0x007A,
+    0xFF96,
+    0x3088,
+    0xFF0D,
+    0x005C,
+    0xFF9B,
+    /* This code point is not encodable and must be done manually entered as F040 */
+    0xE000,
 ];
 </script>
 <script src="test.js"></script>
