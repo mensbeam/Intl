@@ -58,6 +58,8 @@ function make_test(string $label, string $url): array {
             $code = 7743;
         } elseif ($label=="euc-jp") { // three tests are out of date
             $code = ["5C" => 92, "7E" => 126, "A1DD" => 65293][$bytes] ?? $code;
+        } elseif ($label=="shiftjis") { // three tests are incorrect
+            $code = ["5C" => 92, "7E" => 126, "817C" => 0xFF0D][$bytes] ?? $code;
         }
         // convert the code point to decimal
         $out[] = $code;
