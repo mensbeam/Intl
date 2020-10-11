@@ -31,7 +31,7 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\ShiftJIS::encode
-     * @covers MensBeam\Intl\Encoding\ShiftJIS::err
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::errEnc
     */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
@@ -112,7 +112,7 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\ShiftJIS::err
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::errDec
     */
     public function testReplacementModes() {
         return parent::testReplacementModes();
@@ -177,6 +177,7 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
         return [
             'empty string' => ["", []],
             'sanity check' => ["40", [64]],
+            'invalid byte' => ["FF", [65533]],
             'former ASCII deviations' => ["5C 7E", [92, 126]],
             'JIS X 0201 range' => ["A1 DF", [65377, 65439]],
             'EUDC range' => ["F040 F9FC", [57344, 59223]],

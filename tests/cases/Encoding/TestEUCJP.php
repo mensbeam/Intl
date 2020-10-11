@@ -31,7 +31,7 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\EUCJP::encode
-     * @covers MensBeam\Intl\Encoding\EUCJP::err
+     * @covers MensBeam\Intl\Encoding\EUCJP::errEnc
     */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
@@ -101,7 +101,8 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\EUCJP::len
+     * @covers MensBeam\Intl\Encoding\EUCJP::lenChar
+     * @covers MensBeam\Intl\Encoding\EUCJP::lenByte
      * @covers MensBeam\Intl\Encoding\EUCJP::stateSave
      * @covers MensBeam\Intl\Encoding\EUCJP::stateApply
     */
@@ -110,7 +111,7 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
-     * @covers MensBeam\Intl\Encoding\EUCJP::err
+     * @covers MensBeam\Intl\Encoding\EUCJP::errDec
     */
     public function testReplacementModes() {
         return parent::testReplacementModes();
