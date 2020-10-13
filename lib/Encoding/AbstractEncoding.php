@@ -54,6 +54,9 @@ abstract class AbstractEncoding implements Encoding {
     public function rewind() {
         $this->posByte = 0;
         $this->posChar = 0;
+        $this->errMark = -1;
+        $this->errSync = -2;
+        $this->errStack = [];
     }
 
     public function nextChar(): string {
