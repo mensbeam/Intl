@@ -78,12 +78,9 @@ abstract class AbstractEncoding implements Encoding {
 
     public function seek(int $distance): int {
         if ($distance > 0) {
-            if ($this->posByte == strlen($this->string)) {
-                return $distance;
-            }
             do {
                 $p = $this->nextCode();
-            } while (--$distance && $p !== false);
+            } while ($p !== false && --$distance);
             return $distance;
         } elseif ($distance < 0) {
             $distance = abs($distance);

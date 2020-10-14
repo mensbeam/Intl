@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<meta charset=iso-2022-jp>
+<!-- Chromium does NOT produce correct results as of this writing; use Firefox to generate test data -->
+<script>
+var sampleStrings = {
+    'empty string': "",
+    'Implied ASCII mode': "00 30 5C 7E 21 5F",
+    'Explicit ASCII mode': "1B2842 00 30 5C 7E 21 5F",
+    'Roman mode': "1B284A 00 30 5C 7E 21 5F",
+    'Katakana mode': "1B2849 00 30 5C 7E 21 5F",
+    'Double-byte mode 1': "1B2440 00 30 5C 7E 21 5F",
+    'Double-byte mode 2': "1B2442 00 30 5C 7E 21 5F",
+    'Multiple modes': "5C 1B2849 21 1B2440 305C 1B284A 5C 1B2842 5C",
+    'Double escape': "1B2849 1B2842 5C",
+    'Triple escape': "1B2849 1B2842 1B284A 5C",
+    'Trailing escape': "20 1B284A 30 33 1B2849",
+    'Invalid bytes': "80 FF 1B2849 00 20 7F 1B2442 00 2100 FF FF",
+};
+var sampleCharacters = {
+};
+var seekCodePoints = [
+];
+</script>
+<script src="test.js"></script>

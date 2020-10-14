@@ -25,18 +25,24 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
     protected $mode = self::ASCII_STATE;
     protected $modeMark = \PHP_INT_MIN;
     protected $modeStack = [];
+    protected $dirtyEOF = 0;
+    
+    public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
+        parent::__construct($string, $fatal, $allowSurrogates);
+        $this->stateProps[] = "dirtyEOF";
+    }
 
+    public function nextChar(): string {
+        $code = $this->nextCode();
+        if ($code !== false) {
+            return UTF8::encode($code);
+        }
+        return "";
+    }
 
-    /** Decodes the next character from the string and returns its code point number
-     *
-     * If the end of the string has been reached, false is returned
-     *
-     * @return int|bool
-     */
     public function nextCode() {
         $this->posChar++;
         $state = $this->mode;
-        assert($state < self::TRAIL_BYTE_STATE, "Invalid base state $state");
         while (true) { 
             $b = @$this->string[$this->posByte++];
             $eof = ($b === "");
@@ -45,6 +51,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
             if ($state < self::TRAIL_BYTE_STATE) {
                 if ($eof) {
                     $this->posByte--;
+                    $this->posChar--;
                     return false;
                 } elseif ($b === 0x1B) {
                     $state = self::ESCAPE_START_STATE;
@@ -55,7 +62,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
             }
             if ($state === self::ASCII_STATE) {
                 return $b;
-            } elseif ($this->state === self::ROMAN_STATE) {
+            } elseif ($state === self::ROMAN_STATE) {
                 if ($b === 0x5C) {
                     return 0xA5;
                 } elseif ($b === 0x7E) {
@@ -63,26 +70,25 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
                 } else {
                     return $b;
                 }
-            } elseif ($this->state === self::KATAKANA_STATE) {
+            } elseif ($state === self::KATAKANA_STATE) {
                 if ($b >= 0x21 && $b <= 0x5F) {
                     return 0xFF61 - 0x21 + $b;
                 } else {
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                 }
-            } elseif ($this->state === self::LEAD_BYTE_STATE) {
-                assert(!isset($lead), "Lead byte is set when it shouldn't be");
-                if ($b >= 0x21 && $b <= 0x5F) {
+            } elseif ($state === self::LEAD_BYTE_STATE) {
+                if ($b >= 0x21 && $b <= 0x7E) {
                     $lead = $b;
+                    $state = self::TRAIL_BYTE_STATE;
                     continue;
                 } else {
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 1);
                 }
-            } elseif ($this->state === self::TRAIL_BYTE_STATE) {
-                assert(isset($lead), "Trail byte without lead byte");
+            } elseif ($state === self::TRAIL_BYTE_STATE) {
                 if ($eof || $b === 0x1B) {
                     return $this->errDec($this->errMode, $this->posChar - 1, --$this->posByte - 1);
-                } elseif ($b >= 0x21 && $b <= 0x5F) {
-                    $pointer = ($lead - 0x21) * 94 + $b - 0x21;
+                } elseif ($b >= 0x21 && $b <= 0x7E) {
+                    $pointer = (($lead - 0x21) * 94) + $b - 0x21;
                     $codePoint = self::TABLE_JIS0208[$pointer] ?? null;
                     if (!is_null($codePoint)) {
                         return $codePoint;
@@ -93,8 +99,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 2);
                 }
             } elseif ($state === self::ESCAPE_START_STATE) {
-                assert(!isset($lead), "Lead byte is set when it shouldn't be");
-                if ($b === 0x24 || $b ===0x28) {
+                if ($b === 0x24 || $b === 0x28) {
                     $lead = $b;
                     $state = self::ESCAPE_STATE;
                     continue;
@@ -102,7 +107,6 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
                     return $this->errDec($this->errMode, $this->posChar - 1, --$this->posByte - 1);
                 }
             } elseif ($state === self::ESCAPE_STATE) {
-                assert(isset($lead), "Trail byte without lead byte");
                 if ($lead === 0x28 && $b === 0x42) {
                     $newState = self::ASCII_STATE;
                 } elseif ($lead === 0x28 && $b === 0x4A) {
@@ -120,34 +124,80 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
                     return $this->errDec($this->errMode, $this->posChar - 1, $this->posByte - 3);
                 } else {
                     $state = $this->modeSet($newState);
+                    unset($lead);
+                    // if we're at the end of the string, mark the string as dirty
+                    if ($this->posByte === $this->lenByte) {
+                        $this->dirtyEOF = 3;
+                    }
                     continue;
                 }
             }
-            assert(false, "Process failed to continue");
         }
-        assert(false, "Process failed to return a code point");
     }
 
     protected function modeSet(int $mode): int {
-        assert($mode < self::TRAIL_BYTE_STATE, "Mode $mode is invalid");
-        $this->modeStack = [$this->modeMark, $this->mode];
+        $this->modeStack[] = [$this->modeMark, $this->mode];
         $this->mode = $mode;
         $this->modeMark = $this->posByte;
         return $mode;
     }
-
-    /** Returns the encoding of $codePoint as a byte string
-     *
-     * If $codePoint is less than 0 or greater than 1114111, an exception is thrown
-     *
-     * If $fatal is true, an exception will be thrown if the code point cannot be encoded into a character; otherwise HTML character references will be substituted
-     */
+    
     public static function encode(array $codePoints, bool $fatal = true): string {
         return "";
     }
 
-    /** Implements backward seeking $distance characters */
     protected function seekBack(int $distance): int {
+        if ($this->dirtyEOF && $this->posByte === $this->lenByte) {
+            list($this->modeMark, $this->mode) = array_pop($this->modeStack);
+            $this->posByte -= $this->dirtyEOF;
+            $this->dirtyEOF = 0;
+        }
+        while ($distance > 0 && $this->posByte > 0) {
+            $this->posChar--;
+            $distance--;
+            if ($this->posByte === $this->errMark) { // the previous character was malformed
+                // if the position also marks a mode change, pop the mode stack
+                if ($this->posByte === $this->modeMark) {
+                    list($this->modeMark, $this->mode) = array_pop($this->modeStack);
+                }
+                // move to the correct sync position, pop the error stack, and continue
+                $this->posByte = $this->errSync;
+                list($this->errMark, $this->errSync) = array_pop($this->errStack);
+            } else {
+                $this->posByte -= ($this->mode === self::LEAD_BYTE_STATE ? 2 : 1);
+            }
+            // check for a mode change that is not also an error character 
+            if ($this->posByte === $this->modeMark && $this->posByte !== $this->errMark) {
+                $this->posByte -= 3;
+                list($this->modeMark, $this->mode) = array_pop($this->modeStack);
+            }
+        }
         return $distance;
+    }
+    
+    protected function stateSave(): array {
+        $out = parent::stateSave();
+        $out['modeCount'] = sizeof($this->modeStack);
+        return $out;
+    }
+    
+    protected function stateApply(array $state) {
+        while (sizeof($this->modeStack) > $state['modeCount']) {
+            list($this->modeMark, $this->mode) = array_pop($this->modeStack);
+        }
+        unset($state['modeCount']);
+        parent::stateApply($state);
+    }
+    
+    public function rewind() {
+        $this->modeStack = [];
+        $this->modeMark = \PHP_INT_MIN;
+        $this->mode = self::ASCII_STATE;
+        $this->dirtyEOF = 0;
+        parent::rewind();
+    }
+    
+    public function eof(): bool {
+        return $this->posByte === $this->lenByte || ($this->posByte === ($this->lenByte - 3) && $this->peekCode() === false);
     }
 }
