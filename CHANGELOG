@@ -1,3 +1,24 @@
+Version 0.8.0 (????-??-??)
+==========================
+
+New features:
+- Implementation of EUC-JP encoding
+- Implementation of Shift_JIS encoding
+- Implementation of ISO-2022-JP encoding
+- Implementation of replacement encoding
+- Added missing encoder for x-user-defined encoding
+- Added general-purpose \MensBeam\Intl\Encoding\Encoder class
+  also accessible via \MensBeam\Intl\Encoding::createEncoder()
+  static method
+  
+Bug fixes:
+- Fixed errors in Big5, gb18030, and GBK encoders
+- Plugged potential memory leak when using the rewind() method of
+  Big5, gb18030, GBK, and EUC-KR decoders
+
+Changes:
+- Added new labels for UTF-8 and UTF-16
+
 Version 0.7.1 (2020-10-05)
 ==========================
 
@@ -25,11 +46,11 @@ Version 0.5.0 (2019-12-13)
 ==========================
 
 Breaking changes:
-- Rename Encoding::len() to Encoding::lenChar()
+- Renamed Encoding::len() to Encoding::lenChar()
 
 New features:
-- Add Encoding::lenByte() method
-- Add Encoding::eof() method
+- Added Encoding::lenByte() method
+- Added Encoding::eof() method
 
 Version 0.4.0 (2018-09-15)
 ==========================
