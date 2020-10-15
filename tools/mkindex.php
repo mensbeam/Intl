@@ -9,7 +9,7 @@ $labels = [
     'euc-kr'              => "euckr",
     'gb18030'             => "gb18030",
     'ibm866'              => "single_byte",
-    //'iso-2022-jp'         => "iso2022jp",
+    'iso-2022-jp'         => "iso2022jp",
     'iso-8859-10'         => "single_byte",
     'iso-8859-13'         => "single_byte",
     'iso-8859-14'         => "single_byte",
@@ -136,6 +136,16 @@ function eucjp(string $label) {
     $jis0208 = serialize_point_array($table);
     echo "const TABLE_JIS0208 = $jis0208;\n";
     echo "const TABLE_JIS0212 = $jis0212;\n";
+    echo "const TABLE_POINTERS = $dupes;\n";
+}
+
+function iso2022jp(string $label) {
+    $kana = serialize_point_array(read_index("jis0208", "https://encoding.spec.whatwg.org/index-iso-2022-jp-katakana.txt"));
+    $table = read_index("jis0208", "https://encoding.spec.whatwg.org/index-jis0208.txt");
+    $dupes = serialize_point_array(make_override_array($table));
+    $jis0208 = serialize_point_array($table);
+    echo "const TABLE_JIS0208 = $jis0208;\n";
+    echo "const TABLE_KATAKANA = $kana;\n";
     echo "const TABLE_POINTERS = $dupes;\n";
 }
 

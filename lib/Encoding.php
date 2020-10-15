@@ -24,10 +24,13 @@ abstract class Encoding {
         $label = strtolower(trim($label));
         $name = self::LABEL_MAP[$label] ?? null;
         if ($name) {
+            $class = self::NAME_MAP[$name];
+            $encoder = $name === "ISO-2022-JP" || method_exists($class, "encode");
             return [
                 'label' => $label,
                 'name' => $name,
-                'class' => self::NAME_MAP[$name],
+                'encoder' => $encoder,
+                'class' => $class,
             ];
         } else {
             return null;
