@@ -33,124 +33,6 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         $this->testedClass = GB18030::class;
     }
 
-    /**
-     * @dataProvider provideCodePoints
-     * @covers MensBeam\Intl\Encoding\GB18030::encode
-     * @covers MensBeam\Intl\Encoding\GB18030::errEnc
-     * @covers MensBeam\Intl\Encoding\GBK::encode
-     * @covers MensBeam\Intl\Encoding\GBK::errEnc
-     */
-    public function testEncodeCodePoints(bool $fatal, $input, $exp, $class = self::class) {
-        $this->testedClass = $class;
-        return parent::testEncodeCodePoints($fatal, $input, $exp);
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::__construct
-     * @covers MensBeam\Intl\Encoding\GB18030::nextCode
-     */
-    public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
-        return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::__construct
-     * @covers MensBeam\Intl\Encoding\GB18030::nextChar
-     */
-    public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
-        return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
-     */
-    public function testSTepBackThroughAString(string $input, array $exp) {
-        return parent::testSTepBackThroughAString($input, $exp);
-    }
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::seek
-     * @covers MensBeam\Intl\Encoding\GB18030::posChar
-     * @covers MensBeam\Intl\Encoding\GB18030::posByte
-     * @covers MensBeam\Intl\Encoding\GB18030::rewind
-     */
-    public function testSeekThroughAString() {
-        return parent::testSeekThroughAString();
-    }
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::posChar
-     * @covers MensBeam\Intl\Encoding\GB18030::posByte
-     * @covers MensBeam\Intl\Encoding\GB18030::eof
-     */
-    public function testTraversePastTheEndOfAString() {
-        return parent::testTraversePastTheEndOfAString();
-    }
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::peekChar
-     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
-     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
-     */
-    public function testPeekAtCharacters() {
-        return parent::testPeekAtCharacters();
-    }
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::peekCode
-     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
-     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
-     */
-    public function testPeekAtCodePoints() {
-        return parent::testPeekAtCodePoints();
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::lenChar
-     * @covers MensBeam\Intl\Encoding\GB18030::lenByte
-     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
-     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
-     */
-    public function testGetStringLength(string $input, array $points) {
-        return parent::testGetStringLength($input, $points);
-    }
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::errDec
-     */
-    public function testReplacementModes() {
-        return parent::testReplacementModes();
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @covers MensBeam\Intl\Encoding\GB18030::rewind
-     * @covers MensBeam\Intl\Encoding\GB18030::chars
-     * @covers MensBeam\Intl\Encoding\GB18030::codes
-     */
-    public function testIterateThroughAString(string $input, array $exp) {
-        return parent::testIterateThroughAString($input, $exp);
-    }
-
-    /**
-     * @dataProvider provideStrings
-     * @coversNothing
-     */
-    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
-        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
-    }
-
-    /**
-     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
-     */
-    public function testSeekBackOverRandomData() {
-        return parent::testSeekBackOverRandomData();
-    }
-
     public function provideCodePoints() {
         // bytes confirmed using Firefox
         $series_gb18030 = [
@@ -259,6 +141,137 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'seek test 7 (padded)' => ["00 00 00 00 30 30 81 81 00 00 00 00", [0, 0, 0, 0, 48, 48, 20118, 0, 0, 0, 0]],
             'seek test 8 (padded)' => ["00 00 00 00 F8 83 FE 80 00 00 00 00", [0, 0, 0, 0, 40229, 18211, 0, 0, 0, 0]],
         ];
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Encoder
+     * @covers MensBeam\Intl\Encoding\GB18030::encode
+     * @covers MensBeam\Intl\Encoding\GB18030::errEnc
+     * @covers MensBeam\Intl\Encoding\GBK::encode
+     * @covers MensBeam\Intl\Encoding\GBK::errEnc
+     */
+    public function testEncodeCodePoints(bool $fatal, $input, $exp, $class = self::class) {
+        $this->testedClass = $class;
+        return parent::testEncodeCodePoints($fatal, $input, $exp);
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\GB18030::encode
+     * @covers MensBeam\Intl\Encoding\GB18030::errEnc
+     * @covers MensBeam\Intl\Encoding\GBK::encode
+     * @covers MensBeam\Intl\Encoding\GBK::errEnc
+     */
+    public function testEncodeCodePointsStatically(bool $fatal, $input, $exp, $class = self::class) {
+        $this->testedClass = $class;
+        return parent::testEncodeCodePointsStatically($fatal, $input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::__construct
+     * @covers MensBeam\Intl\Encoding\GB18030::nextCode
+     */
+    public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
+        return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::__construct
+     * @covers MensBeam\Intl\Encoding\GB18030::nextChar
+     */
+    public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
+        return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
+     */
+    public function testSTepBackThroughAString(string $input, array $exp) {
+        return parent::testSTepBackThroughAString($input, $exp);
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::seek
+     * @covers MensBeam\Intl\Encoding\GB18030::posChar
+     * @covers MensBeam\Intl\Encoding\GB18030::posByte
+     * @covers MensBeam\Intl\Encoding\GB18030::rewind
+     */
+    public function testSeekThroughAString() {
+        return parent::testSeekThroughAString();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::posChar
+     * @covers MensBeam\Intl\Encoding\GB18030::posByte
+     * @covers MensBeam\Intl\Encoding\GB18030::eof
+     */
+    public function testTraversePastTheEndOfAString() {
+        return parent::testTraversePastTheEndOfAString();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::peekChar
+     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
+     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
+     */
+    public function testPeekAtCharacters() {
+        return parent::testPeekAtCharacters();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::peekCode
+     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
+     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
+     */
+    public function testPeekAtCodePoints() {
+        return parent::testPeekAtCodePoints();
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::lenChar
+     * @covers MensBeam\Intl\Encoding\GB18030::lenByte
+     * @covers MensBeam\Intl\Encoding\GB18030::stateSave
+     * @covers MensBeam\Intl\Encoding\GB18030::stateApply
+     */
+    public function testGetStringLength(string $input, array $points) {
+        return parent::testGetStringLength($input, $points);
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::errDec
+     */
+    public function testReplacementModes() {
+        return parent::testReplacementModes();
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @covers MensBeam\Intl\Encoding\GB18030::rewind
+     * @covers MensBeam\Intl\Encoding\GB18030::chars
+     * @covers MensBeam\Intl\Encoding\GB18030::codes
+     */
+    public function testIterateThroughAString(string $input, array $exp) {
+        return parent::testIterateThroughAString($input, $exp);
+    }
+
+    /**
+     * @dataProvider provideStrings
+     * @coversNothing
+     */
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+        return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::seekBack
+     */
+    public function testSeekBackOverRandomData() {
+        return parent::testSeekBackOverRandomData();
     }
 
     /**

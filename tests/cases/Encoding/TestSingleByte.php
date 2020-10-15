@@ -8,6 +8,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\SingleByteEncoding;
 use MensBeam\Intl\Encoding\EncoderException;
+use MensBeam\Intl\Encoding\Encoder;
 
 class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     // maps taken from https://github.com/web-platform-tests/wpt/blob/d6c29bef8d4bcdfe4f689defca73360b07647d71/encoding/single-byte-decoder.html
@@ -83,9 +84,20 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Encoder
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::encode
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp, string $class = SingleByteEncoding::class) {
+        $e = new Encoder($class::NAME, $fatal);
+        $out = $e->encode($input);
+        $this->assertSame(bin2hex($exp), bin2hex($out));
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::encode
+     */
+    public function testEncodeCodePointsStatically(bool $fatal, $input, $exp, string $class = SingleByteEncoding::class) {
         $out = "";
         foreach ($input as $code) {
             $out .= $class::encode($code, $fatal);

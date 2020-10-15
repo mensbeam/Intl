@@ -22,14 +22,31 @@ class Encoder {
         if (!$l || !$l['encoder']) {
             throw new EncoderException("Label '$label' does not have an encoder", Encoder::E_UNAVAILABLE_ENCODER);
         } else {
-            $this->name = $s['name'];
+            $this->name = $l['name'];
             $this->fatal = $fatal;
         }
     }
     
-    public function encode(int $codePoint): string {
+    public function encode(iterable $codePoints): string {
+        $oldMode = $this->mode;
+        $this->reset();
+        $out = "";
+        try {
+            foreach ($codePoints as $codePoint) {
+                $out .= $this->encodeChar($codePoint);
+            }
+            if ($this->name === "ISO-2022-JP" && $this->mode !== self::MODE_ASCII) {
+                $out .= "\x1B\x28\x42";
+            }
+        } finally {
+            $this->mode = $oldMode;
+        }
+        return $out;
+    }
+
+    public function encodeChar(int $codePoint): string {
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {
-            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);
+            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", Encoding::E_INVALID_CODE_POINT);
         }
         switch ($this->name) {
             case "UTF-8":
@@ -80,23 +97,25 @@ class Encoder {
                 return Macintosh::encode($codePoint, $this->fatal);
             case "Shift_JIS":
                 return ShiftJIS::encode($codePoint, $this->fatal);
-            case "windows1250":
+            case "windows-1250":
                 return Windows1250::encode($codePoint, $this->fatal);
-            case "windows1251":
+            case "windows-1251":
                 return Windows1251::encode($codePoint, $this->fatal);
-            case "windows1252":
+            case "windows-1252":
                 return Windows1252::encode($codePoint, $this->fatal);
-            case "windows1253":
+            case "windows-1253":
                 return Windows1253::encode($codePoint, $this->fatal);
-            case "windows1254":
+            case "windows-1254":
                 return Windows1254::encode($codePoint, $this->fatal);
-            case "windows1255":
+            case "windows-1255":
                 return Windows1255::encode($codePoint, $this->fatal);
-            case "windows1256":
+            case "windows-1256":
                 return Windows1256::encode($codePoint, $this->fatal);
-            case "windows1257":
+            case "windows-1257":
                 return Windows1257::encode($codePoint, $this->fatal);
-            case "windows874":
+            case "windows-1258":
+                return Windows1258::encode($codePoint, $this->fatal);
+            case "windows-874":
                 return Windows874::encode($codePoint, $this->fatal);
             case "x-mac-cyrillic":
                 return XMacCyrillic::encode($codePoint, $this->fatal);

@@ -28,13 +28,68 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
 
+    public function provideCodePoints() {
+        return [
+            'U+0064 (HTML)'  => [false, 0x64, "64"],
+            'U+0064 (fatal)' => [true,  0x64, "64"],
+            'U+00A5 (HTML)'  => [false, 0xA5, "5C"],
+            'U+00A5 (fatal)' => [true,  0xA5, "5C"],
+            'U+203E (HTML)'  => [false, 0x203E, "7E"],
+            'U+203E (fatal)' => [true,  0x203E, "7E"],
+            'U+3088 (HTML)'  => [false, 0x3088, "82 E6"],
+            'U+3088 (fatal)' => [true,  0x3088, "82 E6"],
+            'U+FF96 (HTML)'  => [false, 0xFF96, "D6"],
+            'U+FF96 (fatal)' => [true,  0xFF96, "D6"],
+            'U+2212 (HTML)'  => [false, 0x2212, "81 7C"],
+            'U+2212 (fatal)' => [true,  0x2212, "81 7C"],
+            'U+00E6 (HTML)'  => [false, 0xE6, bin2hex("&#230;")],
+            'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+FFE2 (HTML)'  => [false, 0xFFE2, "81 CA"],
+            'U+FFE2 (fatal)' => [true,  0xFFE2, "81 CA"],
+            'U+2116 (HTML)'  => [false, 0x2116, "87 82"],
+            'U+2116 (fatal)' => [true,  0x2116, "87 82"],
+            'U+E000 (HTML)'  => [false, 0xE000, bin2hex("&#57344;")],
+            'U+E000 (fatal)' => [true,  0xE000, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+        ];
+    }
+
+    public function provideStrings() {
+        return [
+            'empty string' => ["", []],
+            'sanity check' => ["40", [64]],
+            'invalid byte' => ["FF", [65533]],
+            'former ASCII deviations' => ["5C 7E", [92, 126]],
+            'JIS X 0201 range' => ["A1 DF", [65377, 65439]],
+            'EUDC range' => ["F040 F9FC", [57344, 59223]],
+            'JIS X 0208 assigned range' => ["8140 FC4B", [12288, 40657]],
+            'JIS X 0208 total range' => ["8140 FCFC", [12288, 65533]],
+            'JIS X 0208 truncated character 1' => ["81", [65533]],
+            'JIS X 0208 truncated character 2' => ["81 20", [65533, 32]],
+            'JIS X 0208 truncated character 3' => ["81 FF", [65533]],
+        ];
+    }
+
     /**
      * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Encoder
      * @covers MensBeam\Intl\Encoding\ShiftJIS::encode
      * @covers MensBeam\Intl\Encoding\ShiftJIS::errEnc
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::encode
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::errEnc
+     */
+    public function testEncodeCodePointsStatically(bool $fatal, $input, $exp) {
+        return parent::testEncodeCodePointsStatically($fatal, $input, $exp);
     }
 
     /**
@@ -141,51 +196,6 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
-    }
-
-    public function provideCodePoints() {
-        return [
-            'U+0064 (HTML)'  => [false, 0x64, "64"],
-            'U+0064 (fatal)' => [true,  0x64, "64"],
-            'U+00A5 (HTML)'  => [false, 0xA5, "5C"],
-            'U+00A5 (fatal)' => [true,  0xA5, "5C"],
-            'U+203E (HTML)'  => [false, 0x203E, "7E"],
-            'U+203E (fatal)' => [true,  0x203E, "7E"],
-            'U+3088 (HTML)'  => [false, 0x3088, "82 E6"],
-            'U+3088 (fatal)' => [true,  0x3088, "82 E6"],
-            'U+FF96 (HTML)'  => [false, 0xFF96, "D6"],
-            'U+FF96 (fatal)' => [true,  0xFF96, "D6"],
-            'U+2212 (HTML)'  => [false, 0x2212, "81 7C"],
-            'U+2212 (fatal)' => [true,  0x2212, "81 7C"],
-            'U+00E6 (HTML)'  => [false, 0xE6, bin2hex("&#230;")],
-            'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            'U+FFE2 (HTML)'  => [false, 0xFFE2, "81 CA"],
-            'U+FFE2 (fatal)' => [true,  0xFFE2, "81 CA"],
-            'U+2116 (HTML)'  => [false, 0x2116, "87 82"],
-            'U+2116 (fatal)' => [true,  0x2116, "87 82"],
-            'U+E000 (HTML)'  => [false, 0xE000, bin2hex("&#57344;")],
-            'U+E000 (fatal)' => [true,  0xE000, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-        ];
-    }
-
-    public function provideStrings() {
-        return [
-            'empty string' => ["", []],
-            'sanity check' => ["40", [64]],
-            'invalid byte' => ["FF", [65533]],
-            'former ASCII deviations' => ["5C 7E", [92, 126]],
-            'JIS X 0201 range' => ["A1 DF", [65377, 65439]],
-            'EUDC range' => ["F040 F9FC", [57344, 59223]],
-            'JIS X 0208 assigned range' => ["8140 FC4B", [12288, 40657]],
-            'JIS X 0208 total range' => ["8140 FCFC", [12288, 65533]],
-            'JIS X 0208 truncated character 1' => ["81", [65533]],
-            'JIS X 0208 truncated character 2' => ["81 20", [65533, 32]],
-            'JIS X 0208 truncated character 3' => ["81 FF", [65533]],
-        ];
     }
 
     /**

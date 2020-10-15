@@ -60,11 +60,21 @@ class TestXUserDefined extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Encoder
      * @covers MensBeam\Intl\Encoding\XUserDefined::encode
      * @covers MensBeam\Intl\Encoding\XUserDefined::errEnc
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\XUserDefined::encode
+     * @covers MensBeam\Intl\Encoding\XUserDefined::errEnc
+     */
+    public function testEncodeCodePointsStatically(bool $fatal, $input, $exp) {
+        return parent::testEncodeCodePointsStatically($fatal, $input, $exp);
     }
 
     /**
