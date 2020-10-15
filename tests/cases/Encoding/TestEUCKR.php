@@ -136,7 +136,6 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
-
     /**
      * @covers MensBeam\Intl\Encoding\EUCKR::seekBack
      */

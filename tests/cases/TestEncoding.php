@@ -49,7 +49,9 @@ class TestEncoding extends \PHPUnit\Framework\TestCase {
         }
         $out = [];
         foreach ($labels as $label => $name) {
-            $out[] = [(string) $label, ['label' => (string) $label, 'name' => $name, 'class' => $names[$name]]];
+            $class = $names[$name];
+            $encoder = !in_array($name, ["UTF-16LE", "UTF-16BE", "replacement"]);
+            $out[] = [(string) $label, ['label' => (string) $label, 'name' => $name, 'encoder' => $encoder, 'class' => $class]];
         }
         return $out;
     }

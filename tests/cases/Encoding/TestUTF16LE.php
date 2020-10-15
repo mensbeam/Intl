@@ -126,7 +126,6 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
-
     /**
      * @covers MensBeam\Intl\Encoding\UTF16::seekBack
      */

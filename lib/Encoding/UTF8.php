@@ -9,12 +9,12 @@ namespace MensBeam\Intl\Encoding;
 class UTF8 extends AbstractEncoding implements StatelessEncoding {
     const NAME = "UTF-8";
     const LABELS = [
-        "unicode-1-1-utf-8", 
-        "unicode11utf8", 
+        "unicode-1-1-utf-8",
+        "unicode11utf8",
         "unicode20utf8",
-        "utf-8", 
-        "utf8", 
-        "x-unicode20utf8"
+        "utf-8",
+        "utf8",
+        "x-unicode20utf8",
     ];
 
     protected $selfSynchronizing = true;

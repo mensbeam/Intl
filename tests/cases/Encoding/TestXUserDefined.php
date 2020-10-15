@@ -117,7 +117,6 @@ class TestXUserDefined extends \MensBeam\Intl\Test\DecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
-
     /**
      * @coversNothing
      */

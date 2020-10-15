@@ -1,6 +1,6 @@
 <?php
-// this script read and names and labels from each concrete 
-// class in the Encoding set and generates tables mapping labels 
+// this script read and names and labels from each concrete
+// class in the Encoding set and generates tables mapping labels
 // to names and names to classes
 
 use MensBeam\Intl\Encoding\Encoding;

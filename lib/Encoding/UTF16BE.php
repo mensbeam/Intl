@@ -10,7 +10,7 @@ class UTF16BE extends UTF16 {
     const BE = true;
     const NAME = "UTF-16BE";
     const LABELS = [
-        "unicodefffe", 
-        "utf-16be"
+        "unicodefffe",
+        "utf-16be",
     ];
 }

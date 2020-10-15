@@ -7,8 +7,6 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\ISO2022JP;
-use MensBeam\Intl\Encoding\Encoding;
-use MensBeam\Intl\Encoding\EncoderException;
 
 class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = ISO2022JP::class;
@@ -64,7 +62,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideCodePoints
      * @covers MensBeam\Intl\Encoding\ISO2022JP::encode
      * @covers MensBeam\Intl\Encoding\ISO2022JP::errEnc
-    */
+     */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
     }
@@ -74,7 +72,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::__construct
      * @covers MensBeam\Intl\Encoding\ISO2022JP::nextCode
      * @covers MensBeam\Intl\Encoding\ISO2022JP::modeSet
-    */
+     */
     public function testDecodeMultipleCharactersAsCodePoints(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsCodePoints($input, $exp);
     }
@@ -84,7 +82,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::__construct
      * @covers MensBeam\Intl\Encoding\ISO2022JP::nextChar
      * @covers MensBeam\Intl\Encoding\ISO2022JP::modeSet
-    */
+     */
     public function testDecodeMultipleCharactersAsStrings(string $input, array $exp) {
         return parent::testDecodeMultipleCharactersAsStrings($input, $exp);
     }
@@ -92,7 +90,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\ISO2022JP::seekBack
-    */
+     */
     public function testSTepBackThroughAString(string $input, array $exp) {
         return parent::testSTepBackThroughAString($input, $exp);
     }
@@ -102,7 +100,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::posChar
      * @covers MensBeam\Intl\Encoding\ISO2022JP::posByte
      * @covers MensBeam\Intl\Encoding\ISO2022JP::rewind
-    */
+     */
     public function testSeekThroughAString() {
         return parent::testSeekThroughAString();
     }
@@ -111,7 +109,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::posChar
      * @covers MensBeam\Intl\Encoding\ISO2022JP::posByte
      * @covers MensBeam\Intl\Encoding\ISO2022JP::eof
-    */
+     */
     public function testTraversePastTheEndOfAString() {
         return parent::testTraversePastTheEndOfAString();
     }
@@ -120,7 +118,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::peekChar
      * @covers MensBeam\Intl\Encoding\ISO2022JP::stateSave
      * @covers MensBeam\Intl\Encoding\ISO2022JP::stateApply
-    */
+     */
     public function testPeekAtCharacters() {
         return parent::testPeekAtCharacters();
     }
@@ -129,7 +127,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::peekCode
      * @covers MensBeam\Intl\Encoding\ISO2022JP::stateSave
      * @covers MensBeam\Intl\Encoding\ISO2022JP::stateApply
-    */
+     */
     public function testPeekAtCodePoints() {
         return parent::testPeekAtCodePoints();
     }
@@ -140,14 +138,14 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::lenByte
      * @covers MensBeam\Intl\Encoding\ISO2022JP::stateSave
      * @covers MensBeam\Intl\Encoding\ISO2022JP::stateApply
-    */
+     */
     public function testGetStringLength(string $input, array $points) {
         return parent::testGetStringLength($input, $points);
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\ISO2022JP::errDec
-    */
+     */
     public function testReplacementModes() {
         return parent::testReplacementModes();
     }
@@ -157,7 +155,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::rewind
      * @covers MensBeam\Intl\Encoding\ISO2022JP::chars
      * @covers MensBeam\Intl\Encoding\ISO2022JP::codes
-    */
+     */
     public function testIterateThroughAString(string $input, array $exp) {
         return parent::testIterateThroughAString($input, $exp);
     }
@@ -165,11 +163,10 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
     /**
      * @dataProvider provideStrings
      * @coversNothing
-    */
+     */
     public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
-
 
     /**
      * @covers MensBeam\Intl\Encoding\ISO2022JP::seekBack
@@ -180,7 +177,7 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @group optional
-    */
+     */
     public function testPedanticallyDecodeSingleCharactersAsCodePoint() {
         $series = [
         ];
@@ -196,5 +193,3 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
         }
     }
 }
-
-

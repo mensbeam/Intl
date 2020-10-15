@@ -136,7 +136,6 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
-
     /**
      * @covers MensBeam\Intl\Encoding\Big5::seekBack
      */

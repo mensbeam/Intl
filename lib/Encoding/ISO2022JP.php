@@ -27,7 +27,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
     protected $modeMark = \PHP_INT_MIN;
     protected $modeStack = [];
     protected $dirtyEOF = 0;
-    
+
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         parent::__construct($string, $fatal, $allowSurrogates);
         $this->stateProps[] = "dirtyEOF";
@@ -44,7 +44,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
     public function nextCode() {
         $this->posChar++;
         $state = $this->mode;
-        while (true) { 
+        while (true) {
             $b = @$this->string[$this->posByte++];
             $eof = ($b === "");
             $b = ord($b);
@@ -142,7 +142,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
         $this->modeMark = $this->posByte;
         return $mode;
     }
-    
+
     public static function encode(array $codePoints, bool $fatal = true): string {
         return "";
     }
@@ -167,7 +167,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
             } else {
                 $this->posByte -= ($this->mode === self::LEAD_BYTE_STATE ? 2 : 1);
             }
-            // check for a mode change that is not also an error character 
+            // check for a mode change that is not also an error character
             if ($this->posByte === $this->modeMark && $this->posByte !== $this->errMark) {
                 $this->posByte -= 3;
                 list($this->modeMark, $this->mode) = array_pop($this->modeStack);
@@ -175,13 +175,13 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
         }
         return $distance;
     }
-    
+
     protected function stateSave(): array {
         $out = parent::stateSave();
         $out['modeCount'] = sizeof($this->modeStack);
         return $out;
     }
-    
+
     protected function stateApply(array $state) {
         while (sizeof($this->modeStack) > $state['modeCount']) {
             list($this->modeMark, $this->mode) = array_pop($this->modeStack);
@@ -189,7 +189,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
         unset($state['modeCount']);
         parent::stateApply($state);
     }
-    
+
     public function rewind() {
         $this->modeStack = [];
         $this->modeMark = \PHP_INT_MIN;
@@ -197,7 +197,7 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
         $this->dirtyEOF = 0;
         parent::rewind();
     }
-    
+
     public function eof(): bool {
         return $this->posByte === $this->lenByte || ($this->posByte === ($this->lenByte - 3) && $this->peekCode() === false);
     }

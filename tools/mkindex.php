@@ -111,7 +111,7 @@ ARRAY_LITERAL;
     // search the Big5 rump for duplicates
     $dupes = make_override_array($nhk);
     // remove those duplicates which should use the last code point
-    foreach([0x2550, 0x255E, 0x2561, 0x256A, 0x5341, 0x5345] as $code) {
+    foreach ([0x2550, 0x255E, 0x2561, 0x256A, 0x5341, 0x5345] as $code) {
         unset($dupes[$code]);
     }
     // serialize and print; Hong Kong characters are kept separate as they are not used in encoding

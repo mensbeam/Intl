@@ -214,7 +214,6 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $exp, $exp);
     }
 
-
     /**
      * @dataProvider provideClasses
      * @coversNothing

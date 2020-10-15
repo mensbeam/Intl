@@ -94,7 +94,7 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         $this->assertSame(0, $s->seek(4));
         $this->assertSame(7, $s->posChar());
         $this->assertSame($off[7], $s->posByte());
-        
+
         $this->assertSame(1, $s->seek(1));
         $this->assertSame(7, $s->posChar());
         if ($this->testedClass !== ISO2022JP::class) {

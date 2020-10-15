@@ -16,6 +16,6 @@ class UTF16LE extends UTF16 {
         "unicode",
         "unicodefeff",
         "utf-16",
-        "utf-16le"
+        "utf-16le",
     ];
 }

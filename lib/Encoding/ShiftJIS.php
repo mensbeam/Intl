@@ -50,7 +50,7 @@ class ShiftJIS extends AbstractEncoding implements StatelessEncoding {
                     if ($pointer >= 8836 && $pointer <= 10715) {
                         return 0xE000 - 8836 + $pointer;
                     } else {
-                        $codePoint = self::TABLE_CODES[$pointer] ?? self::TABLE_CODES_EXTRA[$pointer] ?? null; 
+                        $codePoint = self::TABLE_CODES[$pointer] ?? self::TABLE_CODES_EXTRA[$pointer] ?? null;
                     }
                 }
                 if ($codePoint === null) {
