@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class XUserDefined extends AbstractEncoding implements Encoding {
+class XUserDefined extends AbstractEncoding implements StatelessEncoding {
     const NAME = "x-user-defined";
     const LABELS = ["x-user-defined"];
 
@@ -76,7 +76,18 @@ class XUserDefined extends AbstractEncoding implements Encoding {
             return 0;
         }
     }
-
+    
+    public static function encode(int $codePoint, bool $fatal = true): string {
+        if ($codePoint < 0 || $codePoint > 0x10FFFF) {
+            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", self::E_INVALID_CODE_POINT);
+        } elseif ($codePoint < 0x80) {
+            return chr($codePoint);
+        } elseif ($codePoint >= 0xF780 && $codePoint <= 0xF7FF) {
+            return chr($codePoint - 0xF780 + 0x80);
+        } else {
+            return self::errEnc(!$fatal, $codePoint);
+        }
+    }
 
     /** @codeCoverageIgnore */
     protected function seekBack(int $distance): int {
