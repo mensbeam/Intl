@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
+class ISO2022JP extends AbstractEncoding implements Encoding {
     const NAME = "ISO-2022-JP";
     const LABELS = [
         "csiso2022jp",
@@ -141,10 +141,6 @@ class ISO2022JP extends AbstractEncoding implements StatefulEncoding {
         $this->mode = $mode;
         $this->modeMark = $this->posByte;
         return $mode;
-    }
-
-    public static function encode(array $codePoints, bool $fatal = true): string {
-        return "";
     }
 
     protected function seekBack(int $distance): int {

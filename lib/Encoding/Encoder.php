@@ -135,7 +135,7 @@ class Encoder {
                     }
                     return chr($codePoint);
                 } elseif ($codePoint === 0xA5 || $codePoint === 0x203E) {
-                    $ord = $codePoint = 0xA5 ? 0x5C : 0x7E;
+                    $ord = $codePoint === 0xA5 ? 0x5C : 0x7E;
                     if ($this->mode !== self::MODE_ROMAN) {
                         return $this->modeSet(self::MODE_ROMAN, chr($ord));
                     }
@@ -148,15 +148,15 @@ class Encoder {
                     }
                     $pointer = ISO2022JP::TABLE_POINTERS[$codePoint] ?? array_flip(ISO2022JP::TABLE_JIS0208)[$codePoint] ?? null;
                     if (!is_null($pointer)) {
-                        $lead = chr($pointer / 94 - 0x21);
-                        $trail = chr($pointer % 94 - 0x21);
+                        $lead = chr((int) ($pointer / 94) + 0x21);
+                        $trail = chr(($pointer % 94) + 0x21);
                         if ($this->mode !== self::MODE_JIS) {
                             return $this->modeSet(self::MODE_JIS, $lead.$trail);
                         }
                         return $lead.$trail;
                     }
                     return $this->err($codePoint);
-            }
+                }
         }
     }
 

@@ -17,8 +17,29 @@ var sampleStrings = {
     'Invalid bytes': "80 FF 1B2849 00 20 7F 1B2442 00 2100 FF FF",
 };
 var sampleCharacters = {
+    'U+0020':            [0x20],
+    'U+005C':            [0x5C],
+    'U+007E':            [0x7E],
+    'U+00A5':            [0xA5],
+    'U+203E':            [0x203E],
+    'U+FF61':            [0xFF61],
+    'U+FF9F':            [0xFF9F],
+    'U+2212':            [0x2212],
+    'U+2116':            [0x2116],
+    'U+FFE2':            [0xFFE2],
+    'U+00C6':            [0xC6],
+    'U+FFFD':            [0xFFFD],
+    'Roman':             [0xA5, 0x20, 0x203E],
+    'Roman to ASCII':    [0xA5, 0x5C],
+    'Roman to error':    [0xA5, 0x80],
+    'JIS':               [0x2116, 0xFFE2, 0x2212],
+    'JIS to Roman':      [0x2116, 0xA5],
+    'JIS to ASCII 1':    [0x2116, 0x20],
+    'JIS to ASCII 2':    [0x2116, 0x5C],
+    'JIS to error':      [0x2116, 0x80],
+    'Escape characters': [0x1B, 0xE, 0xF], // Even Firefox is wrong here; see https://github.com/web-platform-tests/wpt/pull/26158
+    '-1':                [-1],
+    '0x110000':          [0x110000],
 };
-var seekCodePoints = [
-];
 </script>
 <script src="test.js"></script>
