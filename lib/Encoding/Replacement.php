@@ -75,7 +75,7 @@ class Replacement implements Encoding {
         return $distance;
     }
 
-    public function rewind() {
+    public function rewind(): void {
         $this->done = false;
     }
 

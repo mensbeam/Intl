@@ -54,7 +54,7 @@ interface Encoding {
      *
      * This is usually faster than using the seek method for the same purpose
      */
-    public function rewind();
+    public function rewind(): void;
 
     /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer
      *

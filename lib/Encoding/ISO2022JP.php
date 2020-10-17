@@ -178,7 +178,7 @@ class ISO2022JP extends AbstractEncoding implements Encoding {
         return $out;
     }
 
-    protected function stateApply(array $state) {
+    protected function stateApply(array $state): void {
         while (sizeof($this->modeStack) > $state['modeCount']) {
             list($this->modeMark, $this->mode) = array_pop($this->modeStack);
         }
@@ -186,7 +186,7 @@ class ISO2022JP extends AbstractEncoding implements Encoding {
         parent::stateApply($state);
     }
 
-    public function rewind() {
+    public function rewind(): void {
         $this->modeStack = [];
         $this->modeMark = \PHP_INT_MIN;
         $this->mode = self::ASCII_STATE;

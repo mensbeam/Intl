@@ -51,7 +51,7 @@ abstract class AbstractEncoding implements Encoding {
         return $this->posChar;
     }
 
-    public function rewind() {
+    public function rewind(): void {
         $this->posByte = 0;
         $this->posChar = 0;
         $this->errMark = -1;
@@ -163,7 +163,7 @@ abstract class AbstractEncoding implements Encoding {
     }
 
     /** Sets the decoder's state to the values specified */
-    protected function stateApply(array $state) {
+    protected function stateApply(array $state): void {
         while (sizeof($this->errStack) > $state['errCount']) {
             list($this->errMark, $this->errSync) = array_pop($this->errStack);
         }
@@ -174,8 +174,7 @@ abstract class AbstractEncoding implements Encoding {
     }
 
     /** Handles decoding errors */
-    protected function errDec(int $mode, int $charOffset, int $byteOffset) {
-        assert(in_array($mode, [self::MODE_NULL, self::MODE_REPLACE, self::MODE_FATAL]), "Invalid error mode $mode");
+    protected function errDec(int $mode, int $charOffset, int $byteOffset): ?int {
         if ($mode !== self::MODE_NULL) {
             // expose the error to the user; this disambiguates a literal replacement character
             $this->posErr = $this->posChar;
@@ -195,7 +194,7 @@ abstract class AbstractEncoding implements Encoding {
     }
 
     /** Handles encoding errors */
-    protected static function errEnc(bool $htmlMode, $data = null) {
+    protected static function errEnc(bool $htmlMode, $data = null): string {
         if ($htmlMode) {
             return "&#".(string) $data.";";
         } else {
