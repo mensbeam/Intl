@@ -51,7 +51,7 @@ class Replacement implements Encoding {
     public function nextCode() {
         if (!$this->eof()) {
             try {
-                return $this->peekCode();
+                return $this->peekCode()[0];
             } finally {
                 $this->done = true;
                 $this->posErr = 1;
@@ -80,7 +80,7 @@ class Replacement implements Encoding {
     }
 
     public function peekChar(int $num = 1): string {
-        if (!$this->eof()) {
+        if (!$this->eof() && $num > 0) {
             if ($this->fatal) {
                 throw new DecoderException("Unable to decode string", self::E_INVALID_BYTE);
             }
@@ -90,7 +90,7 @@ class Replacement implements Encoding {
     }
 
     public function peekCode(int $num = 1): array {
-        if (!$this->eof()) {
+        if (!$this->eof() && $num > 0) {
             if ($this->fatal) {
                 throw new DecoderException("Unable to decode string", self::E_INVALID_BYTE);
             }

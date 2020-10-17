@@ -28,6 +28,7 @@
         <file>cases/Encoding/TestEUCKR.php</file>
         <file>cases/Encoding/TestShiftJIS.php</file>
         <file>cases/Encoding/TestISO2022JP.php</file>
+        <file>cases/Encoding/TestReplacement.php</file>
         <file>cases/TestEncoding.php</file>
     </testsuite>
 </testsuites>
