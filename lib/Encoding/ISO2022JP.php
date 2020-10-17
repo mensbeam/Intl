@@ -134,7 +134,7 @@ class ISO2022JP extends AbstractEncoding implements Encoding {
                 }
             }
         }
-    }
+    } // @codeCoverageIgnore
 
     protected function modeSet(int $mode): int {
         $this->modeStack[] = [$this->modeMark, $this->mode];

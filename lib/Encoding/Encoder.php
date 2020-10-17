@@ -20,7 +20,7 @@ class Encoder {
     public function __construct(string $label, bool $fatal = true) {
         $l = Matcher::matchLabel($label);
         if (!$l || !$l['encoder']) {
-            throw new EncoderException("Label '$label' does not have an encoder", Encoder::E_UNAVAILABLE_ENCODER);
+            throw new EncoderException("Label '$label' does not have an encoder", Encoding::E_UNAVAILABLE_ENCODER);
         } else {
             $this->name = $l['name'];
             $this->fatal = $fatal;
@@ -158,7 +158,7 @@ class Encoder {
                     return $this->err($codePoint);
                 }
         }
-    }
+    } // @codeCoverageIgnore
 
     protected function modeSet(int $mode, string $bytes): string {
         $head = ["\x1B\x28\x42", "\x1B\x28\x4A", "\x1B\x24\x42"][$mode];
