@@ -29,15 +29,13 @@ class Encoder {
     
     public function encode(iterable $codePoints): string {
         $oldMode = $this->mode;
-        $this->reset();
+        $this->mode = self::MODE_ASCII;
         $out = "";
         try {
             foreach ($codePoints as $codePoint) {
                 $out .= $this->encodeChar($codePoint);
             }
-            if ($this->name === "ISO-2022-JP" && $this->mode !== self::MODE_ASCII) {
-                $out .= "\x1B\x28\x42";
-            }
+            $out .= $this->finalize();
         } finally {
             $this->mode = $oldMode;
         }
@@ -178,7 +176,10 @@ class Encoder {
         }
     }
     
-    public function reset() {
-        $this->mode = self::MODE_ASCII;
+    public function finalize(): string {
+        if ($this->mode !== self::MODE_ASCII) {
+            return $this->modeSet(self::MODE_ASCII, "");
+        }
+        return "";
     }
 }
