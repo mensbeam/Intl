@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class Big5 extends AbstractEncoding implements StatelessEncoding {
+class Big5 extends AbstractEncoding implements Coder, Decoder {
     const NAME = "Big5";
     const LABELS = [
         "big5",

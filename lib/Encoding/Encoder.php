@@ -20,7 +20,7 @@ class Encoder {
     public function __construct(string $label, bool $fatal = true) {
         $l = Matcher::matchLabel($label);
         if (!$l || !$l['encoder']) {
-            throw new EncoderException("Label '$label' does not have an encoder", Encoding::E_UNAVAILABLE_ENCODER);
+            throw new EncoderException("Label '$label' does not have an encoder", Coder::E_UNAVAILABLE_ENCODER);
         } else {
             $this->name = $l['name'];
             $this->fatal = $fatal;
@@ -44,7 +44,7 @@ class Encoder {
 
     public function encodeChar(int $codePoint): string {
         if ($codePoint < 0 || $codePoint > 0x10FFFF) {
-            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", Encoding::E_INVALID_CODE_POINT);
+            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", Coder::E_INVALID_CODE_POINT);
         }
         switch ($this->name) {
             case "UTF-8":
@@ -172,7 +172,7 @@ class Encoder {
             }
             return $out;
         } else {
-            throw new EncoderException("Code point $actual not available in target encoding", Encoding::E_UNAVAILABLE_CODE_POINT);
+            throw new EncoderException("Code point $actual not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
         }
     }
     

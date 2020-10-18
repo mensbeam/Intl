@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class XUserDefined extends AbstractEncoding implements StatelessEncoding {
+class XUserDefined extends AbstractEncoding implements Coder, Decoder {
     const NAME = "x-user-defined";
     const LABELS = ["x-user-defined"];
 

@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\EUCKR;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -33,13 +33,13 @@ class TestEUCKR extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+0064 (HTML)'    => [false, 0x64, "64"],
             'U+0064 (fatal)'   => [true,  0x64, "64"],
             'U+00CA (HTML)'    => [false, 0xCA, bin2hex("&#202;")],
-            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+ACF2 (HTML)'    => [false, 0xACF2, "81 E9"],
             'U+ACF2 (fatal)'   => [true,  0xACF2, "81 E9"],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
     }
 

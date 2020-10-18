@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class Replacement implements Encoding {
+class Replacement implements Decoder {
     const NAME = "replacement";
     const LABELS = [
         "csiso2022kr",

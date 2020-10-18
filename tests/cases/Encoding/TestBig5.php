@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\Big5;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -33,7 +33,7 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+0064 (HTML)'    => [false, 0x64, "64"],
             'U+0064 (fatal)'   => [true,  0x64, "64"],
             'U+00CA (HTML)'    => [false, 0xCA, bin2hex("&#202;")],
-            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+3007 (HTML)'    => [false, 0x3007, "C6 E2"],
             'U+3007 (fatal)'   => [true,  0x3007, "C6 E2"],
             'U+5341 (HTML)'    => [false, 0x5341, "A4 51"],
@@ -42,10 +42,10 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+2561 (fatal)'   => [true,  0x2561, "F9 EB"],
             'U+256D (HTML)'    => [false, 0x256D, "A2 7E"],
             'U+256D (fatal)'   => [true,  0x256D, "A2 7E"],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
     }
 

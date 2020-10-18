@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\EUCJP;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -43,15 +43,15 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+2212 (HTML)'  => [false, 0x2212, "A1 DD"],
             'U+2212 (fatal)' => [true,  0x2212, "A1 DD"],
             'U+00E6 (HTML)'  => [false, 0xE6, bin2hex("&#230;")],
-            'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+00E6 (fatal)' => [true,  0xE6, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+FFE2 (HTML)'  => [false, 0xFFE2, "A2 CC"],
             'U+FFE2 (fatal)' => [true,  0xFFE2, "A2 CC"],
             'U+2116 (HTML)'  => [false, 0x2116, "AD E2"],
             'U+2116 (fatal)' => [true,  0x2116, "AD E2"],
-            '-1 (HTML)'  => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)' => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (HTML)'  => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
     }
 

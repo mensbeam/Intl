@@ -57,7 +57,7 @@ class TestEncoding extends \PHPUnit\Framework\TestCase {
             $file = basename($file, ".php");
             $className = $ns.$file;
             $class = new \ReflectionClass($className);
-            if ($class->implementsInterface(\MensBeam\Intl\Encoding\Encoding::class) && $class->isInstantiable()) {
+            if ($class->implementsInterface(\MensBeam\Intl\Encoding\Decoder::class) && $class->isInstantiable()) {
                 $name = $class->getConstant("NAME");
                 $names[$name] = $className;
                 foreach ($class->getConstant("LABELS") as $label) {

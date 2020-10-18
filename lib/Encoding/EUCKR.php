@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class EUCKR extends AbstractEncoding implements StatelessEncoding {
+class EUCKR extends AbstractEncoding implements Coder, Decoder {
     const NAME = "EUC-KR";
     const LABELS = [
         "cseuckr",

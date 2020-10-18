@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class ISO2022JP extends AbstractEncoding implements Encoding {
+class ISO2022JP extends AbstractEncoding implements Decoder {
     const NAME = "ISO-2022-JP";
     const LABELS = [
         "csiso2022jp",

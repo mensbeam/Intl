@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-abstract class AbstractEncoding implements Encoding {
+abstract class AbstractEncoding  implements Decoder {
     /** @var string $string The string being decoded */
     protected $string;
     /** @var int $posByte The current byte position in the string */
@@ -199,7 +199,7 @@ abstract class AbstractEncoding implements Encoding {
             return "&#".(string) $data.";";
         } else {
             // fatal replacement mode for encoders; not applicable to Unicode transformation formats
-            throw new EncoderException("Code point $data not available in target encoding", self::E_UNAVAILABLE_CODE_POINT);
+            throw new EncoderException("Code point $data not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
         }
     }
 }

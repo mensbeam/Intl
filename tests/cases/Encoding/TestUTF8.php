@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\UTF8;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -44,10 +44,10 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+10FFFD (fatal)' => [true,  0x10FFFD, "F4 8F BF BD"],
             'U+FFFE (HTML)'    => [false, 0xFFFE, "EF BF BE"],
             'U+FFFE (fatal)'   => [true,  0xFFFE, "EF BF BE"],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
     }
 

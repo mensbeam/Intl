@@ -3,7 +3,7 @@
 // class in the Encoding set and generates tables mapping labels
 // to names and names to classes
 
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Decoder;
 
 define("BASE", dirname(__DIR__).DIRECTORY_SEPARATOR);
 require_once BASE."vendor".DIRECTORY_SEPARATOR."autoload.php";
@@ -15,7 +15,7 @@ foreach (new \GlobIterator(BASE."/lib/Encoding/*.php", \FilesystemIterator::CURR
     $file = basename($file, ".php");
     $className = $ns.$file;
     $class = new \ReflectionClass($className);
-    if ($class->implementsInterface(Encoding::class) && $class->isInstantiable()) {
+    if ($class->implementsInterface(Decoder::class) && $class->isInstantiable()) {
         $name = $class->getConstant("NAME");
         $names[$name] = $className;
         foreach ($class->getConstant("LABELS") as $label) {

@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\ISO2022JP;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -55,15 +55,15 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
 'U+FFE2 (HTML)'  => [false, [0xFFE2], "1B 24 42 22 4C 1B 28 42"],
 'U+FFE2 (fatal)' => [true,  [0xFFE2], "1B 24 42 22 4C 1B 28 42"],
 'U+00C6 (HTML)'  => [false, [0xC6], "26 23 31 39 38 3B"],
-'U+00C6 (fatal)' => [true,  [0xC6], new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+'U+00C6 (fatal)' => [true,  [0xC6], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
 'U+FFFD (HTML)'  => [false, [0xFFFD], "26 23 36 35 35 33 33 3B"],
-'U+FFFD (fatal)' => [true,  [0xFFFD], new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+'U+FFFD (fatal)' => [true,  [0xFFFD], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
 'Roman (HTML)'  => [false, [0xA5, 0x20, 0x203E], "1B 28 4A 5C 20 7E 1B 28 42"],
 'Roman (fatal)' => [true,  [0xA5, 0x20, 0x203E], "1B 28 4A 5C 20 7E 1B 28 42"],
 'Roman to ASCII (HTML)'  => [false, [0xA5, 0x5C], "1B 28 4A 5C 1B 28 42 5C"],
 'Roman to ASCII (fatal)' => [true,  [0xA5, 0x5C], "1B 28 4A 5C 1B 28 42 5C"],
 'Roman to error (HTML)'  => [false, [0xA5, 0x80], "1B 28 4A 5C 26 23 31 32 38 3B 1B 28 42"],
-'Roman to error (fatal)' => [true,  [0xA5, 0x80], new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+'Roman to error (fatal)' => [true,  [0xA5, 0x80], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
 'JIS (HTML)'  => [false, [0x2116, 0xFFE2, 0x2212], "1B 24 42 2D 62 22 4C 21 5D 1B 28 42"],
 'JIS (fatal)' => [true,  [0x2116, 0xFFE2, 0x2212], "1B 24 42 2D 62 22 4C 21 5D 1B 28 42"],
 'JIS to Roman (HTML)'  => [false, [0x2116, 0xA5], "1B 24 42 2D 62 1B 28 4A 5C 1B 28 42"],
@@ -73,13 +73,13 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
 'JIS to ASCII 2 (HTML)'  => [false, [0x2116, 0x5C], "1B 24 42 2D 62 1B 28 42 5C"],
 'JIS to ASCII 2 (fatal)' => [true,  [0x2116, 0x5C], "1B 24 42 2D 62 1B 28 42 5C"],
 'JIS to error (HTML)'  => [false, [0x2116, 0x80], "1B 24 42 2D 62 1B 28 42 26 23 31 32 38 3B"],
-'JIS to error (fatal)' => [true,  [0x2116, 0x80], new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+'JIS to error (fatal)' => [true,  [0x2116, 0x80], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
 'Escape characters (HTML)'  => [false, [0x1B, 0xE, 0xF], "26 23 36 35 35 33 33 3B 26 23 36 35 35 33 33 3B 26 23 36 35 35 33 33 3B"],
-'Escape characters (fatal)' => [true,  [0x1B, 0xE, 0xF], new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-'-1 (HTML)'  => [false, [-1], new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-'-1 (fatal)' => [true,  [-1], new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-'0x110000 (HTML)'  => [false, [0x110000], new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-'0x110000 (fatal)' => [true,  [0x110000], new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+'Escape characters (fatal)' => [true,  [0x1B, 0xE, 0xF], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+'-1 (HTML)'  => [false, [-1], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+'-1 (fatal)' => [true,  [-1], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+'0x110000 (HTML)'  => [false, [0x110000], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+'0x110000 (fatal)' => [true,  [0x110000], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
     }
 

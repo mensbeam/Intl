@@ -7,7 +7,7 @@ var encoding = document.getElementsByTagName("meta")[0].getAttribute("charset");
 
 function encodeCodePoint(code, fatal) {
     if (code < 0 || code > 0x10FFFF) {
-        return 'new EncoderException("", Encoding::E_INVALID_CODE_POINT)';
+        return 'new EncoderException("", Coder::E_INVALID_CODE_POINT)';
     } else {
         var l = document.createElement("a");
         l.href = "http://example.com/?" + String.fromCodePoint(code) + "#";
@@ -17,7 +17,7 @@ function encodeCodePoint(code, fatal) {
             if ((url.charAt(a) == "%" && url.substr(a, 6) == "%26%23") || url.charAt(a) == "&") {
                 // character cannot be encoded
                 if (fatal) {
-                    return 'new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)';
+                    return 'new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)';
                 } else {
                     return decodeURIComponent(url);
                 }
@@ -35,7 +35,7 @@ function encodeCodePoint(code, fatal) {
 function encodeCodePoints(codes, fatal) {
     for (let a = 0; a < codes.length; a++) {
         if (codes[a] < 0 || codes[a] > 0x10FFFF) {
-            return 'new EncoderException("", Encoding::E_INVALID_CODE_POINT)';
+            return 'new EncoderException("", Coder::E_INVALID_CODE_POINT)';
         }
     }
     var l = document.createElement("a");
@@ -43,7 +43,7 @@ function encodeCodePoints(codes, fatal) {
     var bytes = [];
     let url = decodeURIComponent(l.search.substr(1));
     if (fatal && url.indexOf("&#") > -1) {
-        return 'new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)';
+        return 'new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)';
     }
     for (let a = 0; a < url.length; a++) {
         bytes.push(url.charCodeAt(a).toString(16).padStart(2, "0").toUpperCase());

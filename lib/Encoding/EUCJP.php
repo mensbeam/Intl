@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class EUCJP extends AbstractEncoding implements StatelessEncoding {
+class EUCJP extends AbstractEncoding implements Coder, Decoder {
     const NAME = "EUC-JP";
     const LABELS = [
         "cseucpkdfmtjapanese",

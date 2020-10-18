@@ -8,7 +8,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\GBK;
 use MensBeam\Intl\Encoding\GB18030;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -49,13 +49,13 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+1D11E (HTML)'   => [false, 0x1D11E, "94 32 BE 34"],
             'U+1D11E (fatal)'  => [true,  0x1D11E, "94 32 BE 34"],
             'U+E5E5 (HTML)'    => [false, 0xE5E5, bin2hex("&#58853;")],
-            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+3000 (HTML)'    => [false, 0x3000, "A1 A1"],
             'U+3000 (fatal)'   => [true,  0x3000, "A1 A1"],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
         $series_gbk = [
             'U+0064 (HTML)'    => [false, 0x64, "64"],
@@ -65,19 +65,19 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
             'U+2164 (HTML)'    => [false, 0x2164, "A2 F5"],
             'U+2164 (fatal)'   => [true,  0x2164, "A2 F5"],
             'U+3A74 (HTML)'    => [false, 0x3A74, bin2hex("&#14964;")],
-            'U+3A74 (fatal)'   => [true,  0x3A74, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+3A74 (fatal)'   => [true,  0x3A74, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+E7C7 (HTML)'    => [false, 0xE7C7, bin2hex("&#59335;")],
-            'U+E7C7 (fatal)'   => [true,  0xE7C7, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+E7C7 (fatal)'   => [true,  0xE7C7, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+1D11E (HTML)'   => [false, 0x1D11E, bin2hex("&#119070;")],
-            'U+1D11E (fatal)'  => [true,  0x1D11E, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+1D11E (fatal)'  => [true,  0x1D11E, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+E5E5 (HTML)'    => [false, 0xE5E5, bin2hex("&#58853;")],
-            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
+            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
             'U+3000 (HTML)'    => [false, 0x3000, "A1 A1"],
             'U+3000 (fatal)'   => [true,  0x3000, "A1 A1"],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
         foreach ($series_gb18030 as $name => $test) {
             array_push($test, GB18030::class);

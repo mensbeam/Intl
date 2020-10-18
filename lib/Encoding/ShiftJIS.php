@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class ShiftJIS extends AbstractEncoding implements StatelessEncoding {
+class ShiftJIS extends AbstractEncoding implements Coder, Decoder {
     const NAME = "Shift_JIS";
     const LABELS = [
         "csshiftjis",
