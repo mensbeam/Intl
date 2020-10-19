@@ -15,7 +15,9 @@ class Encoder {
     
     protected $name;
     protected $fatal = true;
-    protected $mode = ISO2022JP::ASCII_STATE;
+    protected $mode = self::MODE_ASCII;
+
+    protected $pointerCache;
     
     public function __construct(string $label, bool $fatal = true) {
         $l = Matcher::matchLabel($label);
@@ -121,21 +123,33 @@ class Encoder {
                 return XUserDefined::encode($codePoint, $this->fatal);
             case "ISO-2022-JP":
                 if ($codePoint === 0xE || $codePoint === 0xF || $codePoint === 0x1B) {
-                    return $this->err($codePoint, 0xFFFD);
+                    if (!$this->fatal) {
+                        $out = "&#".(string) 0xFFFD.";";
+                        if ($this->mode === self::MODE_JIS) {
+                            $this->mode = self::MODE_ASCII;
+                            return "\x1B\x28\x42". $out;
+                        }
+                        return $out;
+                    } else {
+                        throw new EncoderException("Code point $codePoint not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
+                    }
                 } elseif ($codePoint === 0x5C || $codePoint === 0x7E) {
                     if ($this->mode !== self::MODE_ASCII) {
-                        return $this->modeSet(self::MODE_ASCII, chr($codePoint));
+                        $this->mode = self::MODE_ASCII;
+                        return "\x1B\x28\x42".chr($codePoint);
                     }
                     return chr($codePoint);
                 } elseif ($codePoint < 0x80) {
                     if ($this->mode === self::MODE_JIS) {
-                        return $this->modeSet(self::MODE_ASCII, chr($codePoint));
+                        $this->mode = self::MODE_ASCII;
+                        return "\x1B\x28\x42".chr($codePoint);
                     }
                     return chr($codePoint);
                 } elseif ($codePoint === 0xA5 || $codePoint === 0x203E) {
                     $ord = $codePoint === 0xA5 ? 0x5C : 0x7E;
                     if ($this->mode !== self::MODE_ROMAN) {
-                        return $this->modeSet(self::MODE_ROMAN, chr($ord));
+                        $this->mode = self::MODE_ROMAN;
+                        return "\x1B\x28\x4A".chr($ord);
                     }
                     return chr($ord);
                 } else {
@@ -144,41 +158,34 @@ class Encoder {
                     } elseif ($codePoint === 0x2212) {
                         $codePoint = 0xFF0D;
                     }
-                    $pointer = ISO2022JP::TABLE_POINTERS[$codePoint] ?? array_flip(ISO2022JP::TABLE_JIS0208)[$codePoint] ?? null;
+                    $pointer = ISO2022JP::TABLE_POINTERS[$codePoint] ?? ($this->pointerCache ?? ($this->pointerCache = array_flip(ISO2022JP::TABLE_JIS0208)))[$codePoint] ?? null;
                     if (!is_null($pointer)) {
                         $lead = chr((int) ($pointer / 94) + 0x21);
                         $trail = chr(($pointer % 94) + 0x21);
                         if ($this->mode !== self::MODE_JIS) {
-                            return $this->modeSet(self::MODE_JIS, $lead.$trail);
+                            $this->mode = self::MODE_JIS;
+                            return "\x1B\x24\x42".$lead.$trail;
                         }
                         return $lead.$trail;
                     }
-                    return $this->err($codePoint);
+                    if (!$this->fatal) {
+                        $out = "&#".(string) ($codePoint).";";
+                        if ($this->mode === self::MODE_JIS) {
+                            $this->mode = self::MODE_ASCII;
+                            return "\x1B\x28\x42". $out;
+                        }
+                        return $out;
+                    } else {
+                        throw new EncoderException("Code point $codePoint not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
+                    }
                 }
         }
     } // @codeCoverageIgnore
-
-    protected function modeSet(int $mode, string $bytes): string {
-        $head = ["\x1B\x28\x42", "\x1B\x28\x4A", "\x1B\x24\x42"][$mode];
-        $this->mode = $mode;
-        return $head.$bytes;
-    }
-        
-    protected function err(int $actual, int $effective = null): string {
-        if (!$this->fatal) {
-            $out = "&#".(string) ($effective ?? $actual).";";
-            if ($this->mode === self::MODE_JIS) {
-                return $this->modeSet(self::MODE_ASCII, $out);
-            }
-            return $out;
-        } else {
-            throw new EncoderException("Code point $actual not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
-        }
-    }
     
     public function finalize(): string {
         if ($this->mode !== self::MODE_ASCII) {
-            return $this->modeSet(self::MODE_ASCII, "");
+            $this->mode = self::MODE_ASCII;
+            return "\x1B\x28\x42";
         }
         return "";
     }
