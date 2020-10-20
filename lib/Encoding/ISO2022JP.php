@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-class ISO2022JP extends AbstractEncoding implements Decoder {
+class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
     const NAME = "ISO-2022-JP";
     const LABELS = [
         "csiso2022jp",
@@ -27,6 +27,8 @@ class ISO2022JP extends AbstractEncoding implements Decoder {
     protected $modeMark = \PHP_INT_MIN;
     protected $modeStack = [];
     protected $dirtyEOF = 0;
+
+    protected static $pointerCache;
 
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         parent::__construct($string, $fatal, $allowSurrogates);
@@ -196,5 +198,74 @@ class ISO2022JP extends AbstractEncoding implements Decoder {
 
     public function eof(): bool {
         return $this->posByte === $this->lenByte || ($this->posByte === ($this->lenByte - 3) && $this->peekCode() === false);
+    }
+
+    public static function encode(?int $codePoint, bool $fatal = true, &$mode = null): string {
+        $mode = $mode ?? self::MODE_ASCII;
+        if ($codePoint < 0 || $codePoint > 0x10FFFF) {
+            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", Coder::E_INVALID_CODE_POINT);
+        } elseif ($codePoint === null) {
+            if ($mode !== self::MODE_ASCII) {
+                $mode = self::MODE_ASCII;
+                return "\x1B\x28\x42";
+            }
+            return "";
+        } elseif ($codePoint === 0xE || $codePoint === 0xF || $codePoint === 0x1B) {
+            if (!$fatal) {
+                $out = "&#".(string) 0xFFFD.";";
+                if ($mode === self::MODE_JIS) {
+                    $mode = self::MODE_ASCII;
+                    return "\x1B\x28\x42". $out;
+                }
+                return $out;
+            } else {
+                throw new EncoderException("Code point $codePoint not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
+            }
+        } elseif ($codePoint === 0x5C || $codePoint === 0x7E) {
+            if ($mode !== self::MODE_ASCII) {
+                $mode = self::MODE_ASCII;
+                return "\x1B\x28\x42".chr($codePoint);
+            }
+            return chr($codePoint);
+        } elseif ($codePoint < 0x80) {
+            if ($mode === self::MODE_JIS) {
+                $mode = self::MODE_ASCII;
+                return "\x1B\x28\x42".chr($codePoint);
+            }
+            return chr($codePoint);
+        } elseif ($codePoint === 0xA5 || $codePoint === 0x203E) {
+            $ord = $codePoint === 0xA5 ? 0x5C : 0x7E;
+            if ($mode !== self::MODE_ROMAN) {
+                $mode = self::MODE_ROMAN;
+                return "\x1B\x28\x4A".chr($ord);
+            }
+            return chr($ord);
+        } else {
+            if ($codePoint >= 0xFF61 && $codePoint <= 0xFF9F) {
+                $codePoint = self::TABLE_KATAKANA[$codePoint - 0xFF61];
+            } elseif ($codePoint === 0x2212) {
+                $codePoint = 0xFF0D;
+            }
+            $pointer = self::TABLE_POINTERS[$codePoint] ?? (self::$pointerCache ?? (self::$pointerCache = array_flip(self::TABLE_JIS0208)))[$codePoint] ?? null;
+            if (!is_null($pointer)) {
+                $lead = chr((int) ($pointer / 94) + 0x21);
+                $trail = chr(($pointer % 94) + 0x21);
+                if ($mode !== self::MODE_JIS) {
+                    $mode = self::MODE_JIS;
+                    return "\x1B\x24\x42".$lead.$trail;
+                }
+                return $lead.$trail;
+            }
+            if (!$fatal) {
+                $out = "&#".(string) ($codePoint).";";
+                if ($mode === self::MODE_JIS) {
+                    $mode = self::MODE_ASCII;
+                    return "\x1B\x28\x42". $out;
+                }
+                return $out;
+            } else {
+                throw new EncoderException("Code point $codePoint not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
+            }
+        }
     }
 }

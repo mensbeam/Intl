@@ -22,6 +22,12 @@ abstract class CoderDecoderTest extends DecoderTest {
         }
         $out = $e->encode($input);
         $this->assertSame($exp, bin2hex($out));
+        $out = "";
+        foreach ($input as $c) {
+            $out .= $e->encodeChar($c);
+        }
+        $out .= $e->finalize();
+        $this->assertSame($exp, bin2hex($out));
     }
 
     public function testEncodeCodePointsStatically(bool $fatal, $input, $exp) {

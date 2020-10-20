@@ -34,52 +34,54 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     public function provideCodePoints() {
         return [
-'U+0020 (HTML)'  => [false, [0x20], "20"],
-'U+0020 (fatal)' => [true,  [0x20], "20"],
-'U+005C (HTML)'  => [false, [0x5C], "5C"],
-'U+005C (fatal)' => [true,  [0x5C], "5C"],
-'U+007E (HTML)'  => [false, [0x7E], "7E"],
-'U+007E (fatal)' => [true,  [0x7E], "7E"],
-'U+00A5 (HTML)'  => [false, [0xA5], "1B 28 4A 5C 1B 28 42"],
-'U+00A5 (fatal)' => [true,  [0xA5], "1B 28 4A 5C 1B 28 42"],
-'U+203E (HTML)'  => [false, [0x203E], "1B 28 4A 7E 1B 28 42"],
-'U+203E (fatal)' => [true,  [0x203E], "1B 28 4A 7E 1B 28 42"],
-'U+FF61 (HTML)'  => [false, [0xFF61], "1B 24 42 21 23 1B 28 42"],
-'U+FF61 (fatal)' => [true,  [0xFF61], "1B 24 42 21 23 1B 28 42"],
-'U+FF9F (HTML)'  => [false, [0xFF9F], "1B 24 42 21 2C 1B 28 42"],
-'U+FF9F (fatal)' => [true,  [0xFF9F], "1B 24 42 21 2C 1B 28 42"],
-'U+2212 (HTML)'  => [false, [0x2212], "1B 24 42 21 5D 1B 28 42"],
-'U+2212 (fatal)' => [true,  [0x2212], "1B 24 42 21 5D 1B 28 42"],
-'U+2116 (HTML)'  => [false, [0x2116], "1B 24 42 2D 62 1B 28 42"],
-'U+2116 (fatal)' => [true,  [0x2116], "1B 24 42 2D 62 1B 28 42"],
-'U+FFE2 (HTML)'  => [false, [0xFFE2], "1B 24 42 22 4C 1B 28 42"],
-'U+FFE2 (fatal)' => [true,  [0xFFE2], "1B 24 42 22 4C 1B 28 42"],
-'U+00C6 (HTML)'  => [false, [0xC6], "26 23 31 39 38 3B"],
-'U+00C6 (fatal)' => [true,  [0xC6], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
-'U+FFFD (HTML)'  => [false, [0xFFFD], "26 23 36 35 35 33 33 3B"],
-'U+FFFD (fatal)' => [true,  [0xFFFD], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
-'Roman (HTML)'  => [false, [0xA5, 0x20, 0x203E], "1B 28 4A 5C 20 7E 1B 28 42"],
-'Roman (fatal)' => [true,  [0xA5, 0x20, 0x203E], "1B 28 4A 5C 20 7E 1B 28 42"],
-'Roman to ASCII (HTML)'  => [false, [0xA5, 0x5C], "1B 28 4A 5C 1B 28 42 5C"],
-'Roman to ASCII (fatal)' => [true,  [0xA5, 0x5C], "1B 28 4A 5C 1B 28 42 5C"],
-'Roman to error (HTML)'  => [false, [0xA5, 0x80], "1B 28 4A 5C 26 23 31 32 38 3B 1B 28 42"],
-'Roman to error (fatal)' => [true,  [0xA5, 0x80], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
-'JIS (HTML)'  => [false, [0x2116, 0xFFE2, 0x2212], "1B 24 42 2D 62 22 4C 21 5D 1B 28 42"],
-'JIS (fatal)' => [true,  [0x2116, 0xFFE2, 0x2212], "1B 24 42 2D 62 22 4C 21 5D 1B 28 42"],
-'JIS to Roman (HTML)'  => [false, [0x2116, 0xA5], "1B 24 42 2D 62 1B 28 4A 5C 1B 28 42"],
-'JIS to Roman (fatal)' => [true,  [0x2116, 0xA5], "1B 24 42 2D 62 1B 28 4A 5C 1B 28 42"],
-'JIS to ASCII 1 (HTML)'  => [false, [0x2116, 0x20], "1B 24 42 2D 62 1B 28 42 20"],
-'JIS to ASCII 1 (fatal)' => [true,  [0x2116, 0x20], "1B 24 42 2D 62 1B 28 42 20"],
-'JIS to ASCII 2 (HTML)'  => [false, [0x2116, 0x5C], "1B 24 42 2D 62 1B 28 42 5C"],
-'JIS to ASCII 2 (fatal)' => [true,  [0x2116, 0x5C], "1B 24 42 2D 62 1B 28 42 5C"],
-'JIS to error (HTML)'  => [false, [0x2116, 0x80], "1B 24 42 2D 62 1B 28 42 26 23 31 32 38 3B"],
-'JIS to error (fatal)' => [true,  [0x2116, 0x80], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
-'Escape characters (HTML)'  => [false, [0x1B, 0xE, 0xF], "26 23 36 35 35 33 33 3B 26 23 36 35 35 33 33 3B 26 23 36 35 35 33 33 3B"],
-'Escape characters (fatal)' => [true,  [0x1B, 0xE, 0xF], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
-'-1 (HTML)'  => [false, [-1], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
-'-1 (fatal)' => [true,  [-1], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
-'0x110000 (HTML)'  => [false, [0x110000], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
-'0x110000 (fatal)' => [true,  [0x110000], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            'U+0020 (HTML)'  => [false, [0x20], "20"],
+            'U+0020 (fatal)' => [true,  [0x20], "20"],
+            'U+005C (HTML)'  => [false, [0x5C], "5C"],
+            'U+005C (fatal)' => [true,  [0x5C], "5C"],
+            'U+007E (HTML)'  => [false, [0x7E], "7E"],
+            'U+007E (fatal)' => [true,  [0x7E], "7E"],
+            'U+00A5 (HTML)'  => [false, [0xA5], "1B 28 4A 5C 1B 28 42"],
+            'U+00A5 (fatal)' => [true,  [0xA5], "1B 28 4A 5C 1B 28 42"],
+            'U+203E (HTML)'  => [false, [0x203E], "1B 28 4A 7E 1B 28 42"],
+            'U+203E (fatal)' => [true,  [0x203E], "1B 28 4A 7E 1B 28 42"],
+            'U+FF61 (HTML)'  => [false, [0xFF61], "1B 24 42 21 23 1B 28 42"],
+            'U+FF61 (fatal)' => [true,  [0xFF61], "1B 24 42 21 23 1B 28 42"],
+            'U+FF9F (HTML)'  => [false, [0xFF9F], "1B 24 42 21 2C 1B 28 42"],
+            'U+FF9F (fatal)' => [true,  [0xFF9F], "1B 24 42 21 2C 1B 28 42"],
+            'U+2212 (HTML)'  => [false, [0x2212], "1B 24 42 21 5D 1B 28 42"],
+            'U+2212 (fatal)' => [true,  [0x2212], "1B 24 42 21 5D 1B 28 42"],
+            'U+2116 (HTML)'  => [false, [0x2116], "1B 24 42 2D 62 1B 28 42"],
+            'U+2116 (fatal)' => [true,  [0x2116], "1B 24 42 2D 62 1B 28 42"],
+            'U+FFE2 (HTML)'  => [false, [0xFFE2], "1B 24 42 22 4C 1B 28 42"],
+            'U+FFE2 (fatal)' => [true,  [0xFFE2], "1B 24 42 22 4C 1B 28 42"],
+            'U+00C6 (HTML)'  => [false, [0xC6], "26 23 31 39 38 3B"],
+            'U+00C6 (fatal)' => [true,  [0xC6], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+FFFD (HTML)'  => [false, [0xFFFD], "26 23 36 35 35 33 33 3B"],
+            'U+FFFD (fatal)' => [true,  [0xFFFD], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'Roman (HTML)'  => [false, [0xA5, 0x20, 0x203E], "1B 28 4A 5C 20 7E 1B 28 42"],
+            'Roman (fatal)' => [true,  [0xA5, 0x20, 0x203E], "1B 28 4A 5C 20 7E 1B 28 42"],
+            'Roman to ASCII (HTML)'  => [false, [0xA5, 0x5C], "1B 28 4A 5C 1B 28 42 5C"],
+            'Roman to ASCII (fatal)' => [true,  [0xA5, 0x5C], "1B 28 4A 5C 1B 28 42 5C"],
+            'Roman to error (HTML)'  => [false, [0xA5, 0x80], "1B 28 4A 5C 26 23 31 32 38 3B 1B 28 42"],
+            'Roman to error (fatal)' => [true,  [0xA5, 0x80], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'JIS (HTML)'  => [false, [0x2116, 0xFFE2, 0x2212], "1B 24 42 2D 62 22 4C 21 5D 1B 28 42"],
+            'JIS (fatal)' => [true,  [0x2116, 0xFFE2, 0x2212], "1B 24 42 2D 62 22 4C 21 5D 1B 28 42"],
+            'JIS to Roman (HTML)'  => [false, [0x2116, 0xA5], "1B 24 42 2D 62 1B 28 4A 5C 1B 28 42"],
+            'JIS to Roman (fatal)' => [true,  [0x2116, 0xA5], "1B 24 42 2D 62 1B 28 4A 5C 1B 28 42"],
+            'JIS to ASCII 1 (HTML)'  => [false, [0x2116, 0x20], "1B 24 42 2D 62 1B 28 42 20"],
+            'JIS to ASCII 1 (fatal)' => [true,  [0x2116, 0x20], "1B 24 42 2D 62 1B 28 42 20"],
+            'JIS to ASCII 2 (HTML)'  => [false, [0x2116, 0x5C], "1B 24 42 2D 62 1B 28 42 5C"],
+            'JIS to ASCII 2 (fatal)' => [true,  [0x2116, 0x5C], "1B 24 42 2D 62 1B 28 42 5C"],
+            'JIS to error 1 (HTML)'  => [false, [0x2116, 0x80], "1B 24 42 2D 62 1B 28 42 26 23 31 32 38 3B"],
+            'JIS to error 1 (fatal)' => [true,  [0x2116, 0x80], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'JIS to error 2 (HTML)'  => [false, [0x2116, 0x1B], "1B 24 42 2D 62 1B 28 42 26 23 36 35 35 33 33 3B"],
+            'JIS to error 2 (fatal)' => [true,  [0x2116, 0x1B], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'Escape characters (HTML)'  => [false, [0x1B, 0xE, 0xF], "26 23 36 35 35 33 33 3B 26 23 36 35 35 33 33 3B 26 23 36 35 35 33 33 3B"],
+            'Escape characters (fatal)' => [true,  [0x1B, 0xE, 0xF], new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            '-1 (HTML)'  => [false, [-1], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)' => [true,  [-1], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, [0x110000], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  [0x110000], new EncoderException("", Coder::E_INVALID_CODE_POINT)],
         ];
     }
 
@@ -116,10 +118,21 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
 
     /**
      * @dataProvider provideCodePoints
-     * @coversNothing
+     * @covers MensBeam\Intl\Encoding\ISO2022JP::encode
      */
     public function testEncodeCodePointsStatically(bool $fatal, $input, $exp) {
-        return parent::testEncodeCodePointsStatically($fatal, $input, $exp);
+        $out = "";
+        if ($exp instanceof \Throwable) {
+            $this->expectException(get_class($exp));
+            $this->expectExceptionCode($exp->getCode());
+        } else {
+            $exp = strtolower(str_replace(" ", "", $exp));
+        }
+        foreach ($input as $char) {
+            $out .= ISO2022JP::encode($char, $fatal, $mode);
+        }
+        $out .= ISO2022JP::encode(null, $fatal, $mode);
+        $this->assertSame($exp, bin2hex($out));
     }
 
     /**

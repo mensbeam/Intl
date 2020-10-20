@@ -17,8 +17,6 @@ class Encoder {
     protected $fatal = true;
     protected $mode = self::MODE_ASCII;
 
-    protected $pointerCache;
-    
     public function __construct(string $label, bool $fatal = true) {
         $l = Matcher::matchLabel($label);
         if (!$l || !$l['encoder']) {
@@ -30,24 +28,199 @@ class Encoder {
     }
     
     public function encode(iterable $codePoints): string {
-        $oldMode = $this->mode;
-        $this->mode = self::MODE_ASCII;
         $out = "";
-        try {
-            foreach ($codePoints as $codePoint) {
-                $out .= $this->encodeChar($codePoint);
-            }
-            $out .= $this->finalize();
-        } finally {
-            $this->mode = $oldMode;
+        switch ($this->name) {
+            case "UTF-8":
+                foreach ($codePoints as $codePoint) {
+                    $out .= UTF8::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "Big5":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Big5::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "EUC-JP":
+                foreach ($codePoints as $codePoint) {
+                    $out .= EUCJP::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "EUC-KR":
+                foreach ($codePoints as $codePoint) {
+                    $out .= EUCKR::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "gb18030":
+                foreach ($codePoints as $codePoint) {
+                    $out .= GB18030::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "GBK":
+                foreach ($codePoints as $codePoint) {
+                    $out .= GBK::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "IBM866":
+                foreach ($codePoints as $codePoint) {
+                    $out .= IBM866::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-2":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88592::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-3":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88593::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-4":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88594::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-5":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88595::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-6":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88596::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-7":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88597::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-8":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88598::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-8-I":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO88598I::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-10":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO885910::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-13":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO885913::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-14":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO885914::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-15":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO885915::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-8859-16":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO885916::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "KOI8-R":
+                foreach ($codePoints as $codePoint) {
+                    $out .= KOI8R::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "KOI8-U":
+                foreach ($codePoints as $codePoint) {
+                    $out .= KOI8U::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "macintosh":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Macintosh::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "Shift_JIS":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ShiftJIS::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1250":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1250::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1251":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1251::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1252":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1252::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1253":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1253::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1254":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1254::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1255":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1255::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1256":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1256::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1257":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1257::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-1258":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows1258::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "windows-874":
+                foreach ($codePoints as $codePoint) {
+                    $out .= Windows874::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "x-mac-cyrillic":
+                foreach ($codePoints as $codePoint) {
+                    $out .= XMacCyrillic::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "x-user-defined":
+                foreach ($codePoints as $codePoint) {
+                    $out .= XUserDefined::encode($codePoint, $this->fatal);
+                }
+                break;
+            case "ISO-2022-JP":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO2022JP::encode($codePoint, $this->fatal, $mode);
+                }
+                $out .= ISO2022JP::encode(null, $this->fatal, $mode);
+                break;
         }
         return $out;
     }
 
     public function encodeChar(int $codePoint): string {
-        if ($codePoint < 0 || $codePoint > 0x10FFFF) {
-            throw new EncoderException("Encountered code point outside Unicode range ($codePoint)", Coder::E_INVALID_CODE_POINT);
-        }
         switch ($this->name) {
             case "UTF-8":
                 return UTF8::encode($codePoint, $this->fatal);
@@ -122,71 +295,11 @@ class Encoder {
             case "x-user-defined":
                 return XUserDefined::encode($codePoint, $this->fatal);
             case "ISO-2022-JP":
-                if ($codePoint === 0xE || $codePoint === 0xF || $codePoint === 0x1B) {
-                    if (!$this->fatal) {
-                        $out = "&#".(string) 0xFFFD.";";
-                        if ($this->mode === self::MODE_JIS) {
-                            $this->mode = self::MODE_ASCII;
-                            return "\x1B\x28\x42". $out;
-                        }
-                        return $out;
-                    } else {
-                        throw new EncoderException("Code point $codePoint not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
-                    }
-                } elseif ($codePoint === 0x5C || $codePoint === 0x7E) {
-                    if ($this->mode !== self::MODE_ASCII) {
-                        $this->mode = self::MODE_ASCII;
-                        return "\x1B\x28\x42".chr($codePoint);
-                    }
-                    return chr($codePoint);
-                } elseif ($codePoint < 0x80) {
-                    if ($this->mode === self::MODE_JIS) {
-                        $this->mode = self::MODE_ASCII;
-                        return "\x1B\x28\x42".chr($codePoint);
-                    }
-                    return chr($codePoint);
-                } elseif ($codePoint === 0xA5 || $codePoint === 0x203E) {
-                    $ord = $codePoint === 0xA5 ? 0x5C : 0x7E;
-                    if ($this->mode !== self::MODE_ROMAN) {
-                        $this->mode = self::MODE_ROMAN;
-                        return "\x1B\x28\x4A".chr($ord);
-                    }
-                    return chr($ord);
-                } else {
-                    if ($codePoint >= 0xFF61 && $codePoint <= 0xFF9F) {
-                        $codePoint = ISO2022JP::TABLE_KATAKANA[$codePoint - 0xFF61];
-                    } elseif ($codePoint === 0x2212) {
-                        $codePoint = 0xFF0D;
-                    }
-                    $pointer = ISO2022JP::TABLE_POINTERS[$codePoint] ?? ($this->pointerCache ?? ($this->pointerCache = array_flip(ISO2022JP::TABLE_JIS0208)))[$codePoint] ?? null;
-                    if (!is_null($pointer)) {
-                        $lead = chr((int) ($pointer / 94) + 0x21);
-                        $trail = chr(($pointer % 94) + 0x21);
-                        if ($this->mode !== self::MODE_JIS) {
-                            $this->mode = self::MODE_JIS;
-                            return "\x1B\x24\x42".$lead.$trail;
-                        }
-                        return $lead.$trail;
-                    }
-                    if (!$this->fatal) {
-                        $out = "&#".(string) ($codePoint).";";
-                        if ($this->mode === self::MODE_JIS) {
-                            $this->mode = self::MODE_ASCII;
-                            return "\x1B\x28\x42". $out;
-                        }
-                        return $out;
-                    } else {
-                        throw new EncoderException("Code point $codePoint not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
-                    }
-                }
+                return ISO2022JP::encode($codePoint, $this->fatal, $this->mode);
         }
     } // @codeCoverageIgnore
     
     public function finalize(): string {
-        if ($this->mode !== self::MODE_ASCII) {
-            $this->mode = self::MODE_ASCII;
-            return "\x1B\x28\x42";
-        }
-        return "";
+        return ISO2022JP::encode(null, $this->fatal, $this->mode);
     }
 }

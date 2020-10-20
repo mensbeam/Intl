@@ -18,6 +18,8 @@ Bug fixes:
 
 Changes:
 - Added new labels for UTF-8 and UTF-16
+- Improved performance of Big5, gb18030, GBK, and EUC-KR encoders
+- Corrected requirement of PHP 7.1 
 
 Version 0.7.1 (2020-10-05)
 ==========================

@@ -36,7 +36,8 @@ var sampleCharacters = {
     'JIS to Roman':      [0x2116, 0xA5],
     'JIS to ASCII 1':    [0x2116, 0x20],
     'JIS to ASCII 2':    [0x2116, 0x5C],
-    'JIS to error':      [0x2116, 0x80],
+    'JIS to error 1':    [0x2116, 0x80],
+    'JIS to error 2':    [0x2116, 0x1B], // Even Firefox is wrong here; see https://github.com/web-platform-tests/wpt/pull/26158
     'Escape characters': [0x1B, 0xE, 0xF], // Even Firefox is wrong here; see https://github.com/web-platform-tests/wpt/pull/26158
     '-1':                [-1],
     '0x110000':          [0x110000],

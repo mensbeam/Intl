@@ -88,9 +88,8 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::encode
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp, string $class = SingleByteEncoding::class) {
-        $e = new Encoder($class::NAME, $fatal);
-        $out = $e->encode($input);
-        $this->assertSame(bin2hex($exp), bin2hex($out));
+        $this->testedClass = $class;
+        return parent::testEncodeCodePoints($fatal, $input, bin2hex($exp));
     }
 
     /**

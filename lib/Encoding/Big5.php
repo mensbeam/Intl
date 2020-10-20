@@ -27,6 +27,8 @@ class Big5 extends AbstractEncoding implements Coder, Decoder {
 
     protected $bufferedCode = 0;
 
+    protected static $pointerCache;
+
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         $this->stateProps[] = "bufferedCode";
         parent::__construct($string, $fatal, $allowSurrogates);
@@ -96,7 +98,7 @@ class Big5 extends AbstractEncoding implements Coder, Decoder {
         } elseif ($codePoint < 128) {
             return chr($codePoint);
         } else {
-            $pointer = self::TABLE_POINTERS[$codePoint] ?? array_flip(self::TABLE_CODES_TW)[$codePoint] ?? null;
+            $pointer = self::TABLE_POINTERS[$codePoint] ?? (self::$pointerCache ?? (self::$pointerCache = array_flip(self::TABLE_CODES_TW)))[$codePoint] ?? null;
             if (isset($pointer)) {
                 $lead = (int) ($pointer / 157) + 0x81;
                 $trail = $pointer % 157;
