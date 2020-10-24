@@ -34,6 +34,11 @@ abstract class AbstractEncoding  implements Decoder {
 
     public $posErr = 0;
 
+    /** Seeks backwards through the string the specified number of characters. 
+     * If the beginning of the string is reached before the requested number 
+     * of characters has been skipped over, the number of remaining characters
+     * is returned.
+     */
     abstract protected function seekBack(int $distance): int;
 
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {

@@ -17,6 +17,13 @@ class Encoder {
     protected $fatal = true;
     protected $mode = self::MODE_ASCII;
 
+    /** Constructs a new encoder for the specified $label
+     * 
+     * @param string $label One of the encoding labels listed in the specification e.g. "utf-8", "Latin1", "shift_JIS"
+     * @param bool $fatal If true (the default) exceptions will be thrown when a character cannot be represented in the target encoding; if false HTML character references will be substituted instead
+     * 
+     * @see https://encoding.spec.whatwg.org#names-and-labels
+     */
     public function __construct(string $label, bool $fatal = true) {
         $l = Matcher::matchLabel($label);
         if (!$l || !$l['encoder']) {
@@ -27,6 +34,10 @@ class Encoder {
         }
     }
     
+    /** Encodes a series of code point numbers into a string
+     * 
+     * @param iterable $codePoints An iterable set of integers representing code points in the Unicode range
+     */
     public function encode(iterable $codePoints): string {
         $out = "";
         switch ($this->name) {
@@ -220,6 +231,12 @@ class Encoder {
         return $out;
     }
 
+    /** Encodes a single character into a string
+     * 
+     * When using this method to encode a string, the finalize() method should be called to terminate the string
+     * 
+     * @param int $codePoint An integer representing the Unicode code point number to encode
+     */
     public function encodeChar(int $codePoint): string {
         switch ($this->name) {
             case "UTF-8":
@@ -299,6 +316,10 @@ class Encoder {
         }
     } // @codeCoverageIgnore
     
+    /** Finalizes a string, returning any terminal bytes to append to the output
+     * 
+     * For the ISO-2022-JP encoding, this method must be called fater the last character is encoded to correctly encode a string; for other encodings this is a no-op
+     */
     public function finalize(): string {
         return ISO2022JP::encode(null, $this->fatal, $this->mode);
     }

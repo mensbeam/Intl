@@ -23,16 +23,21 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
     const ESCAPE_START_STATE = 5;
     const ESCAPE_STATE = 6;
 
-    protected $mode = self::ASCII_STATE;
-    protected $modeMark = \PHP_INT_MIN;
+    /** @var array $modeStack The stack of previous decoding modes and their effective byte positions; the current mode is kept off the stack */
     protected $modeStack = [];
-    protected $dirtyEOF = 0;
+    /** @var int $mode The current decoding mode, a subset of the possible states defined in the specification */
+    protected $mode = self::ASCII_STATE;
+    /** @var int $modeMark The byte position marking theposition where the current mode first applied; it is the position of the first byte AFTER the escape sequence */
+    protected $modeMark = \PHP_INT_MIN;
+    /** @var bool $trailingEscape Whether the string ends in a valid escape sequence */
+    protected $trailingEscape = false;
 
+    /** @var array $pointerCache A cached result of flipping the pointer-to-code-point table */
     protected static $pointerCache;
 
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         parent::__construct($string, $fatal, $allowSurrogates);
-        $this->stateProps[] = "dirtyEOF";
+        $this->stateProps[] = "trailingEscape";
     }
 
     public function nextChar(): string {
@@ -130,7 +135,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
                     unset($lead);
                     // if we're at the end of the string, mark the string as dirty
                     if ($this->posByte === $this->lenByte) {
-                        $this->dirtyEOF = 3;
+                        $this->trailingEscape = true;
                     }
                     continue;
                 }
@@ -146,10 +151,10 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
     }
 
     protected function seekBack(int $distance): int {
-        if ($this->dirtyEOF && $this->posByte === $this->lenByte) {
+        if ($this->trailingEscape && $this->posByte === $this->lenByte) {
             list($this->modeMark, $this->mode) = array_pop($this->modeStack);
-            $this->posByte -= $this->dirtyEOF;
-            $this->dirtyEOF = 0;
+            $this->posByte -= 3;
+            $this->trailingEscape = false;
         }
         while ($distance > 0 && $this->posByte > 0) {
             $this->posChar--;
@@ -192,7 +197,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
         $this->modeStack = [];
         $this->modeMark = \PHP_INT_MIN;
         $this->mode = self::ASCII_STATE;
-        $this->dirtyEOF = 0;
+        $this->trailingEscape = false;
         parent::rewind();
     }
 

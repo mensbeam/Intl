@@ -14,6 +14,8 @@ interface Decoder {
     const E_INVALID_BYTE = 2;
 
     /** Constructs a new decoder
+     * 
+     * @param string $string The string to decode
      * @param bool $fatal If true, throw enceptions when encountering invalid input. If false, substitute U+FFFD REPLACEMENT CHARACTER instead
      * @param bool $allowSurrogates If true, treats surrogate characters as valid input; this only affects UTF-8 and UTF-16 encodings
      */
