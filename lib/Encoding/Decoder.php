@@ -7,11 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 interface Decoder {
-    const MODE_NULL = 0;
-    const MODE_REPLACE = 1;
-    const MODE_FATAL = 2;
-
-    const E_INVALID_BYTE = 2;
+    public const E_INVALID_BYTE = 2;
 
     /** Constructs a new decoder
      * 

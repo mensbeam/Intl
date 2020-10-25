@@ -7,6 +7,10 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 abstract class AbstractEncoding  implements Decoder {
+    protected const MODE_NULL = 0;
+    protected const MODE_REPLACE = 1;
+    protected const MODE_FATAL = 2;
+
     /** @var string $string The string being decoded */
     protected $string;
     /** @var int $posByte The current byte position in the string */

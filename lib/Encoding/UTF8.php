@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 class UTF8 extends AbstractEncoding implements Coder, Decoder {
-    const NAME = "UTF-8";
-    const LABELS = [
+    public const NAME = "UTF-8";
+    public const LABELS = [
         "unicode-1-1-utf-8",
         "unicode11utf8",
         "unicode20utf8",

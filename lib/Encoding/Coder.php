@@ -7,9 +7,9 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 interface Coder {
-    const E_INVALID_CODE_POINT = 1;
-    const E_UNAVAILABLE_CODE_POINT = 3;
-    const E_UNAVAILABLE_ENCODER = 4;
+    public const E_INVALID_CODE_POINT = 1;
+    public const E_UNAVAILABLE_CODE_POINT = 3;
+    public const E_UNAVAILABLE_ENCODER = 4;
 
     /** Returns the encoding of $codePoint as a byte string
      *

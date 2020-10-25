@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 class Replacement implements Decoder {
-    const NAME = "replacement";
-    const LABELS = [
+    public const NAME = "replacement";
+    public const LABELS = [
         "csiso2022kr",
         "hz-gb-2312",
         "iso-2022-cn",

@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
 class XUserDefined extends AbstractEncoding implements Coder, Decoder {
-    const NAME = "x-user-defined";
-    const LABELS = ["x-user-defined"];
+    public const NAME = "x-user-defined";
+    public const LABELS = ["x-user-defined"];
 
     /** Retrieve the next character in the string, in UTF-8 encoding
      *

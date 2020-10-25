@@ -9,14 +9,9 @@ namespace MensBeam\Intl\Encoding;
 use MensBeam\Intl\Encoding as Matcher;
 
 class Encoder {
-    const MODE_ASCII = 0;
-    const MODE_ROMAN = 1;
-    const MODE_JIS = 2;
-    
     protected $name;
     protected $fatal = true;
-    protected $mode = self::MODE_ASCII;
-
+    
     /** Constructs a new encoder for the specified $label
      * 
      * @param string $label One of the encoding labels listed in the specification e.g. "utf-8", "Latin1", "shift_JIS"
@@ -75,6 +70,12 @@ class Encoder {
                 foreach ($codePoints as $codePoint) {
                     $out .= IBM866::encode($codePoint, $this->fatal);
                 }
+                break;
+            case "ISO-2022-JP":
+                foreach ($codePoints as $codePoint) {
+                    $out .= ISO2022JP::encode($codePoint, $this->fatal, $mode);
+                }
+                $out .= ISO2022JP::encode(null, $this->fatal, $mode);
                 break;
             case "ISO-8859-2":
                 foreach ($codePoints as $codePoint) {
@@ -220,12 +221,6 @@ class Encoder {
                 foreach ($codePoints as $codePoint) {
                     $out .= XUserDefined::encode($codePoint, $this->fatal);
                 }
-                break;
-            case "ISO-2022-JP":
-                foreach ($codePoints as $codePoint) {
-                    $out .= ISO2022JP::encode($codePoint, $this->fatal, $mode);
-                }
-                $out .= ISO2022JP::encode(null, $this->fatal, $mode);
                 break;
         }
         return $out;
