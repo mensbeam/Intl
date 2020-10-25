@@ -17,16 +17,19 @@
 
 <testsuites>
     <testsuite name="Encoding">
+        <file>cases/TestEncoding.php</file>
         <file>cases/Encoding/TestUTF8.php</file>
         <file>cases/Encoding/TestUTF16LE.php</file>
         <file>cases/Encoding/TestUTF16BE.php</file>
         <file>cases/Encoding/TestSingleByte.php</file>
         <file>cases/Encoding/TestXUserDefined.php</file>
+        <file>cases/Encoding/TestEUCJP.php</file>
         <file>cases/Encoding/TestGB18030.php</file>
         <file>cases/Encoding/TestBig5.php</file>
         <file>cases/Encoding/TestEUCKR.php</file>
-
-        <file>cases/TestEncoding.php</file>
+        <file>cases/Encoding/TestShiftJIS.php</file>
+        <file>cases/Encoding/TestISO2022JP.php</file>
+        <file>cases/Encoding/TestReplacement.php</file>
     </testsuite>
 </testsuites>
 </phpunit>

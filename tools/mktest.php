@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 // this script generates a test series from the Web Platform test suite which exercises the index tables of multi-byte encodings with single characters
 // they are pedantic sets of tests, and so the test suite itself only uses this series in optional tests
 
@@ -35,7 +36,7 @@ if (!isset($tests[$label])) {
     die("Invalid label specified. Must be one of: ".json_encode(array_keys($tests)));
 }
 
-foreach($tests[$label] as $name => $url) {
+foreach ($tests[$label] as $name => $url) {
     $data = make_test($label, $url);
     $in = $data[0];
     $out = $data[1];
@@ -55,6 +56,10 @@ function make_test(string $label, string $url): array {
         $code = hexdec($match[1]);
         if ($label=="gb18030" && $bytes=="A8BC") { // this test is incorrect or out of date; both Vivaldi and Firefox yield code point 7743
             $code = 7743;
+        } elseif ($label=="euc-jp") { // three tests are out of date
+            $code = ["5C" => 92, "7E" => 126, "A1DD" => 65293][$bytes] ?? $code;
+        } elseif ($label=="shiftjis") { // three tests are incorrect
+            $code = ["5C" => 92, "7E" => 126, "817C" => 0xFF0D][$bytes] ?? $code;
         }
         // convert the code point to decimal
         $out[] = $code;

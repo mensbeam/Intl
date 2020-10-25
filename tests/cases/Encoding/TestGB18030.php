@@ -8,7 +8,7 @@ namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\GBK;
 use MensBeam\Intl\Encoding\GB18030;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -33,8 +33,119 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         $this->testedClass = GB18030::class;
     }
 
+    public function provideCodePoints() {
+        // bytes confirmed using Firefox
+        $series_gb18030 = [
+            'U+0064 (HTML)'    => [false, 0x64, "64"],
+            'U+0064 (fatal)'   => [true,  0x64, "64"],
+            'U+20AC (HTML)'    => [false, 0x20AC, "A2 E3"],
+            'U+20AC (fatal)'   => [true,  0x20AC, "A2 E3"],
+            'U+2164 (HTML)'    => [false, 0x2164, "A2 F5"],
+            'U+2164 (fatal)'   => [true,  0x2164, "A2 F5"],
+            'U+3A74 (HTML)'    => [false, 0x3A74, "82 31 97 30"],
+            'U+3A74 (fatal)'   => [true,  0x3A74, "82 31 97 30"],
+            'U+E7C7 (HTML)'    => [false, 0xE7C7, "81 35 F4 37"],
+            'U+E7C7 (fatal)'   => [true,  0xE7C7, "81 35 F4 37"],
+            'U+1D11E (HTML)'   => [false, 0x1D11E, "94 32 BE 34"],
+            'U+1D11E (fatal)'  => [true,  0x1D11E, "94 32 BE 34"],
+            'U+E5E5 (HTML)'    => [false, 0xE5E5, bin2hex("&#58853;")],
+            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+3000 (HTML)'    => [false, 0x3000, "A1 A1"],
+            'U+3000 (fatal)'   => [true,  0x3000, "A1 A1"],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+        ];
+        $series_gbk = [
+            'U+0064 (HTML)'    => [false, 0x64, "64"],
+            'U+0064 (fatal)'   => [true,  0x64, "64"],
+            'U+20AC (HTML)'    => [false, 0x20AC, "80"],
+            'U+20AC (fatal)'   => [true,  0x20AC, "80"],
+            'U+2164 (HTML)'    => [false, 0x2164, "A2 F5"],
+            'U+2164 (fatal)'   => [true,  0x2164, "A2 F5"],
+            'U+3A74 (HTML)'    => [false, 0x3A74, bin2hex("&#14964;")],
+            'U+3A74 (fatal)'   => [true,  0x3A74, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+E7C7 (HTML)'    => [false, 0xE7C7, bin2hex("&#59335;")],
+            'U+E7C7 (fatal)'   => [true,  0xE7C7, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+1D11E (HTML)'   => [false, 0x1D11E, bin2hex("&#119070;")],
+            'U+1D11E (fatal)'  => [true,  0x1D11E, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+E5E5 (HTML)'    => [false, 0xE5E5, bin2hex("&#58853;")],
+            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+3000 (HTML)'    => [false, 0x3000, "A1 A1"],
+            'U+3000 (fatal)'   => [true,  0x3000, "A1 A1"],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+        ];
+        foreach ($series_gb18030 as $name => $test) {
+            array_push($test, GB18030::class);
+            yield "gb18030 $name" => $test;
+        }
+        foreach ($series_gbk as $name => $test) {
+            array_push($test, GBK::class);
+            yield "GBK $name" => $test;
+        }
+    }
+
+    public function provideStrings() {
+        return [
+            'empty string' => ["", []],
+            // valid single characters
+            'sanity check' => ["40", [64]],
+            'special case for 0x80' => ["80", [8364]],
+            'four-byte special case' => ["81 35 F4 37", [59335]],
+            'two-byte character' => ["A8 4E", [8735]],
+            'four-byte character' => ["82 31 A2 37", [15081]],
+            // cut sequences
+            'EOF after first byte' => ["82", [65533]],
+            'EOF after second byte' => ["82 30", [65533]],
+            'EOF after third byte' => ["82 30 81", [65533]],
+            // invalid sequences
+            'bad first byte' => ["FF 35 F4 37", [65533, 53, 65533]],
+            'bad second byte' => ["81 FF F4 37", [65533, 65533]],
+            'bad third byte' => ["81 35 FF 37", [65533, 53, 65533, 55]],
+            'bad fourth byte' => ["81 35 F4 FF", [65533, 53, 65533]],
+            'control first byte' => ["00 35 F4 37", [0, 53, 65533]],
+            'control second byte' => ["81 00 F4 37", [65533, 0, 65533]],
+            'control third byte' => ["81 35 00 37", [65533, 53, 0, 55]],
+            'control fourth byte' => ["81 35 F4 00", [65533, 53, 65533, 0]],
+            // invalid sequences with clean EOF
+            'bad first byte (padded)' => ["FF 35 F4 37 00 00 00 00", [65533, 53, 65533, 55, 0, 0, 0, 0]],
+            'bad second byte (padded)' => ["81 FF F4 37 00 00 00 00", [65533, 65533, 55, 0, 0, 0, 0]],
+            'bad third byte (padded)' => ["81 35 FF 37 00 00 00 00", [65533, 53, 65533, 55, 0, 0, 0, 0]],
+            'bad fourth byte (padded)' => ["81 35 F4 FF 00 00 00 00", [65533, 53, 65533, 0, 0, 0, 0]],
+            'control first byte (padded)' => ["00 35 F4 37 00 00 00 00", [0, 53, 65533, 55, 0, 0, 0, 0]],
+            'control second byte (padded)' => ["81 00 F4 37 00 00 00 00", [65533, 0, 65533, 55, 0, 0, 0, 0]],
+            'control third byte (padded)' => ["81 35 00 37 00 00 00 00", [65533, 53, 0, 55, 0, 0, 0, 0]],
+            'control fourth byte (padded)' => ["81 35 F4 00 00 00 00 00", [65533, 53, 65533, 0, 0, 0, 0, 0]],
+            // out-of-range sequences
+            'void sequence' => ["84 32 A4 39", [65533]],
+            'void sequence 2' => ["FE 39 FE 39", [65533]],
+            // backward seeking tests
+            'seek test 1' => ["81 81 81 30", [20118, 65533]],
+            'seek test 2' => ["81 81 80", [20118, 8364]],
+            'seek test 3' => ["81 81 00", [20118, 0]],
+            'seek test 4' => ["81 81 81 00", [20118, 65533, 0]],
+            'seek test 5' => ["81 30 30 30", [65533, 48, 48, 48]],
+            'seek test 6' => ["81 30 81 81", [65533, 48, 20118]],
+            'seek test 7' => ["30 30 81 81", [48, 48, 20118]],
+            'seek test 8' => ["F8 83 FE 80", [40229, 18211]],
+            'seek test 1 (padded)' => ["00 00 00 00 81 81 81 30 00 00 00 00", [0, 0, 0, 0, 20118, 65533, 48, 0, 0, 0, 0]],
+            'seek test 2 (padded)' => ["00 00 00 00 81 81 80 00 00 00 00", [0, 0, 0, 0, 20118, 8364, 0, 0, 0, 0]],
+            'seek test 3 (padded)' => ["00 00 00 00 81 81 00 00 00 00 00", [0, 0, 0, 0, 20118, 0, 0, 0, 0, 0]],
+            'seek test 4 (padded)' => ["00 00 00 00 81 81 81 00 00 00 00 00", [0, 0, 0, 0, 20118, 65533, 0, 0, 0, 0, 0]],
+            'seek test 5 (padded)' => ["00 00 00 00 81 30 30 30 00 00 00 00", [0, 0, 0, 0, 65533, 48, 48, 48, 0, 0, 0, 0]],
+            'seek test 6 (padded)' => ["00 00 00 00 81 30 81 81 00 00 00 00", [0, 0, 0, 0, 65533, 48, 20118, 0, 0, 0, 0]],
+            'seek test 7 (padded)' => ["00 00 00 00 30 30 81 81 00 00 00 00", [0, 0, 0, 0, 48, 48, 20118, 0, 0, 0, 0]],
+            'seek test 8 (padded)' => ["00 00 00 00 F8 83 FE 80 00 00 00 00", [0, 0, 0, 0, 40229, 18211, 0, 0, 0, 0]],
+        ];
+    }
+
     /**
      * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Encoder
      * @covers MensBeam\Intl\Encoding\GB18030::encode
      * @covers MensBeam\Intl\Encoding\GB18030::errEnc
      * @covers MensBeam\Intl\Encoding\GBK::encode
@@ -43,6 +154,18 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     public function testEncodeCodePoints(bool $fatal, $input, $exp, $class = self::class) {
         $this->testedClass = $class;
         return parent::testEncodeCodePoints($fatal, $input, $exp);
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\GB18030::encode
+     * @covers MensBeam\Intl\Encoding\GB18030::errEnc
+     * @covers MensBeam\Intl\Encoding\GBK::encode
+     * @covers MensBeam\Intl\Encoding\GBK::errEnc
+     */
+    public function testEncodeCodePointsStatically(bool $fatal, $input, $exp, $class = self::class) {
+        $this->testedClass = $class;
+        return parent::testEncodeCodePointsStatically($fatal, $input, $exp);
     }
 
     /**
@@ -144,118 +267,11 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
-    public function provideCodePoints() {
-        // bytes confirmed using Firefox
-        $series_gb18030 = [
-            'U+0064 (HTML)'    => [false, 0x64, "64"],
-            'U+0064 (fatal)'   => [true,  0x64, "64"],
-            'U+20AC (HTML)'    => [false, 0x20AC, "A2 E3"],
-            'U+20AC (fatal)'   => [true,  0x20AC, "A2 E3"],
-            'U+2164 (HTML)'    => [false, 0x2164, "A2 F5"],
-            'U+2164 (fatal)'   => [true,  0x2164, "A2 F5"],
-            'U+3A74 (HTML)'    => [false, 0x3A74, "82 31 97 30"],
-            'U+3A74 (fatal)'   => [true,  0x3A74, "82 31 97 30"],
-            'U+E7C7 (HTML)'    => [false, 0xE7C7, "81 35 F4 37"],
-            'U+E7C7 (fatal)'   => [true,  0xE7C7, "81 35 F4 37"],
-            'U+1D11E (HTML)'   => [false, 0x1D11E, "94 32 BE 34"],
-            'U+1D11E (fatal)'  => [true,  0x1D11E, "94 32 BE 34"],
-            'U+E5E5 (HTML)'    => [false, 0xE5E5, bin2hex("&#58853;")],
-            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-        ];
-        $series_gbk = [
-            'U+0064 (HTML)'    => [false, 0x64, "64"],
-            'U+0064 (fatal)'   => [true,  0x64, "64"],
-            'U+20AC (HTML)'    => [false, 0x20AC, "80"],
-            'U+20AC (fatal)'   => [true,  0x20AC, "80"],
-            'U+2164 (HTML)'    => [false, 0x2164, "A2 F5"],
-            'U+2164 (fatal)'   => [true,  0x2164, "A2 F5"],
-            'U+3A74 (HTML)'    => [false, 0x3A74, bin2hex("&#14964;")],
-            'U+3A74 (fatal)'   => [true,  0x3A74, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            'U+E7C7 (HTML)'    => [false, 0xE7C7, bin2hex("&#59335;")],
-            'U+E7C7 (fatal)'   => [true,  0xE7C7, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            'U+1D11E (HTML)'   => [false, 0x1D11E, bin2hex("&#119070;")],
-            'U+1D11E (fatal)'  => [true,  0x1D11E, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            'U+E5E5 (HTML)'    => [false, 0xE5E5, bin2hex("&#58853;")],
-            'U+E5E5 (fatal)'   => [true,  0xE5E5, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-        ];
-        foreach ($series_gb18030 as $name => $test) {
-            array_push($test, GB18030::class);
-            yield "gb18030 $name" => $test;
-        }
-        foreach ($series_gbk as $name => $test) {
-            array_push($test, GBK::class);
-            yield "GBK $name" => $test;
-        }
-    }
-
-
     /**
      * @covers MensBeam\Intl\Encoding\GB18030::seekBack
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
-    }
-
-    public function provideStrings() {
-        return [
-            'empty string' => ["", []],
-            // valid single characters
-            'sanity check' => ["40", [64]],
-            'special case for 0x80' => ["80", [8364]],
-            'four-byte special case' => ["81 35 F4 37", [59335]],
-            'two-byte character' => ["A8 4E", [8735]],
-            'four-byte character' => ["82 31 A2 37", [15081]],
-            // cut sequences
-            'EOF after first byte' => ["82", [65533]],
-            'EOF after second byte' => ["82 30", [65533]],
-            'EOF after third byte' => ["82 30 81", [65533]],
-            // invalid sequences
-            'bad first byte' => ["FF 35 F4 37", [65533, 53, 65533]],
-            'bad second byte' => ["81 FF F4 37", [65533, 65533]],
-            'bad third byte' => ["81 35 FF 37", [65533, 53, 65533, 55]],
-            'bad fourth byte' => ["81 35 F4 FF", [65533, 53, 65533]],
-            'control first byte' => ["00 35 F4 37", [0, 53, 65533]],
-            'control second byte' => ["81 00 F4 37", [65533, 0, 65533]],
-            'control third byte' => ["81 35 00 37", [65533, 53, 0, 55]],
-            'control fourth byte' => ["81 35 F4 00", [65533, 53, 65533, 0]],
-            // invalid sequences with clean EOF
-            'bad first byte (padded)' => ["FF 35 F4 37 00 00 00 00", [65533, 53, 65533, 55, 0, 0, 0, 0]],
-            'bad second byte (padded)' => ["81 FF F4 37 00 00 00 00", [65533, 65533, 55, 0, 0, 0, 0]],
-            'bad third byte (padded)' => ["81 35 FF 37 00 00 00 00", [65533, 53, 65533, 55, 0, 0, 0, 0]],
-            'bad fourth byte (padded)' => ["81 35 F4 FF 00 00 00 00", [65533, 53, 65533, 0, 0, 0, 0]],
-            'control first byte (padded)' => ["00 35 F4 37 00 00 00 00", [0, 53, 65533, 55, 0, 0, 0, 0]],
-            'control second byte (padded)' => ["81 00 F4 37 00 00 00 00", [65533, 0, 65533, 55, 0, 0, 0, 0]],
-            'control third byte (padded)' => ["81 35 00 37 00 00 00 00", [65533, 53, 0, 55, 0, 0, 0, 0]],
-            'control fourth byte (padded)' => ["81 35 F4 00 00 00 00 00", [65533, 53, 65533, 0, 0, 0, 0, 0]],
-            // out-of-range sequences
-            'void sequence' => ["84 32 A4 39", [65533]],
-            'void sequence 2' => ["FE 39 FE 39", [65533]],
-            // backward seeking tests
-            'seek test 1' => ["81 81 81 30", [20118, 65533]],
-            'seek test 2' => ["81 81 80", [20118, 8364]],
-            'seek test 3' => ["81 81 00", [20118, 0]],
-            'seek test 4' => ["81 81 81 00", [20118, 65533, 0]],
-            'seek test 5' => ["81 30 30 30", [65533, 48, 48, 48]],
-            'seek test 6' => ["81 30 81 81", [65533, 48, 20118]],
-            'seek test 7' => ["30 30 81 81", [48, 48, 20118]],
-            'seek test 8' => ["F8 83 FE 80", [40229, 18211]],
-            'seek test 1 (padded)' => ["00 00 00 00 81 81 81 30 00 00 00 00", [0, 0, 0, 0, 20118, 65533, 48, 0, 0, 0, 0]],
-            'seek test 2 (padded)' => ["00 00 00 00 81 81 80 00 00 00 00", [0, 0, 0, 0, 20118, 8364, 0, 0, 0, 0]],
-            'seek test 3 (padded)' => ["00 00 00 00 81 81 00 00 00 00 00", [0, 0, 0, 0, 20118, 0, 0, 0, 0, 0]],
-            'seek test 4 (padded)' => ["00 00 00 00 81 81 81 00 00 00 00 00", [0, 0, 0, 0, 20118, 65533, 0, 0, 0, 0, 0]],
-            'seek test 5 (padded)' => ["00 00 00 00 81 30 30 30 00 00 00 00", [0, 0, 0, 0, 65533, 48, 48, 48, 0, 0, 0, 0]],
-            'seek test 6 (padded)' => ["00 00 00 00 81 30 81 81 00 00 00 00", [0, 0, 0, 0, 65533, 48, 20118, 0, 0, 0, 0]],
-            'seek test 7 (padded)' => ["00 00 00 00 30 30 81 81 00 00 00 00", [0, 0, 0, 0, 48, 48, 20118, 0, 0, 0, 0]],
-            'seek test 8 (padded)' => ["00 00 00 00 F8 83 FE 80 00 00 00 00", [0, 0, 0, 0, 40229, 18211, 0, 0, 0, 0]],
-        ];
     }
 
     /**

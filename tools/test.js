@@ -7,17 +7,17 @@ var encoding = document.getElementsByTagName("meta")[0].getAttribute("charset");
 
 function encodeCodePoint(code, fatal) {
     if (code < 0 || code > 0x10FFFF) {
-        return 'new EncoderException("", Encoding::E_INVALID_CODE_POINT)';
+        return 'new EncoderException("", Coder::E_INVALID_CODE_POINT)';
     } else {
         var l = document.createElement("a");
-        l.href = "http://example.com/?" + String.fromCodePoint(code) + "a";
+        l.href = "http://example.com/?" + String.fromCodePoint(code) + "#";
         var bytes = [];
-        let url = l.search.substr(1, l.search.length - 2);
+        let url = l.search.substr(1);
         for (let a = 0; a < url.length; a++) {
             if ((url.charAt(a) == "%" && url.substr(a, 6) == "%26%23") || url.charAt(a) == "&") {
                 // character cannot be encoded
                 if (fatal) {
-                    return 'new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)';
+                    return 'new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)';
                 } else {
                     return decodeURIComponent(url);
                 }
@@ -32,10 +32,33 @@ function encodeCodePoint(code, fatal) {
     return bytes;
 }
 
+function encodeCodePoints(codes, fatal) {
+    for (let a = 0; a < codes.length; a++) {
+        if (codes[a] < 0 || codes[a] > 0x10FFFF) {
+            return 'new EncoderException("", Coder::E_INVALID_CODE_POINT)';
+        }
+    }
+    var l = document.createElement("a");
+    l.href = "http://example.com/?" + String.fromCodePoint(...codes) + "#";
+    var bytes = [];
+    let url = decodeURIComponent(l.search.substr(1));
+    if (fatal && url.indexOf("&#") > -1) {
+        return 'new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)';
+    }
+    for (let a = 0; a < url.length; a++) {
+        bytes.push(url.charCodeAt(a).toString(16).padStart(2, "0").toUpperCase());
+    }
+    return bytes;
+}
+
 function wrapCodePoint(code, fatal) {
-    var out = encodeCodePoint(code, fatal);
+    if (typeof code === "number") {
+        var out = encodeCodePoint(code, fatal);
+    } else {
+        var out = encodeCodePoints(code, fatal);
+    }
     if (Array.isArray(out)) {
-        return '"' + out.join(" ") + '"';
+        return ('"' + out.join(" ") + '"').toUpperCase();
     } else if (out.charAt(0) == "&") {
         return 'bin2hex("' + out + '")';
     } else {
@@ -72,9 +95,21 @@ if(typeof sampleStrings != 'undefined') {
 if(typeof sampleCharacters != 'undefined') {
     for (name in sampleCharacters) {
         let code = sampleCharacters[name];
-        if (code > -1 && code % 1 == 0) code = "0x" + code.toString(16).toUpperCase();
-        let line1 = "'" + name + " (HTML)'  => [false, " + code + ", " + wrapCodePoint(code, false) + "],\n";
-        let line2 = "'" + name + " (fatal)' => [true,  " + code + ", " + wrapCodePoint(code, true) + "],\n";
+        if (typeof code == "number" && code > -1 && code % 1 == 0) {
+            var displayCode = "0x" + code.toString(16).toUpperCase();
+        } else if (typeof code !== "number") {
+            var displayCode = [...code];
+            for (let a = 0; a < displayCode.length; a++) {
+                if (displayCode[a] > -1 && displayCode[a] % 1 == 0) {
+                    displayCode[a] = "0x" + displayCode[a].toString(16).toUpperCase();
+                }
+            }
+            displayCode = "[" + displayCode.join(", ") + "]";
+        } else {
+            var displayCode = code;
+        }
+        let line1 = "'" + name + " (HTML)'  => [false, " + displayCode + ", " + wrapCodePoint(code, false) + "],\n";
+        let line2 = "'" + name + " (fatal)' => [true,  " + displayCode + ", " + wrapCodePoint(code, true) + "],\n";
         out.appendChild(document.createTextNode(line1));
         out.appendChild(document.createTextNode(line2));
     }

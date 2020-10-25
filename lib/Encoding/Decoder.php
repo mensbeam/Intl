@@ -6,16 +6,12 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-interface Encoding {
-    const MODE_NULL = 0;
-    const MODE_REPLACE = 1;
-    const MODE_FATAL = 2;
-
-    const E_INVALID_CODE_POINT = 1;
-    const E_INVALID_BYTE = 2;
-    const E_UNAVAILABLE_CODE_POINT = 3;
+interface Decoder {
+    public const E_INVALID_BYTE = 2;
 
     /** Constructs a new decoder
+     * 
+     * @param string $string The string to decode
      * @param bool $fatal If true, throw enceptions when encountering invalid input. If false, substitute U+FFFD REPLACEMENT CHARACTER instead
      * @param bool $allowSurrogates If true, treats surrogate characters as valid input; this only affects UTF-8 and UTF-16 encodings
      */
@@ -53,7 +49,7 @@ interface Encoding {
      *
      * This is usually faster than using the seek method for the same purpose
      */
-    public function rewind();
+    public function rewind(): void;
 
     /** Retrieves the next $num characters (in UTF-8 encoding) from the string without advancing the character pointer
      *

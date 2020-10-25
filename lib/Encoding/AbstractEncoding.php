@@ -6,7 +6,11 @@
 declare(strict_types=1);
 namespace MensBeam\Intl\Encoding;
 
-abstract class AbstractEncoding implements Encoding {
+abstract class AbstractEncoding  implements Decoder {
+    protected const MODE_NULL = 0;
+    protected const MODE_REPLACE = 1;
+    protected const MODE_FATAL = 2;
+
     /** @var string $string The string being decoded */
     protected $string;
     /** @var int $posByte The current byte position in the string */
@@ -34,6 +38,11 @@ abstract class AbstractEncoding implements Encoding {
 
     public $posErr = 0;
 
+    /** Seeks backwards through the string the specified number of characters. 
+     * If the beginning of the string is reached before the requested number 
+     * of characters has been skipped over, the number of remaining characters
+     * is returned.
+     */
     abstract protected function seekBack(int $distance): int;
 
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
@@ -51,9 +60,12 @@ abstract class AbstractEncoding implements Encoding {
         return $this->posChar;
     }
 
-    public function rewind() {
+    public function rewind(): void {
         $this->posByte = 0;
         $this->posChar = 0;
+        $this->errMark = -1;
+        $this->errSync = -2;
+        $this->errStack = [];
     }
 
     public function nextChar(): string {
@@ -75,12 +87,9 @@ abstract class AbstractEncoding implements Encoding {
 
     public function seek(int $distance): int {
         if ($distance > 0) {
-            if ($this->posByte == strlen($this->string)) {
-                return $distance;
-            }
             do {
                 $p = $this->nextCode();
-            } while (--$distance && $p !== false);
+            } while ($p !== false && --$distance);
             return $distance;
         } elseif ($distance < 0) {
             $distance = abs($distance);
@@ -163,7 +172,7 @@ abstract class AbstractEncoding implements Encoding {
     }
 
     /** Sets the decoder's state to the values specified */
-    protected function stateApply(array $state) {
+    protected function stateApply(array $state): void {
         while (sizeof($this->errStack) > $state['errCount']) {
             list($this->errMark, $this->errSync) = array_pop($this->errStack);
         }
@@ -174,8 +183,7 @@ abstract class AbstractEncoding implements Encoding {
     }
 
     /** Handles decoding errors */
-    protected function errDec(int $mode, int $charOffset, int $byteOffset) {
-        assert(in_array($mode, [self::MODE_NULL, self::MODE_REPLACE, self::MODE_FATAL]), "Invalid error mode $mode");
+    protected function errDec(int $mode, int $charOffset, int $byteOffset): ?int {
         if ($mode !== self::MODE_NULL) {
             // expose the error to the user; this disambiguates a literal replacement character
             $this->posErr = $this->posChar;
@@ -195,12 +203,12 @@ abstract class AbstractEncoding implements Encoding {
     }
 
     /** Handles encoding errors */
-    protected static function errEnc(bool $htmlMode, $data = null) {
+    protected static function errEnc(bool $htmlMode, $data = null): string {
         if ($htmlMode) {
             return "&#".(string) $data.";";
         } else {
             // fatal replacement mode for encoders; not applicable to Unicode transformation formats
-            throw new EncoderException("Code point $data not available in target encoding", self::E_UNAVAILABLE_CODE_POINT);
+            throw new EncoderException("Code point $data not available in target encoding", Coder::E_UNAVAILABLE_CODE_POINT);
         }
     }
 }

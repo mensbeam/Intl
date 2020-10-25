@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase;
 
 use MensBeam\Intl\Encoding;
+use MensBeam\Intl\Encoding\Encoder;
 
 class TestEncoding extends \PHPUnit\Framework\TestCase {
     /** @dataProvider provideLabelData */
@@ -31,6 +32,23 @@ class TestEncoding extends \PHPUnit\Framework\TestCase {
         $this->assertNull(Encoding::createDecoder("Not a label", ""));
     }
 
+    /** @dataProvider provideLabelData */
+    public function testCreateAnEncoderFromALabel(string $label, array $data) {
+        if ($data['encoder']) {
+            $this->assertInstanceOf(Encoder::class, Encoding::createEncoder($label));
+            $this->assertInstanceOf(Encoder::class, Encoding::createEncoder(strtoupper($label)));
+            $this->assertInstanceOf(Encoder::class, Encoding::createEncoder("    $label\n\n\r\t"));
+        } else {
+            $this->assertNull(Encoding::createEncoder($label));
+            $this->assertNull(Encoding::createEncoder(strtoupper($label)));
+            $this->assertNull(Encoding::createEncoder("    $label\n\n\r\t"));
+        }
+    }
+
+    public function testFailToCreateAnEncoderFromALabel() {
+        $this->assertNull(Encoding::createEncoder("Not a label"));
+    }
+
     public function provideLabelData() {
         $ns = "MensBeam\\Intl\\Encoding\\";
         $labels = [];
@@ -39,7 +57,7 @@ class TestEncoding extends \PHPUnit\Framework\TestCase {
             $file = basename($file, ".php");
             $className = $ns.$file;
             $class = new \ReflectionClass($className);
-            if ($class->implementsInterface(\MensBeam\Intl\Encoding\Encoding::class) && $class->isInstantiable()) {
+            if ($class->implementsInterface(\MensBeam\Intl\Encoding\Decoder::class) && $class->isInstantiable()) {
                 $name = $class->getConstant("NAME");
                 $names[$name] = $className;
                 foreach ($class->getConstant("LABELS") as $label) {
@@ -47,10 +65,10 @@ class TestEncoding extends \PHPUnit\Framework\TestCase {
                 }
             }
         }
-        $out = [];
         foreach ($labels as $label => $name) {
-            $out[] = [(string) $label, ['label' => (string) $label, 'name' => $name, 'class' => $names[$name]]];
+            $class = $names[$name];
+            $encoder = !in_array($name, ["UTF-16LE", "UTF-16BE", "replacement"]);
+            yield [(string) $label, ['label' => (string) $label, 'name' => $name, 'class' => $class, 'encoder' => $encoder]];
         }
-        return $out;
     }
 }

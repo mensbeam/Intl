@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace MensBeam\Intl\TestCase\Encoding;
 
 use MensBeam\Intl\Encoding\Big5;
-use MensBeam\Intl\Encoding\Encoding;
+use MensBeam\Intl\Encoding\Coder;
 use MensBeam\Intl\Encoding\EncoderException;
 
 class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
@@ -28,13 +28,65 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
 
+    public function provideCodePoints() {
+        return [
+            'U+0064 (HTML)'    => [false, 0x64, "64"],
+            'U+0064 (fatal)'   => [true,  0x64, "64"],
+            'U+00CA (HTML)'    => [false, 0xCA, bin2hex("&#202;")],
+            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Coder::E_UNAVAILABLE_CODE_POINT)],
+            'U+3007 (HTML)'    => [false, 0x3007, "C6 E2"],
+            'U+3007 (fatal)'   => [true,  0x3007, "C6 E2"],
+            'U+5341 (HTML)'    => [false, 0x5341, "A4 51"],
+            'U+5341 (fatal)'   => [true,  0x5341, "A4 51"],
+            'U+2561 (HTML)'    => [false, 0x2561, "F9 EB"],
+            'U+2561 (fatal)'   => [true,  0x2561, "F9 EB"],
+            'U+256D (HTML)'    => [false, 0x256D, "A2 7E"],
+            'U+256D (fatal)'   => [true,  0x256D, "A2 7E"],
+            '-1 (HTML)'        => [false, -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '-1 (fatal)'       => [true,  -1, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Coder::E_INVALID_CODE_POINT)],
+        ];
+    }
+
+    public function provideStrings() {
+        return [
+            'empty string' => ["", []],
+            'sanity check' => ["40", [64]],
+            'two-byte character' => ["D7 D7", [36290]],
+            'EOF after first byte' => ["D7", [65533]],
+            'low byte after first byte' => ["D7 39", [65533, 57]],
+            '0x80 as first byte' => ["80 D7 00", [65533, 65533, 0]],
+            '0xFF as first byte' => ["FF D7 00", [65533, 65533, 0]],
+            'invalid high byte as first byte' => ["81 D7 00", [65533, 0]],
+            '0x7F after first byte' => ["D7 7F", [65533, 127]],
+            '0xFF after first byte' => ["D7 FF", [65533]],
+            'invalid high byte after first byte' => ["D7 81", [65533]],
+            'broken string' => ["00 FF 00", [0, 65533, 0]],
+            'double-characters low' => ["88 62 88 64", [202, 772, 202, 780]],
+            'double-characters high' => ["88 A3 88 A5", [234, 772, 234, 780]],
+            'mixed string' => ["7A D7 AA A4 F4 88 62 88 A5", [122, 34508, 27700, 202, 772, 234, 780]],
+            'mixed string 2' => ["62 D7 D7 D7 D7 62", [98, 36290, 36290, 98]],
+        ];
+    }
+
     /**
      * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Encoder
      * @covers MensBeam\Intl\Encoding\Big5::encode
      * @covers MensBeam\Intl\Encoding\Big5::errEnc
      */
     public function testEncodeCodePoints(bool $fatal, $input, $exp) {
         return parent::testEncodeCodePoints($fatal, $input, $exp);
+    }
+
+    /**
+     * @dataProvider provideCodePoints
+     * @covers MensBeam\Intl\Encoding\Big5::encode
+     * @covers MensBeam\Intl\Encoding\Big5::errEnc
+     */
+    public function testEncodeCodePointsStatically(bool $fatal, $input, $exp) {
+        return parent::testEncodeCodePointsStatically($fatal, $input, $exp);
     }
 
     /**
@@ -136,48 +188,11 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 
-
     /**
      * @covers MensBeam\Intl\Encoding\Big5::seekBack
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
-    }
-
-    public function provideCodePoints() {
-        return [
-            'U+0064 (HTML)'    => [false, 0x64, "64"],
-            'U+0064 (fatal)'   => [true,  0x64, "64"],
-            'U+00CA (HTML)'    => [false, 0xCA, bin2hex("&#202;")],
-            'U+00CA (fatal)'   => [true,  0xCA, new EncoderException("", Encoding::E_UNAVAILABLE_CODE_POINT)],
-            'U+3007 (HTML)'    => [false, 0x3007, "C6 E2"],
-            'U+3007 (fatal)'   => [true,  0x3007, "C6 E2"],
-            '-1 (HTML)'        => [false, -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '-1 (fatal)'       => [true,  -1, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (HTML)'  => [false, 0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-            '0x110000 (fatal)' => [true,  0x110000, new EncoderException("", Encoding::E_INVALID_CODE_POINT)],
-        ];
-    }
-
-    public function provideStrings() {
-        return [
-            'empty string' => ["", []],
-            'sanity check' => ["40", [64]],
-            'two-byte character' => ["D7 D7", [36290]],
-            'EOF after first byte' => ["D7", [65533]],
-            'low byte after first byte' => ["D7 39", [65533, 57]],
-            '0x80 as first byte' => ["80 D7 00", [65533, 65533, 0]],
-            '0xFF as first byte' => ["FF D7 00", [65533, 65533, 0]],
-            'invalid high byte as first byte' => ["81 D7 00", [65533, 0]],
-            '0x7F after first byte' => ["D7 7F", [65533, 127]],
-            '0xFF after first byte' => ["D7 FF", [65533]],
-            'invalid high byte after first byte' => ["D7 81", [65533]],
-            'broken string' => ["00 FF 00", [0, 65533, 0]],
-            'double-characters low' => ["88 62 88 64", [202, 772, 202, 780]],
-            'double-characters high' => ["88 A3 88 A5", [234, 772, 234, 780]],
-            'mixed string' => ["7A D7 AA A4 F4 88 62 88 A5", [122, 34508, 27700, 202, 772, 234, 780]],
-            'mixed string 2' => ["62 D7 D7 D7 D7 62", [98, 36290, 36290, 98]],
-        ];
     }
 
     /**

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<meta charset=iso-2022-jp>
+<!-- Chromium does NOT produce correct results as of this writing; use Firefox to generate test data -->
+<script>
+var sampleStrings = {
+    'empty string': "",
+    'Implied ASCII mode': "00 30 5C 7E 21 5F",
+    'Explicit ASCII mode': "1B2842 00 30 5C 7E 21 5F",
+    'Roman mode': "1B284A 00 30 5C 7E 21 5F",
+    'Katakana mode': "1B2849 00 30 5C 7E 21 5F",
+    'Double-byte mode 1': "1B2440 00 30 5C 7E 21 5F",
+    'Double-byte mode 2': "1B2442 00 30 5C 7E 21 5F",
+    'Multiple modes': "5C 1B2849 21 1B2440 305C 1B284A 5C 1B2842 5C",
+    'Double escape': "1B2849 1B2842 5C",
+    'Triple escape': "1B2849 1B2842 1B284A 5C",
+    'Trailing escape': "20 1B284A 30 33 1B2849",
+    'Invalid bytes': "80 FF 1B2849 00 20 7F 1B2442 00 2100 FF FF",
+};
+var sampleCharacters = {
+    'U+0020':            [0x20],
+    'U+005C':            [0x5C],
+    'U+007E':            [0x7E],
+    'U+00A5':            [0xA5],
+    'U+203E':            [0x203E],
+    'U+FF61':            [0xFF61],
+    'U+FF9F':            [0xFF9F],
+    'U+2212':            [0x2212],
+    'U+2116':            [0x2116],
+    'U+FFE2':            [0xFFE2],
+    'U+00C6':            [0xC6],
+    'U+FFFD':            [0xFFFD],
+    'Roman':             [0xA5, 0x20, 0x203E],
+    'Roman to ASCII':    [0xA5, 0x5C],
+    'Roman to error':    [0xA5, 0x80],
+    'JIS':               [0x2116, 0xFFE2, 0x2212],
+    'JIS to Roman':      [0x2116, 0xA5],
+    'JIS to ASCII 1':    [0x2116, 0x20],
+    'JIS to ASCII 2':    [0x2116, 0x5C],
+    'JIS to error 1':    [0x2116, 0x80],
+    'JIS to error 2':    [0x2116, 0x1B], // Even Firefox is wrong here; see https://github.com/web-platform-tests/wpt/pull/26158
+    'Escape characters': [0x1B, 0xE, 0xF], // Even Firefox is wrong here; see https://github.com/web-platform-tests/wpt/pull/26158
+    '-1':                [-1],
+    '0x110000':          [0x110000],
+};
+</script>
+<script src="test.js"></script>

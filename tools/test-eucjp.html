@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<meta charset=euc-jp>
+<!-- Chromium does NOT produce correct results as of this writing; use Firefox to generate test data -->
+<script>
+var sampleStrings = {
+    'empty string': "",
+    // sanity checks
+    'sanity check': "40",
+    'former ASCII deviations': "5C 7E",
+    'changed multibyte index': "A1DD",
+    // JIS X 0201
+    'JIS X 0201 range': "8EA1 8EDF",
+    'JIS X 0201 bogus range': "8EA0 8EE0",
+    'JIS X 0201 truncated character 1': "8E",
+    'JIS X 0201 truncated character 2': "8E 20",
+    'JIS X 0201 truncated character 3': "8E FF",
+    // JIS X 0212
+    'JIS X 0212 assigned range': "8FA2AF 8FEDE3",
+    'JIS X 0212 total range': "8FA1A1 8FFEFE",
+    'JIS X 0212 bogus range 1': "8FA0A1 8FFFFE",
+    'JIS X 0212 bogus range 2': "8FA1A0 8FFEFF",
+    'JIS X 0212 truncated character 1': "8FA2",
+    'JIS X 0212 truncated character 2': "8FA2 20",
+    'JIS X 0212 truncated character 3': "8FA2 FF",
+    // JIS X 0208
+    'JIS X 0208 assigned range': "A1A1 FCFE",
+    'JIS X 0208 total range': "A1A1 FEFE",
+    'JIS X 0208 bogus range': "A1A0 A0FE",
+    'JIS X 0208 truncated character 1': "A1",
+    'JIS X 0208 truncated character 2': "A1 20",
+    'JIS X 0208 truncated character 3': "A1 FF",
+};
+var sampleCharacters = {
+    'U+0064':   0x64,
+    'U+00A5':   0xA5,
+    'U+203E':   0x203E,
+    'U+3088':   0x3088,
+    'U+FF96':   0xFF96,
+    'U+2212':   0x2212,
+    'U+00E6':   0xE6,
+    'U+FFE2':   0xFFE2,
+    'U+2116':   0x2116,
+    '-1':       -1,
+    '0x110000': 0x110000,
+};
+var seekCodePoints = [
+    0x007A,
+    0xFF96,
+    0x3088,
+    0xFF0D,
+    0x005C,
+    0xFF9B,
+    /* This code point is not encodable and must be done manually entered as 8FB0EF */
+    0x4F58,
+];
+</script>
+<script src="test.js"></script>

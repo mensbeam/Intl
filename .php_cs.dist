@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /** @license MIT
  * Copyright 2018 J. King et al.
  * See LICENSE and AUTHORS files for details */
@@ -16,6 +17,7 @@ $paths = [
     BASE."lib",
     BASE."perf",
     BASE."tests",
+    BASE."tools",
 ];
 $rules = [
     // house rules where PSR series is silent
