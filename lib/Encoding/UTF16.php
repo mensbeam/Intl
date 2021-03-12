@@ -84,6 +84,54 @@ abstract class UTF16 extends AbstractEncoding {
         }
     }
 
+    public function asciiSpan(string $mask, int $length = null): string {
+        // UTF-16 has no ASCII characters, so we must do things the hard way
+        $out = "";
+        while (true) {
+            $c1 = @$this->string[$this->posByte];
+            $c2 = @$this->string[$this->posByte + 1];
+            $b = ord(self::BE ? $c1 : $c2);
+            if (!$b) {
+                $c = self::BE ? $c2 : $c1;
+                $b = ord($c);
+                if ($b < 0x80 && strpos($mask, $c) !== false && $c1 !== "" && $c2 !== "") {
+                    $out .= $c;
+                    $this->posByte += 2;
+                    $this->posChar++;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return $out;
+    }
+
+    public function asciiSpanNot(string $mask, int $length = null): string {
+        // this is a copy of asciiSpan above with only the strpos check reversed
+        $out = "";
+        while (true) {
+            $c1 = @$this->string[$this->posByte];
+            $c2 = @$this->string[$this->posByte + 1];
+            $b = ord(self::BE ? $c1 : $c2);
+            if (!$b) {
+                $c = self::BE ? $c2 : $c1;
+                $b = ord($c);
+                if ($b < 0x80 && strpos($mask, $c) === false && $c1 !== "" && $c2 !== "") {
+                    $out .= $c;
+                    $this->posByte += 2;
+                    $this->posChar++;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return $out;
+    }
+
     /** Implements backward seeking $distance characters */
     protected function seekBack(int $distance): int {
         if ($this->dirtyEOF && $distance) {

@@ -122,4 +122,12 @@ class Replacement implements Decoder {
             yield 0 => $this->nextCode();
         }
     }
+
+    public function asciiSpan(string $mask, int $length = null): string {
+        return "";
+    }
+
+    public function asciiSpanNot(string $mask, int $length = null): string {
+        return "";
+    }
 }

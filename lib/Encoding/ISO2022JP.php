@@ -184,6 +184,40 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
         return $distance;
     }
 
+    public function asciiSpan(string $mask, int $length = null): string {
+        if ($this->mode === self::ASCII_STATE) {
+            $exc = '/[\x0E\x0F\x1B\x80-\xFF]/gs';
+        } elseif ($this->mode === self::ROMAN_STATE) {
+            $exc = '/[\x0E\x0F\x1B\x5C\x7E\x80-\xFF]/gs';
+        } else {
+            // in other modes ASCII characters are never returned
+            return "";
+        }
+        $mask = preg_replace($exc, "", $mask);
+        $len = strspn($this->string, $mask, $this->posByte, $length);
+        $out = substr($this->string, $this->posByte, $len);
+        $this->posByte += $len;
+        $this->posChar += $len;
+        return $out;
+    }
+
+    public function asciiSpanNot(string $mask, int $length = null): string {
+        if ($this->mode === self::ASCII_STATE) {
+            $mask .= "\x0E\x0F\x1B";
+        } elseif ($this->mode === self::ROMAN_STATE) {
+            $mask .= "\x0E\x0F\x1B\x5C\x7E";
+        } else {
+            // in other modes ASCII characters are never returned
+            return "";
+        }
+        $mask .= self::HIGH_BYTES;
+        $len = strcspn($this->string, $mask, $this->posByte, $length);
+        $out = substr($this->string, $this->posByte, $len);
+        $this->posByte += $len;
+        $this->posChar += $len;
+        return $out;
+    }
+
     protected function stateSave(): array {
         $out = parent::stateSave();
         $out['modeCount'] = sizeof($this->modeStack);

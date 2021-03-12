@@ -80,4 +80,26 @@ interface Decoder {
 
     /** Generates an iterator which steps through each code point in the string  */
     public function codes(): \Generator;
+
+    /** Fast-forwards through a span of ASCII characters matching the supplied mask, returning any consumed characters
+     * 
+     * The mask must consist only of ASCII characters. 
+     * 
+     * Note that if the empty string is returned, this does not necessarily signal the end of the string
+     * 
+     * @param string $mask The set of ASCII characters to match
+     * @param int $length The maximum number oof characters to advance by
+     */
+    public function asciiSpan(string $mask, int $length = null): string;
+
+    /** Fast-forwards through a span of ASCII characters not matching the supplied mask, returning any consumed characters
+     * 
+     * The mask must consist only of ASCII characters. 
+     * 
+     * Note that if the empty string is returned, this does not necessarily signal the end of the string
+     * 
+     * @param string $mask The set of ASCII characters to not match
+     * @param int $length The maximum number oof characters to advance by
+     */
+    public function asciiSpanNot(string $mask, int $length = null): string;
 }
