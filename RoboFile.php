@@ -128,6 +128,7 @@ class RoboFile extends \Robo\Tasks {
     }
 
     protected function runTests(string $executor, string $set, array $args): Result {
+        error_reporting(0);
         switch ($set) {
             case "typical":
                 $set = ["--exclude-group", "optional"];
