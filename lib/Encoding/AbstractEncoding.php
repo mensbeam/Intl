@@ -165,21 +165,37 @@ abstract class AbstractEncoding  implements Decoder {
     }
 
     public function asciiSpan(string $mask, int $length = null): string {
-        $mask = preg_replace('/[\x80-\xFF]/gs', "", $mask);
-        $len = strspn($this->string, $mask, $this->posByte, $length);
-        $out = substr($this->string, $this->posByte, $len);
-        $this->posByte += $len;
-        $this->posChar += $len;
-        return $out;
+        $mask = preg_replace('/[\x80-\xFF]/s', "", $mask);
+        if ($length !== null) {
+            $len = strspn($this->string, $mask, $this->posByte, $length);
+        } else {
+            $len = strspn($this->string, $mask, $this->posByte);
+        }
+        if ($len) {
+            $out = substr($this->string, $this->posByte, $len);
+            $this->posByte += $len;
+            $this->posChar += $len;
+            return $out;
+        } else {
+            return "";
+        }
     }
 
     public function asciiSpanNot(string $mask, int $length = null): string {
         $mask .= self::HIGH_BYTES;
-        $len = strcspn($this->string, $mask, $this->posByte, $length);
-        $out = substr($this->string, $this->posByte, $len);
-        $this->posByte += $len;
-        $this->posChar += $len;
-        return $out;
+        if ($length !== null) {
+            $len = strcspn($this->string, $mask, $this->posByte, $length);
+        } else {
+            $len = strcspn($this->string, $mask, $this->posByte);
+        }
+        if ($len) {
+            $out = substr($this->string, $this->posByte, $len);
+            $this->posByte += $len;
+            $this->posChar += $len;
+            return $out;
+        } else {
+            return "";
+        }
     }
 
     /** Returns a copy of the decoder's state to keep in memory */

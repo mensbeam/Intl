@@ -186,19 +186,27 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
 
     public function asciiSpan(string $mask, int $length = null): string {
         if ($this->mode === self::ASCII_STATE) {
-            $exc = '/[\x0E\x0F\x1B\x80-\xFF]/gs';
+            $exc = '/[\x0E\x0F\x1B\x80-\xFF]/s';
         } elseif ($this->mode === self::ROMAN_STATE) {
-            $exc = '/[\x0E\x0F\x1B\x5C\x7E\x80-\xFF]/gs';
+            $exc = '/[\x0E\x0F\x1B\x5C\x7E\x80-\xFF]/s';
         } else {
             // in other modes ASCII characters are never returned
             return "";
         }
         $mask = preg_replace($exc, "", $mask);
-        $len = strspn($this->string, $mask, $this->posByte, $length);
-        $out = substr($this->string, $this->posByte, $len);
-        $this->posByte += $len;
-        $this->posChar += $len;
-        return $out;
+        if ($length !== null) {
+            $len = strspn($this->string, $mask, $this->posByte, $length);
+        } else {
+            $len = strspn($this->string, $mask, $this->posByte);
+        }
+        if ($len) {
+            $out = substr($this->string, $this->posByte, $len);
+            $this->posByte += $len;
+            $this->posChar += $len;
+            return $out;
+        } else {
+            return "";
+        }
     }
 
     public function asciiSpanNot(string $mask, int $length = null): string {
@@ -211,11 +219,19 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
             return "";
         }
         $mask .= self::HIGH_BYTES;
-        $len = strcspn($this->string, $mask, $this->posByte, $length);
-        $out = substr($this->string, $this->posByte, $len);
-        $this->posByte += $len;
-        $this->posChar += $len;
-        return $out;
+        if ($length !== null) {
+            $len = strcspn($this->string, $mask, $this->posByte, $length);
+        } else {
+            $len = strcspn($this->string, $mask, $this->posByte);
+        }
+        if ($len) {
+            $out = substr($this->string, $this->posByte, $len);
+            $this->posByte += $len;
+            $this->posChar += $len;
+            return $out;
+        } else {
+            return "";
+        }
     }
 
     protected function stateSave(): array {
