@@ -21,6 +21,7 @@ class XUserDefined extends AbstractEncoding implements Coder, Decoder {
             return "";
         }
         $this->posChar++;
+        $this->posByte++;
         $p = ord($b);
         if ($p < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
@@ -43,6 +44,7 @@ class XUserDefined extends AbstractEncoding implements Coder, Decoder {
             return false;
         }
         $this->posChar++;
+        $this->posByte++;
         $p = ord($b);
         if ($p < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
@@ -69,6 +71,7 @@ class XUserDefined extends AbstractEncoding implements Coder, Decoder {
             $distance = abs($distance);
             while ($this->posChar > 0 && $distance > 0) {
                 $this->posChar--;
+                $this->posByte--;
                 $distance--;
             }
             return $distance;
@@ -93,11 +96,6 @@ class XUserDefined extends AbstractEncoding implements Coder, Decoder {
     protected function seekBack(int $distance): int {
         // stub: not used
         return 0;
-    }
-
-    /** Returns the current byte position of the decoder */
-    public function posByte(): int {
-        return $this->posChar;
     }
 
     /** Calculates the length of the string in code points

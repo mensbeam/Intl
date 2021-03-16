@@ -16,6 +16,7 @@ abstract class SingleByteEncoding extends AbstractEncoding implements Coder, Dec
             return "";
         }
         $this->posChar++;
+        $this->posByte++;
         $p = ord($b);
         if ($p < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
@@ -32,6 +33,7 @@ abstract class SingleByteEncoding extends AbstractEncoding implements Coder, Dec
             return false;
         }
         $this->posChar++;
+        $this->posByte++;
         $p = ord($b);
         if ($p < 0x80) {
             // if the byte is an ASCII character or end of input, simply return it
@@ -62,6 +64,7 @@ abstract class SingleByteEncoding extends AbstractEncoding implements Coder, Dec
             $distance = abs($distance);
             while ($this->posChar > 0 && $distance > 0) {
                 $this->posChar--;
+                $this->posByte--;
                 $distance--;
             }
             return $distance;
@@ -74,10 +77,6 @@ abstract class SingleByteEncoding extends AbstractEncoding implements Coder, Dec
     protected function seekBack(int $distance): int {
         // stub: not used
         return 0;
-    }
-
-    public function posByte(): int {
-        return $this->posChar;
     }
 
     public function lenChar(): int {
