@@ -27,6 +27,30 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 3, 6, 10, 13, 17, 20];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "41 5A E6B0B4 F09D849E 30 39";
+
+    protected function allBytes(): string {
+        $out = "";
+        for ($a = 0x00; $a <= 0xFF; $a++) {
+            $out .= chr($a);
+        }
+        return $out;
+    }
+
+    public function testExtractAsciiSpans() {
+        $allBytes = $this->allBytes();
+        $class = $this->testedClass;
+        $d = new $class($this->prepString($this->spanString));
+        $this->assertSame("", $d->asciiSpan("az"));
+        $this->assertSame("A", $d->asciiSpan("AZ", 1));
+        $this->assertSame("Z", $d->asciiSpan("AZ"));
+        $this->assertSame("", $d->asciiSpan($allBytes));
+        $d->nextChar();
+        $this->assertSame("", $d->asciiSpan($allBytes));
+        $d->nextChar();
+        $this->assertSame("09", $d->asciiSpan($allBytes));
+    }
 
     public function provideCodePoints() {
         return [
