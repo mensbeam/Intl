@@ -216,6 +216,13 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
+     * @covers MensBeam\Intl\Encoding\EUCJP::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        parent::testExtractNegativeAsciiSpans();
+    }
+
+    /**
      * @group optional
      */
     public function testPedanticallyDecodeSingleCharactersAsCodePoint() {

@@ -87,7 +87,8 @@ abstract class UTF16 extends AbstractEncoding {
     public function asciiSpan(string $mask, int $length = null): string {
         // UTF-16 has no ASCII characters, so we must do things the hard way
         $out = "";
-        while (true) {
+        $left = ($length === null) ? -1 : $length;
+        while ($left) {
             $c1 = @$this->string[$this->posByte];
             $c2 = @$this->string[$this->posByte + 1];
             $b = ord(static::BE ? $c1 : $c2);
@@ -98,6 +99,7 @@ abstract class UTF16 extends AbstractEncoding {
                     $out .= $c;
                     $this->posByte += 2;
                     $this->posChar++;
+                    $left--;
                 } else {
                     break;
                 }
@@ -111,7 +113,8 @@ abstract class UTF16 extends AbstractEncoding {
     public function asciiSpanNot(string $mask, int $length = null): string {
         // this is a copy of asciiSpan above with only the strpos check reversed
         $out = "";
-        while (true) {
+        $left = ($length === null) ? -1 : $length;
+        while ($left) {
             $c1 = @$this->string[$this->posByte];
             $c2 = @$this->string[$this->posByte + 1];
             $b = ord(static::BE ? $c1 : $c2);
@@ -122,6 +125,7 @@ abstract class UTF16 extends AbstractEncoding {
                     $out .= $c;
                     $this->posByte += 2;
                     $this->posChar++;
+                    $left--;
                 } else {
                     break;
                 }

@@ -142,6 +142,13 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
         parent::testExtractAsciiSpans();
     }
 
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF16::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        parent::testExtractNegativeAsciiSpans();
+    }
+
     public function provideStrings() {
         return [
             // control samples

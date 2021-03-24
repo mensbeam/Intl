@@ -284,6 +284,13 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
+     * @covers MensBeam\Intl\Encoding\GB18030::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        parent::testExtractNegativeAsciiSpans();
+    }
+
+    /**
      * @group optional
      */
     public function testPedanticallyDecodeSingleCharactersAsCodePoint() {

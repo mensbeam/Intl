@@ -203,6 +203,19 @@ class TestReplacement extends \MensBeam\Intl\Test\DecoderTest {
      * @covers MensBeam\Intl\Encoding\Replacement::asciiSpan
      */
     public function testExtractAsciiSpans() {
-        $this->markTestIncomplete();
+        $d = new Replacement("VVVVVV");
+        $this->assertSame("", $d->asciiSpan($this->allBytes()));
+        $d->nextChar();
+        $this->assertTrue($d->eof());
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\Replacement::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        $d = new Replacement("VVVVVV");
+        $this->assertSame("", $d->asciiSpanNot(""));
+        $d->nextChar();
+        $this->assertTrue($d->eof());
     }
 }

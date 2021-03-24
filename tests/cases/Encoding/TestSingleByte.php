@@ -237,10 +237,21 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
+     * @dataProvider provideClasses
      * @covers MensBeam\Intl\Encoding\SingleByteEncoding::asciiSpan
      */
-    public function testExtractAsciiSpans() {
+    public function testExtractAsciiSpans($class =  null) {
+        $this->testedClass = $class;
         parent::testExtractAsciiSpans();
+    }
+
+    /**
+     * @dataProvider provideClasses
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::asciiSpan
+     */
+    public function testExtractNegativeAsciiSpans($class =  null) {
+        $this->testedClass = $class;
+        parent::testExtractNegativeAsciiSpans();
     }
 
     public function provideClasses() {

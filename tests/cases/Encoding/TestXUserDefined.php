@@ -18,6 +18,8 @@ class TestXUserDefined extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
     /* This string is supposed to contain an invalid character sequence sandwiched between two null characters, but x-user-defined has no invalid characters */
     protected $brokenChar = "";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "41 5A 80 FF 30 39";
 
     public function provideCodePoints() {
         return [
@@ -189,5 +191,12 @@ class TestXUserDefined extends \MensBeam\Intl\Test\CoderDecoderTest {
      */
     public function testExtractAsciiSpans() {
         parent::testExtractAsciiSpans();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\XUserDefined::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        parent::testExtractNegativeAsciiSpans();
     }
 }

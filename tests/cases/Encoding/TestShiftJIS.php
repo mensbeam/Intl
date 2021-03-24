@@ -208,6 +208,13 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        parent::testExtractNegativeAsciiSpans();
+    }
+
+    /**
      * @group optional
      */
     public function testPedanticallyDecodeSingleCharactersAsCodePoint() {

@@ -368,6 +368,19 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         $this->assertSame("09", $d->asciiSpan($allBytes));
     }
 
+    public function testExtractNegativeAsciiSpans() {
+        $class = $this->testedClass;
+        $d = new $class($this->prepString($this->spanString));
+        $this->assertSame("", $d->asciiSpanNot("AZ"));
+        $this->assertSame("A", $d->asciiSpanNot("az", 1));
+        $this->assertSame("Z", $d->asciiSpanNot("az"));
+        $this->assertSame("", $d->asciiSpanNot(""));
+        $d->nextChar();
+        $this->assertSame("", $d->asciiSpanNot(""));
+        $d->nextChar();
+        $this->assertSame("09", $d->asciiSpanNot(""));
+    }
+
     protected function prepString(string $str): string {
         return hex2bin(str_replace(" ", "", $str));
     }

@@ -233,4 +233,11 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     public function testExtractAsciiSpans() {
         parent::testExtractAsciiSpans();
     }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF8::asciiSpanNot
+     */
+    public function testExtractNegativeAsciiSpans() {
+        parent::testExtractNegativeAsciiSpans();
+    }
 }
