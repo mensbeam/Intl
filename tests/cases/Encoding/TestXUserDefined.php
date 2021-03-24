@@ -183,4 +183,11 @@ class TestXUserDefined extends \MensBeam\Intl\Test\CoderDecoderTest {
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
     }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\XUserDefined::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
+    }
 }

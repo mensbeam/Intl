@@ -27,6 +27,8 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 3, 5, 5, 7, 7, 9];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "41 5A D7AA A4F4 30 39";
 
     public function provideCodePoints() {
         return [
@@ -193,6 +195,13 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\Big5::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
     }
 
     /**

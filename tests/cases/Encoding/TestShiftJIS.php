@@ -27,6 +27,8 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 2, 4, 6, 7, 8, 10];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "41 5A D6 82E6 30 39";
 
     public function provideCodePoints() {
         return [
@@ -196,6 +198,13 @@ class TestShiftJIS extends \MensBeam\Intl\Test\CoderDecoderTest {
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\ShiftJIS::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
     }
 
     /**

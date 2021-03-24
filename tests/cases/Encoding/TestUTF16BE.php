@@ -25,6 +25,8 @@ class TestUTF16BE extends TestUTF16LE {
     protected $seekOffsets = [0, 2, 4, 6, 10, 12, 16, 18];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "0000 DC00 0000";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "0041 005A 6C34 D834DD1E 0030 0039";
     protected $lowerA = "\x00a";
 
     public function provideStrings() {

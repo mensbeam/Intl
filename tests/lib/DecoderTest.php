@@ -354,7 +354,29 @@ abstract class DecoderTest extends \PHPUnit\Framework\TestCase {
         $this->assertSame(sizeof($exp), $a);
     }
 
+    public function testExtractAsciiSpans() {
+        $allBytes = $this->allBytes();
+        $class = $this->testedClass;
+        $d = new $class($this->prepString($this->spanString));
+        $this->assertSame("", $d->asciiSpan("az"));
+        $this->assertSame("A", $d->asciiSpan("AZ", 1));
+        $this->assertSame("Z", $d->asciiSpan("AZ"));
+        $this->assertSame("", $d->asciiSpan($allBytes));
+        $d->nextChar();
+        $this->assertSame("", $d->asciiSpan($allBytes));
+        $d->nextChar();
+        $this->assertSame("09", $d->asciiSpan($allBytes));
+    }
+
     protected function prepString(string $str): string {
         return hex2bin(str_replace(" ", "", $str));
+    }
+
+    protected function allBytes(): string {
+        $out = "";
+        for ($a = 0x00; $a <= 0xFF; $a++) {
+            $out .= chr($a);
+        }
+        return $out;
     }
 }

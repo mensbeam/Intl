@@ -198,4 +198,11 @@ class TestReplacement extends \MensBeam\Intl\Test\DecoderTest {
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
     }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\Replacement::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        $this->markTestIncomplete();
+    }
 }

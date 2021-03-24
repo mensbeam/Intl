@@ -244,6 +244,13 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
     }
 
     /**
+     * @covers MensBeam\Intl\Encoding\ISO2022JP::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        $this->markTestIncomplete();
+    }
+
+    /**
      * @group optional
      */
     public function testPedanticallyDecodeSingleCharactersAsCodePoint() {

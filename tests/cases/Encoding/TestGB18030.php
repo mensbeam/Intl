@@ -23,11 +23,13 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
         Char 6  U+FFFE   (4 bytes) Offset 19
         End of string at char 7, offset 23
     */
-    protected $seekString = "7A 81 30 84 34 CB AE 94 32 BE 34 84 30 81 30 E3 32 9A 33 84 31 A4 38";
+    protected $seekString = "7A 81308434 CBAE 9432BE34 84308130 E3329A33 8431A438";
     protected $seekCodes = [0x007A, 0x00A2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE];
     protected $seekOffsets = [0, 1, 5, 7, 11, 15, 19, 23];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "41 5A 81308434 CBAE 30 39";
 
     public function tearDown(): void {
         $this->testedClass = GB18030::class;
@@ -272,6 +274,13 @@ class TestGB18030 extends \MensBeam\Intl\Test\CoderDecoderTest {
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\GB18030::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
     }
 
     /**

@@ -90,9 +90,9 @@ abstract class UTF16 extends AbstractEncoding {
         while (true) {
             $c1 = @$this->string[$this->posByte];
             $c2 = @$this->string[$this->posByte + 1];
-            $b = ord(self::BE ? $c1 : $c2);
+            $b = ord(static::BE ? $c1 : $c2);
             if (!$b) {
-                $c = self::BE ? $c2 : $c1;
+                $c = static::BE ? $c2 : $c1;
                 $b = ord($c);
                 if ($b < 0x80 && strpos($mask, $c) !== false && $c1 !== "" && $c2 !== "") {
                     $out .= $c;
@@ -114,9 +114,9 @@ abstract class UTF16 extends AbstractEncoding {
         while (true) {
             $c1 = @$this->string[$this->posByte];
             $c2 = @$this->string[$this->posByte + 1];
-            $b = ord(self::BE ? $c1 : $c2);
+            $b = ord(static::BE ? $c1 : $c2);
             if (!$b) {
-                $c = self::BE ? $c2 : $c1;
+                $c = static::BE ? $c2 : $c1;
                 $b = ord($c);
                 if ($b < 0x80 && strpos($mask, $c) === false && $c1 !== "" && $c2 !== "") {
                     $out .= $c;

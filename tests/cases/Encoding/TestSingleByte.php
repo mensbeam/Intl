@@ -81,6 +81,8 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 2, 3, 4, 5, 6, 7];
     /* This string is supposed to contain an invalid character sequence sandwiched between two null characters; this is different for each single-byte encoding (and many do not have invalid characters) */
     protected $brokenChar = "";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "41 5A 80 FF 30 39";
 
     /**
      * @dataProvider provideCodePoints
@@ -232,6 +234,13 @@ class TestSingleByte extends \MensBeam\Intl\Test\CoderDecoderTest {
     public function testSeekBackOverRandomData($class =  null) {
         $this->testedClass = $class;
         return parent::testSeekBackOverRandomData();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\SingleByteEncoding::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
     }
 
     public function provideClasses() {

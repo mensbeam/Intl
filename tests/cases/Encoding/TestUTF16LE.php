@@ -25,6 +25,8 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
     protected $seekOffsets = [0, 2, 4, 6, 10, 12, 16, 18];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "0000 00DC 0000";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "4100 5A00 346C 34D81EDD 3000 3900";
     protected $lowerA = "a\x00";
 
     /**
@@ -131,6 +133,13 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF16::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
     }
 
     public function provideStrings() {

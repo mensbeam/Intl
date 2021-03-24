@@ -30,28 +30,6 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
     protected $spanString = "41 5A E6B0B4 F09D849E 30 39";
 
-    protected function allBytes(): string {
-        $out = "";
-        for ($a = 0x00; $a <= 0xFF; $a++) {
-            $out .= chr($a);
-        }
-        return $out;
-    }
-
-    public function testExtractAsciiSpans() {
-        $allBytes = $this->allBytes();
-        $class = $this->testedClass;
-        $d = new $class($this->prepString($this->spanString));
-        $this->assertSame("", $d->asciiSpan("az"));
-        $this->assertSame("A", $d->asciiSpan("AZ", 1));
-        $this->assertSame("Z", $d->asciiSpan("AZ"));
-        $this->assertSame("", $d->asciiSpan($allBytes));
-        $d->nextChar();
-        $this->assertSame("", $d->asciiSpan($allBytes));
-        $d->nextChar();
-        $this->assertSame("09", $d->asciiSpan($allBytes));
-    }
-
     public function provideCodePoints() {
         return [
             'U+007A (HTML)'    => [false, 0x7A, "7A"],
@@ -247,5 +225,12 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      */
     public function testSeekBackOverRandomData() {
         return parent::testSeekBackOverRandomData();
+    }
+
+    /**
+     * @covers MensBeam\Intl\Encoding\UTF8::asciiSpan
+     */
+    public function testExtractAsciiSpans() {
+        parent::testExtractAsciiSpans();
     }
 }
