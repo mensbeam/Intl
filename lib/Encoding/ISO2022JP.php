@@ -186,6 +186,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
 
     public function asciiSpan(string $mask, int $length = null): string {
         $out = "";
+        $left = ($length === null) ? -1 : $length;
         Process:
         if ($this->mode === self::KATAKANA_STATE || $this->mode === self::LEAD_BYTE_STATE) {
             // these modes will always return an empty span
@@ -194,13 +195,10 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
                 $exc = '/[\x0E\x0F\x1B\x80-\xFF]/s';
             } elseif ($this->mode === self::ROMAN_STATE) {
                 $exc = '/[\x0E\x0F\x1B\x5C\x7E\x80-\xFF]/s';
-            } else {
-                // in other modes ASCII characters are never returned
-                return "";
             }
             $effectiveMask = preg_replace($exc, "", $mask);
             if ($length !== null) {
-                $len = strspn($this->string, $effectiveMask, $this->posByte, $length);
+                $len = strspn($this->string, $effectiveMask, $this->posByte, $left);
             } else {
                 $len = strspn($this->string, $effectiveMask, $this->posByte);
             }
@@ -208,10 +206,11 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
                 $out .= substr($this->string, $this->posByte, $len);
                 $this->posByte += $len;
                 $this->posChar += $len;
+                $left -= $len;
             }
         }
         // check if the current position has a mode change to ASCII or Roman modes and is followed by a desired character
-        if (@$this->string[$this->posByte] === "\x1B") {
+        if ($left && @$this->string[$this->posByte] === "\x1B") {
             if (substr($this->string, $this->posByte + 1, 2) === "\x28\x42") {
                 $exc = '/[\x0E\x0F\x1B\x80-\xFF]/s';
             } elseif (substr($this->string, $this->posByte + 1, 2) === "\x28\x4A") {
@@ -223,7 +222,9 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
             // if the byte after the mode switch is a wanted one, consume it and go back to the start
             if (strspn(@$this->string[$this->posByte + 3], $effectiveMask, $this->posByte)) {
                 $out .= $this->nextChar();
-                goto Process;
+                if (--$left) {
+                    goto Process;
+                }
             }
         }
         return $out;
