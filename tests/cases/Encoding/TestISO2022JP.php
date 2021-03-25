@@ -31,6 +31,8 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $seekOffsets = [0, 1, 5, 6, 11, 13, 15, 19];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
+    /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */
+    protected $spanString = "1B284A 41 5A 1B2849 5C 5F 1B2842 30 39";
 
     public function provideCodePoints() {
         return [
@@ -247,14 +249,14 @@ class TestISO2022JP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @covers MensBeam\Intl\Encoding\ISO2022JP::asciiSpan
      */
     public function testExtractAsciiSpans() {
-        $this->markTestIncomplete();
+        parent::testExtractAsciiSpans();
     }
 
     /**
      * @covers MensBeam\Intl\Encoding\ISO2022JP::asciiSpanNot
      */
     public function testExtractNegativeAsciiSpans() {
-        $this->markTestIncomplete();
+        parent::testExtractNegativeAsciiSpans();
     }
 
     /**

@@ -220,7 +220,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
             }
             $effectiveMask = preg_replace($exc, "", $mask);
             // if the byte after the mode switch is a wanted one, consume it and go back to the start
-            if (strspn(@$this->string[$this->posByte + 3], $effectiveMask, $this->posByte)) {
+            if (strspn(@$this->string[$this->posByte + 3], $effectiveMask)) {
                 $out .= $this->nextChar();
                 if (--$left) {
                     goto Process;
@@ -231,28 +231,48 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
     }
 
     public function asciiSpanNot(string $mask, int $length = null): string {
-        if ($this->mode === self::ASCII_STATE) {
-            $mask .= "\x0E\x0F\x1B";
-        } elseif ($this->mode === self::ROMAN_STATE) {
-            $mask .= "\x0E\x0F\x1B\x5C\x7E";
-        } else {
-            // in other modes ASCII characters are never returned
-            return "";
-        }
         $mask .= self::HIGH_BYTES;
-        if ($length !== null) {
-            $len = strcspn($this->string, $mask, $this->posByte, $length);
+        $out = "";
+        $left = ($length === null) ? -1 : $length;
+        Process:
+        if ($this->mode === self::KATAKANA_STATE || $this->mode === self::LEAD_BYTE_STATE) {
+            // these modes will always return an empty span
         } else {
-            $len = strcspn($this->string, $mask, $this->posByte);
+            if ($this->mode === self::ASCII_STATE) {
+                $effectiveMask = $mask."\x0E\x0F\x1B";
+            } elseif ($this->mode === self::ROMAN_STATE) {
+                $effectiveMask = $mask."\x0E\x0F\x1B\x5C\x7E";
+            }
+            if ($length !== null) {
+                $len = strcspn($this->string, $effectiveMask, $this->posByte, $left);
+            } else {
+                $len = strcspn($this->string, $effectiveMask, $this->posByte);
+            }
+            if ($len) {
+                $out .= substr($this->string, $this->posByte, $len);
+                $this->posByte += $len;
+                $this->posChar += $len;
+                $left -= $len;
+            }
         }
-        if ($len) {
-            $out = substr($this->string, $this->posByte, $len);
-            $this->posByte += $len;
-            $this->posChar += $len;
-            return $out;
-        } else {
-            return "";
+        // check if the current position has a mode change to ASCII or Roman modes and is followed by a desired character
+        if ($left && @$this->string[$this->posByte] === "\x1B") {
+            if (substr($this->string, $this->posByte + 1, 2) === "\x28\x42") {
+                $effectiveMask = $mask."\x0E\x0F\x1B";
+            } elseif (substr($this->string, $this->posByte + 1, 2) === "\x28\x4A") {
+                $effectiveMask = $mask."\x0E\x0F\x1B\x5C\x7E";
+            } else {
+                return $out;
+            }
+            // if the byte after the mode switch is a wanted one, consume it and go back to the start
+            if (strcspn(@$this->string[$this->posByte + 3], $effectiveMask)) {
+                $out .= $this->nextChar();
+                if (--$left) {
+                    goto Process;
+                }
+            }
         }
+        return $out;
     }
 
     protected function stateSave(): array {
