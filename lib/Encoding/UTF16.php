@@ -9,10 +9,21 @@ namespace MensBeam\Intl\Encoding;
 abstract class UTF16 extends AbstractEncoding {
     protected $selfSynchronizing = true;
     protected $dirtyEOF = 0;
+    /** @var int The size of the string's byte order mark, if any */
+    protected $BOM = 0;
 
     public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
         $this->stateProps[] = "dirtyEOF";
         parent::__construct($string, $fatal, $allowSurrogates);
+        if (substr($string, 0, 2) === (static::BE ? "\xFE\xFF" : "\xFF\xFE")) {
+            $this->BOM = 2;
+            $this->posByte = 2;
+        }
+    }
+
+    public function rewind(): void {
+        parent::rewind();
+        $this->posByte = $this->BOM;
     }
 
     public function nextCode() {
@@ -144,7 +155,7 @@ abstract class UTF16 extends AbstractEncoding {
             $this->posByte -= $this->dirtyEOF;
             $this->dirtyEOF = 0;
         }
-        while ($distance > 0 && $this->posByte > 0) {
+        while ($distance > 0 && $this->posChar > 0) {
             $distance--;
             $this->posChar--;
             if ($this->posByte < 4) {

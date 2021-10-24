@@ -13,18 +13,19 @@ use MensBeam\Intl\Encoding\EncoderException;
 class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
     protected $testedClass = UTF8::class;
     /*
-        Char 0  U+007A   (1 byte)  Offset 0
-        Char 1  U+00A2   (2 bytes) Offset 1
-        Char 2  U+6C34   (3 bytes) Offset 3
-        Char 3  U+1D11E  (4 bytes) Offset 6
-        Char 4  U+F8FF   (3 bytes) Offset 10
-        Char 5  U+10FFFD (4 bytes) Offset 13
-        Char 6  U+FFFE   (3 bytes) Offset 17
-        End of string at char 7, offset 20
+        Byte Order Mark  (3 bytes) Offset 0
+        Char 0  U+007A   (1 byte)  Offset 3
+        Char 1  U+00A2   (2 bytes) Offset 4
+        Char 2  U+6C34   (3 bytes) Offset 6
+        Char 3  U+1D11E  (4 bytes) Offset 9
+        Char 4  U+F8FF   (3 bytes) Offset 13
+        Char 5  U+10FFFD (4 bytes) Offset 16
+        Char 6  U+FFFE   (3 bytes) Offset 20
+        End of string at char 7, offset 23
     */
-    protected $seekString = "7A C2A2 E6B0B4 F09D849E EFA3BF F48FBFBD EFBFBE";
+    protected $seekString = "EFBBBF 7A C2A2 E6B0B4 F09D849E EFA3BF F48FBFBD EFBFBE";
     protected $seekCodes = [0x007A, 0x00A2, 0x6C34, 0x1D11E, 0xF8FF, 0x10FFFD, 0xFFFE];
-    protected $seekOffsets = [0, 1, 3, 6, 10, 13, 17, 20];
+    protected $seekOffsets = [3, 4, 6, 9, 13, 16, 20, 23];
     /* This string contains an invalid character sequence sandwiched between two null characters */
     protected $brokenChar = "00 FF 00";
     /* This string conatins the ASCII characters "A" and "Z" followed by two arbitrary non-ASCII characters, followed by the two ASCII characters "0" and "9" */

@@ -17,6 +17,8 @@ abstract class Encoding {
 
     /** Returns a new decoder for the specified $encodingLabel operating on $data, or null if the label is not valid
      * 
+     * If $data includes a UTF-8 or UTF-16 byte order mark, this will take precedence over the specified encoding
+     * 
      * @param string $encodingLabel One of the encoding labels listed in the specification e.g. "utf-8", "Latin1", "shift_JIS"
      * @param string $data The string to decode
      * @param bool $fatal If true, throw enceptions when encountering invalid input. If false, substitute U+FFFD REPLACEMENT CHARACTER instead
@@ -25,7 +27,7 @@ abstract class Encoding {
      * @see https://encoding.spec.whatwg.org#names-and-labels
      */
     public static function createDecoder(string $encodingLabel, string $data, bool $fatal = false, bool $allowSurrogates = false): ?Decoder {
-        $encoding = self::matchLabel($encodingLabel);
+        $encoding = self::matchLabel(self::sniffBOM($data) ?? $encodingLabel);
         if ($encoding) {
             $class = $encoding['class'];
             return new $class($data, $fatal, $allowSurrogates);
@@ -73,6 +75,22 @@ abstract class Encoding {
                 'class' => $class,
                 'encoder' => $encoder,
             ];
+        } else {
+            return null;
+        }
+    }
+
+    /** Finds a Unicode byte order mark in a byte stream and returns the detected encoding, if any
+     * 
+     * @param string $data The string to examine
+     */
+    public static function sniffBOM(string $data): ?string {
+        if (substr($data, 0, 3) === "\xEF\xBB\xBF") {
+            return "UTF-8";
+        } elseif (substr($data, 0, 2) === "\xFE\xFF") {
+            return "UTF-16BE";
+        } elseif (substr($data, 0, 2) === "\xFF\xFE") {
+            return "UTF-16LE";
         } else {
             return null;
         }

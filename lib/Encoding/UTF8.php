@@ -18,6 +18,21 @@ class UTF8 extends AbstractEncoding implements Coder, Decoder {
     ];
 
     protected $selfSynchronizing = true;
+    /** @var int The size of the string's byte order mark, if any */
+    protected $BOM = 0;
+
+    public function __construct(string $string, bool $fatal = false, bool $allowSurrogates = false) {
+        parent::__construct($string, $fatal, $allowSurrogates);
+        if (substr($string, 0, 3) === "\xEF\xBB\xBF") {
+            $this->BOM = 3;
+            $this->posByte = 3;
+        }
+    }
+
+    public function rewind(): void {
+        parent::rewind();
+        $this->posByte = $this->BOM;
+    }
 
     public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
@@ -99,7 +114,7 @@ class UTF8 extends AbstractEncoding implements Coder, Decoder {
 
     /** Implements backward seeking $distance characters */
     protected function seekBack(int $distance): int {
-        while ($distance > 0 && $this->posByte > 0) {
+        while ($distance > 0 && $this->posChar > 0) {
             $distance--;
             $this->posChar--;
             $b = ord(@$this->string[$this->posByte - 1]);
