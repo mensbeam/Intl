@@ -57,7 +57,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
         $this->posChar++;
         $state = $this->mode;
         while (true) {
-            $b = @$this->string[$this->posByte++];
+            $b = $this->string[$this->posByte++] ?? "";
             $eof = ($b === "");
             $b = ord($b);
             // unify handling of basic states where possible
@@ -210,7 +210,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
             }
         }
         // check if the current position has a mode change to ASCII or Roman modes and is followed by a desired character
-        if ($left && @$this->string[$this->posByte] === "\x1B") {
+        if ($left && ($this->string[$this->posByte] ?? "") === "\x1B") {
             if (substr($this->string, $this->posByte + 1, 2) === "\x28\x42") {
                 $exc = '/[\x0E\x0F\x1B\x80-\xFF]/s';
             } elseif (substr($this->string, $this->posByte + 1, 2) === "\x28\x4A") {
@@ -220,7 +220,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
             }
             $effectiveMask = preg_replace($exc, "", $mask);
             // if the byte after the mode switch is a wanted one, consume it and go back to the start
-            if (strspn(@$this->string[$this->posByte + 3], $effectiveMask)) {
+            if (strspn($this->string[$this->posByte + 3] ?? "", $effectiveMask)) {
                 $out .= $this->nextChar();
                 if (--$left) {
                     goto Process;
@@ -256,7 +256,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
             }
         }
         // check if the current position has a mode change to ASCII or Roman modes and is followed by a desired character
-        if ($left && @$this->string[$this->posByte] === "\x1B") {
+        if ($left && ($this->string[$this->posByte] ?? "") === "\x1B") {
             if (substr($this->string, $this->posByte + 1, 2) === "\x28\x42") {
                 $effectiveMask = $mask."\x0E\x0F\x1B";
             } elseif (substr($this->string, $this->posByte + 1, 2) === "\x28\x4A") {
@@ -265,7 +265,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
                 return $out;
             }
             // if the byte after the mode switch is a wanted one, consume it and go back to the start
-            if (strcspn(@$this->string[$this->posByte + 3], $effectiveMask)) {
+            if (strcspn($this->string[$this->posByte + 3] ?? "", $effectiveMask)) {
                 $out .= $this->nextChar();
                 if (--$left) {
                     goto Process;

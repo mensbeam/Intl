@@ -30,7 +30,7 @@ class EUCJP extends AbstractEncoding implements Coder, Decoder {
         $this->posChar++;
         $lead = 0x00;
         $jis0212 = false;
-        while (($b = @$this->string[$this->posByte++]) !== "") {
+        while (($b = $this->string[$this->posByte++] ?? "") !== "") {
             $b = ord($b);
             if ($lead == 0) {
                 if ($b < 0x80) {
@@ -116,14 +116,14 @@ class EUCJP extends AbstractEncoding implements Coder, Decoder {
                 continue;
             }
             // go back one byte
-            $b1 = ord(@$this->string[--$this->posByte]);
+            $b1 = ord($this->string[--$this->posByte] ?? "");
             // if the byte is an ASCII byte or the first byte in the string, this is a character
             if ($b1 < 0x80 || $this->posByte === 0) { // ASCII bytes are always isolate in EUC-JP
                 // the byte is a character
                 continue;
             }
             // go back a second byte
-            $b2 = ord(@$this->string[--$this->posByte]);
+            $b2 = ord($this->string[--$this->posByte] ?? "");
             if ($b2 === 0x8E) { // JIS X 0201 character
                 // the two bytes form a character
                 continue;
@@ -132,7 +132,7 @@ class EUCJP extends AbstractEncoding implements Coder, Decoder {
                 continue;
             }
             // go back a third byte
-            $b3 = ord(@$this->string[--$this->posByte]);
+            $b3 = ord($this->string[--$this->posByte] ?? "");
             if ($b3 === 0x8F) { // JIS X 0212 character
                 // the three bytes form a character
                 continue;

@@ -37,7 +37,7 @@ class UTF8 extends AbstractEncoding implements Coder, Decoder {
     public function nextCode() {
         // this function effectively implements https://encoding.spec.whatwg.org/#utf-8-decoder
         // optimization for ASCII characters
-        $b = @$this->string[$this->posByte];
+        $b = $this->string[$this->posByte] ?? "";
         if ($b === "") {
             return false;
         } elseif (($b = ord($b)) < 0x80) {
@@ -52,7 +52,7 @@ class UTF8 extends AbstractEncoding implements Coder, Decoder {
         $lower = 0x80;
         $upper = 0xBF;
         while ($seen < $needed) {
-            $b = ord(@$this->string[$this->posByte++]);
+            $b = ord($this->string[$this->posByte++] ?? "");
             if (!$seen) {
                 if ($b >= 0xC2 && $b <= 0xDF) { // two-byte character
                     $needed = 2;
@@ -117,7 +117,7 @@ class UTF8 extends AbstractEncoding implements Coder, Decoder {
         while ($distance > 0 && $this->posChar > 0) {
             $distance--;
             $this->posChar--;
-            $b = ord(@$this->string[$this->posByte - 1]);
+            $b = ord($this->string[$this->posByte - 1] ?? "");
             if ($b < 0x80) {
                 // if the byte is an ASCII byte or the end of input, then this is already a synchronized position
                 $this->posByte--;
@@ -125,7 +125,7 @@ class UTF8 extends AbstractEncoding implements Coder, Decoder {
                 $s = $this->posByte;
                 $pos = $s - 1;
                 while ($b >= 0x80 && $b <= 0xBF && $pos > 0 && ($s - $pos) < 4) { // go back at most four bytes, no further than the start of the string, and only as long as the byte remains a continuation byte
-                    $b = ord(@$this->string[--$pos]);
+                    $b = ord($this->string[--$pos] ?? "");
                 }
                 $this->posByte = $pos;
                 // decrement the character position because nextCode() increments it

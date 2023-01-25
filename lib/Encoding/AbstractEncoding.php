@@ -72,7 +72,7 @@ abstract class AbstractEncoding  implements Decoder {
 
     public function nextChar(): string {
         // get the byte at the current position
-        $b = @$this->string[$this->posByte];
+        $b = $this->string[$this->posByte] ?? "";
         if ($b === "") {
             // if the byte is end of input, simply return it
             return "";

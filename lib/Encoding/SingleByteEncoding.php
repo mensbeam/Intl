@@ -11,7 +11,7 @@ abstract class SingleByteEncoding extends AbstractEncoding implements Coder, Dec
 
     public function nextChar(): string {
         // get the byte at the current position
-        $b = @$this->string[$this->posChar];
+        $b = $this->string[$this->posChar] ?? "";
         if ($b === "") {
             return "";
         }
@@ -28,7 +28,7 @@ abstract class SingleByteEncoding extends AbstractEncoding implements Coder, Dec
 
     public function nextCode() {
         // get the byte at the current position
-        $b = @$this->string[$this->posChar];
+        $b = $this->string[$this->posChar] ?? "";
         if ($b === "") {
             return false;
         }

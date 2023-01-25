@@ -11,6 +11,7 @@ use MensBeam\Intl\Encoding as Matcher;
 class Encoder {
     protected $name;
     protected $fatal = true;
+    protected $mode = null;
     
     /** Constructs a new encoder for the specified $label
      * 

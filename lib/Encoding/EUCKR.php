@@ -24,11 +24,12 @@ class EUCKR extends AbstractEncoding implements Coder, Decoder {
 
     /** @var array $pointerCache A cached result of flipping the pointer-to-code-point table */
     protected static $pointerCache;
+    protected $dirtyEOF = 0;
 
     public function nextCode() {
         $this->posChar++;
         $lead = 0x00;
-        while (($b = @$this->string[$this->posByte++]) !== "") {
+        while (($b = $this->string[$this->posByte++] ?? "") !== "") {
             $b = ord($b);
             if ($lead == 0) {
                 if ($b < 0x80) {
@@ -96,13 +97,13 @@ class EUCKR extends AbstractEncoding implements Coder, Decoder {
                 continue;
             }
             // go back one byte
-            $b1 = ord(@$this->string[--$this->posByte]);
+            $b1 = ord($this->string[--$this->posByte] ?? "");
             if ($b1 < 0x41 || $this->posByte === $this->errMark || $this->posByte == 0) { // these bytes never appear in sequences, a byte coming after an error is necessarily its own character, and the first byte is necessarily the start of a sequence
                 // the byte is a character
                 continue;
             }
             // go back a second byte
-            $b2 = ord(@$this->string[--$this->posByte]);
+            $b2 = ord($this->string[--$this->posByte] ?? "");
             if ($b2 < 0x80) { // these bytes never appear in the lead of a sequence
                 // the first byte was a character
                 $this->posByte += 1;
@@ -115,7 +116,7 @@ class EUCKR extends AbstractEncoding implements Coder, Decoder {
                 $pos = $this->posByte;
                 // go back bytes until an error mark, an ASCII byte, or start of string
                 while ($pos > 0 && $pos > $this->errMark) {
-                    $b = ord(@$this->string[--$pos]);
+                    $b = ord($this->string[--$pos] ?? "");
                     if ($b < 0x80) {
                         $pos++;
                         break;

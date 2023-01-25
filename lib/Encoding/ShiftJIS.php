@@ -25,7 +25,7 @@ class ShiftJIS extends AbstractEncoding implements Coder, Decoder {
     protected static $pointerCache;
 
     public function nextCode() {
-        if (($b = @$this->string[$this->posByte++]) === "") {
+        if (($b = $this->string[$this->posByte++] ?? "") === "") {
             // clean EOF
             $this->posByte--;
             return false;
@@ -38,7 +38,7 @@ class ShiftJIS extends AbstractEncoding implements Coder, Decoder {
                 return 0xFF61 - 0xA1 + $b;
             } elseif (($b >= 0x81 && $b <= 0x9F) || ($b >= 0xE0 && $b <= 0xFC)) {
                 $lead = $b;
-                if (($b = @$this->string[$this->posByte++]) === "") {
+                if (($b = $this->string[$this->posByte++] ?? "") === "") {
                     // dirty EOF
                     return $this->errDec($this->errMode, $this->posChar - 1, --$this->posByte - 1);
                 }
@@ -121,13 +121,13 @@ class ShiftJIS extends AbstractEncoding implements Coder, Decoder {
                 continue;
             }
             // go back one byte
-            $b1 = ord(@$this->string[--$this->posByte]);
+            $b1 = ord($this->string[--$this->posByte] ?? "");
             if ($b1 < 0x40 || $b1 > 0xFC || $b1 === 0x7F || $this->posByte === 0 || $this->posByte === $this->errMark) { // these bytes never appear in sequences, and the first byte is necessarily the start of a sequence
                 // the byte is a character
                 continue;
             }
             // go back a second byte
-            $b2 = ord(@$this->string[--$this->posByte]);
+            $b2 = ord($this->string[--$this->posByte] ?? "");
             if ($b2 < 0x81 || $b2 > 0xFC || ($b2 >= 0xA0 && $b2 <= 0xDF)) { // these bytes never appear in the lead of a sequence
                 // the first byte was a character
                 $this->posByte += 1;
@@ -140,7 +140,7 @@ class ShiftJIS extends AbstractEncoding implements Coder, Decoder {
                 $pos = $this->posByte;
                 // go back bytes until an error mark, a definite byte, or start of string
                 while ($pos > 0 && $pos > $this->errMark) {
-                    $b = ord(@$this->string[--$pos]);
+                    $b = ord($this->string[--$pos] ?? "");
                     if ($b < 0x81 || ($b >= 0xA0 && $b <= 0xDF) || $b > 0xFC) {
                         $pos++;
                         break;

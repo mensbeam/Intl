@@ -30,7 +30,7 @@ abstract class UTF16 extends AbstractEncoding {
         $lead_b = null;
         $lead_s = null;
         $this->posChar++;
-        while (($b = @$this->string[$this->posByte++]) !== "") {
+        while (($b = $this->string[$this->posByte++] ?? "") !== "") {
             $b = ord($b);
             if (is_null($lead_b)) {
                 $lead_b = $b;
@@ -85,7 +85,7 @@ abstract class UTF16 extends AbstractEncoding {
 
     public function nextChar(): string {
         // get the byte at the current position
-        $b = @$this->string[$this->posByte];
+        $b = $this->string[$this->posByte] ?? "";
         if ($b === "") {
             // if the byte is end of input, simply return it
             return "";
@@ -100,8 +100,8 @@ abstract class UTF16 extends AbstractEncoding {
         $out = "";
         $left = ($length === null) ? -1 : $length;
         while ($left) {
-            $c1 = @$this->string[$this->posByte];
-            $c2 = @$this->string[$this->posByte + 1];
+            $c1 = $this->string[$this->posByte] ?? "";
+            $c2 = $this->string[$this->posByte + 1] ?? "";
             $b = ord(static::BE ? $c1 : $c2);
             if (!$b) {
                 $c = static::BE ? $c2 : $c1;
@@ -126,8 +126,8 @@ abstract class UTF16 extends AbstractEncoding {
         $out = "";
         $left = ($length === null) ? -1 : $length;
         while ($left) {
-            $c1 = @$this->string[$this->posByte];
-            $c2 = @$this->string[$this->posByte + 1];
+            $c1 = $this->string[$this->posByte] ?? "";
+            $c2 = $this->string[$this->posByte + 1] ?? "";
             $b = ord(static::BE ? $c1 : $c2);
             if (!$b) {
                 $c = static::BE ? $c2 : $c1;

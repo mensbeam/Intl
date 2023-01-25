@@ -20,7 +20,7 @@ abstract class GBCommon extends AbstractEncoding implements Coder, Decoder {
         $second = 0;
         $third = 0;
         $this->posChar++;
-        while (($b = @$this->string[$this->posByte++]) !== "") {
+        while (($b = $this->string[$this->posByte++] ?? "") !== "") {
             $b = ord($b);
             if ($first === 0) {
                 if ($b < 0x80) {
@@ -148,7 +148,7 @@ abstract class GBCommon extends AbstractEncoding implements Coder, Decoder {
                 continue;
             }
             // go back one byte
-            $b1 = ord(@$this->string[--$this->posByte]);
+            $b1 = ord($this->string[--$this->posByte] ?? "");
             if ($b1 > 0x80) { // only GBK characters end in high bytes
                 // the preceeding byte starts the character
                 $this->posByte--;
@@ -165,10 +165,10 @@ abstract class GBCommon extends AbstractEncoding implements Coder, Decoder {
                     continue;
                 }
                 // go back a second byte
-                $b2 = ord(@$this->string[$this->posByte - 1]);
+                $b2 = ord($this->string[$this->posByte - 1] ?? "");
                 if ($b2 > 0x80) {
                     // go back a third byte
-                    $b3 = ord(@$this->string[$this->posByte - 2]);
+                    $b3 = ord($this->string[$this->posByte - 2] ?? "");
                     if ($b3 >= 0x30 && $b3 <= 0x39) {
                         // the next byte starts the character
                         $this->posByte -= 3;
@@ -179,7 +179,7 @@ abstract class GBCommon extends AbstractEncoding implements Coder, Decoder {
                 continue;
             } else { // this can either be the trail of a two-byte GBK character, or a single-byte character
                 // go back a second byte
-                $b2 = ord(@$this->string[--$this->posByte]);
+                $b2 = ord($this->string[--$this->posByte] ?? "");
                 if ($b2 < 0x81) { // these bytes never appear in the lead of a sequence
                     // the first byte was a character
                     $this->posByte += 1;
@@ -189,7 +189,7 @@ abstract class GBCommon extends AbstractEncoding implements Coder, Decoder {
                     $pos = $this->posByte;
                     // go back bytes until an error mark, an ASCII byte, or start of string
                     while ($pos > 0 && $pos > $this->errMark) {
-                        $b = ord(@$this->string[--$pos]);
+                        $b = ord($this->string[--$pos] ?? "");
                         if ($b < 0x81) {
                             $pos++;
                             break;
