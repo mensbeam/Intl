@@ -184,7 +184,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
         return $distance;
     }
 
-    public function asciiSpan(string $mask, int $length = null): string {
+    public function asciiSpan(string $mask, ?int $length = null): string {
         $out = "";
         $left = ($length === null) ? -1 : $length;
         Process:
@@ -230,7 +230,7 @@ class ISO2022JP extends AbstractEncoding implements ModalCoder, Decoder {
         return $out;
     }
 
-    public function asciiSpanNot(string $mask, int $length = null): string {
+    public function asciiSpanNot(string $mask, ?int $length = null): string {
         $mask .= self::HIGH_BYTES;
         $out = "";
         $left = ($length === null) ? -1 : $length;

@@ -217,7 +217,7 @@ class TestUTF8 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF8::nextCode
      */
-    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, ?array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 

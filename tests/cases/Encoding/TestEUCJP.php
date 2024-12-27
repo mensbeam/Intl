@@ -197,7 +197,7 @@ class TestEUCJP extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\EUCJP::nextCode
      */
-    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, ?array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 

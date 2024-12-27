@@ -90,7 +90,7 @@ interface Decoder {
      * @param string $mask The set of ASCII characters to match
      * @param int $length The maximum number oof characters to advance by
      */
-    public function asciiSpan(string $mask, int $length = null): string;
+    public function asciiSpan(string $mask, ?int $length = null): string;
 
     /** Fast-forwards through a span of ASCII characters not matching the supplied mask, returning any consumed characters
      * 
@@ -101,5 +101,5 @@ interface Decoder {
      * @param string $mask The set of ASCII characters to not match
      * @param int $length The maximum number oof characters to advance by
      */
-    public function asciiSpanNot(string $mask, int $length = null): string;
+    public function asciiSpanNot(string $mask, ?int $length = null): string;
 }

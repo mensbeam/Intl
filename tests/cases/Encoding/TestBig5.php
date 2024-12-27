@@ -186,7 +186,7 @@ class TestBig5 extends \MensBeam\Intl\Test\CoderDecoderTest {
      * @dataProvider provideStrings
      * @coversNothing
      */
-    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, ?array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 

@@ -125,7 +125,7 @@ class TestUTF16LE extends \MensBeam\Intl\Test\DecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\UTF16::nextCode
      */
-    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, ?array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 

@@ -1,14 +1,20 @@
+Version 0.9.3 (2024-12-27)
+==========================
+
+Changes:
+- Support PHP 8.4
+
 Version 0.9.2 (2023-01-25)
 ==========================
 
-Bug fixes
+Bug fixes:
 - Define properties which were accidentally created dynamically
 - Avoid use of @ operator to play nice with custom error handlers
 
 Version 0.9.1 (2021-10-24)
 ==========================
 
-Bug fixes
+Bug fixes:
 - Correctly skip byte order marks
 - Detect byte order marks in \MensBeam\Intl\Encoding::createEncoder()
 

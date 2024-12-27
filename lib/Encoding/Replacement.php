@@ -123,11 +123,11 @@ class Replacement implements Decoder {
         }
     }
 
-    public function asciiSpan(string $mask, int $length = null): string {
+    public function asciiSpan(string $mask, ?int $length = null): string {
         return "";
     }
 
-    public function asciiSpanNot(string $mask, int $length = null): string {
+    public function asciiSpanNot(string $mask, ?int $length = null): string {
         return "";
     }
 }

@@ -95,7 +95,7 @@ abstract class UTF16 extends AbstractEncoding {
         }
     }
 
-    public function asciiSpan(string $mask, int $length = null): string {
+    public function asciiSpan(string $mask, ?int $length = null): string {
         // UTF-16 has no ASCII characters, so we must do things the hard way
         $out = "";
         $left = ($length === null) ? -1 : $length;
@@ -121,7 +121,7 @@ abstract class UTF16 extends AbstractEncoding {
         return $out;
     }
 
-    public function asciiSpanNot(string $mask, int $length = null): string {
+    public function asciiSpanNot(string $mask, ?int $length = null): string {
         // this is a copy of asciiSpan above with only the strpos check reversed
         $out = "";
         $left = ($length === null) ? -1 : $length;

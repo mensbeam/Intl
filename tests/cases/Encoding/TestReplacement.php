@@ -188,7 +188,7 @@ class TestReplacement extends \MensBeam\Intl\Test\DecoderTest {
      * @dataProvider provideStrings
      * @covers MensBeam\Intl\Encoding\Replacement::nextCode
      */
-    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, array $relaxedExp = null) {
+    public function testIterateThroughAStringAllowingSurrogates(string $input, array $strictExp, ?array $relaxedExp = null) {
         return parent::testIterateThroughAStringAllowingSurrogates($input, $strictExp, $relaxedExp);
     }
 

@@ -164,7 +164,7 @@ abstract class AbstractEncoding  implements Decoder {
         }
     }
 
-    public function asciiSpan(string $mask, int $length = null): string {
+    public function asciiSpan(string $mask, ?int $length = null): string {
         $mask = preg_replace('/[\x80-\xFF]/s', "", $mask);
         if ($length !== null) {
             $len = strspn($this->string, $mask, $this->posByte, $length);
@@ -181,7 +181,7 @@ abstract class AbstractEncoding  implements Decoder {
         }
     }
 
-    public function asciiSpanNot(string $mask, int $length = null): string {
+    public function asciiSpanNot(string $mask, ?int $length = null): string {
         $mask .= self::HIGH_BYTES;
         if ($length !== null) {
             $len = strcspn($this->string, $mask, $this->posByte, $length);
